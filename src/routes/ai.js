@@ -72,13 +72,14 @@ The user's business is a telecommunications company (The Quantum Leap) selling i
 
 // Streaming chat endpoint
 router.post('/chat/stream', requireAuth, async (req, res) => {
-  const { message, apiKey } = req.body;
+  const { message, apiKey, claudeApiKey } = req.body;
+  const actualApiKey = apiKey || claudeApiKey;
   
   if (!message) {
     return res.status(400).json({ error: 'Message is required' });
   }
 
-  if (!apiKey) {
+  if (!actualApiKey) {
     return res.status(400).json({ 
       error: 'Claude API key is required',
       needsApiKey: true 
@@ -91,7 +92,7 @@ router.post('/chat/stream', requireAuth, async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
 
   try {
-    const client = new Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey: actualApiKey });
     const conversationId = getConversationId(req);
     
     // Get conversation history
@@ -147,13 +148,14 @@ router.post('/chat/stream', requireAuth, async (req, res) => {
 
 // Non-streaming chat endpoint (fallback)
 router.post('/chat', requireAuth, async (req, res) => {
-  const { message, apiKey } = req.body;
+  const { message, apiKey, claudeApiKey } = req.body;
+  const actualApiKey = apiKey || claudeApiKey;
   
   if (!message) {
     return res.status(400).json({ error: 'Message is required' });
   }
 
-  if (!apiKey) {
+  if (!actualApiKey) {
     return res.status(400).json({ 
       error: 'Claude API key is required',
       needsApiKey: true 
@@ -161,7 +163,7 @@ router.post('/chat', requireAuth, async (req, res) => {
   }
 
   try {
-    const client = new Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey: actualApiKey });
     const conversationId = getConversationId(req);
     
     let history = conversations.get(conversationId) || [];
