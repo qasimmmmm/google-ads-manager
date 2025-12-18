@@ -6,6 +6,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
 const aiRoutes = require('./routes/ai');
+const automationRoutes = require('./routes/automation');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
 app.use('/ai', aiRoutes);
+app.use('/automation', automationRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
