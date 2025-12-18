@@ -111,6 +111,76 @@ router.post('/competitor/ads', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Get competitor's organic keywords
+ * POST /automation/competitor/organic
+ */
+router.post('/competitor/organic', requireAuth, async (req, res) => {
+  const { domain, researchApiKey, researchProvider } = req.body;
+
+  if (!domain) {
+    return res.status(400).json({ error: 'Domain is required' });
+  }
+
+  if (!researchApiKey) {
+    return res.status(400).json({ error: 'Research API key required' });
+  }
+
+  try {
+    const manager = new AICampaignManager({
+      researchApiKey,
+      researchProvider: researchProvider || 'semrush'
+    });
+
+    const keywords = await manager.getCompetitorOrganicKeywords(domain);
+    
+    res.json({
+      success: true,
+      domain,
+      totalKeywords: keywords.length,
+      keywords: keywords.slice(0, 100)
+    });
+  } catch (error) {
+    console.error('Organic keywords error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Get competitor's ad competitors
+ * POST /automation/competitor/adcompetitors
+ */
+router.post('/competitor/adcompetitors', requireAuth, async (req, res) => {
+  const { domain, researchApiKey, researchProvider } = req.body;
+
+  if (!domain) {
+    return res.status(400).json({ error: 'Domain is required' });
+  }
+
+  if (!researchApiKey) {
+    return res.status(400).json({ error: 'Research API key required' });
+  }
+
+  try {
+    const manager = new AICampaignManager({
+      researchApiKey,
+      researchProvider: researchProvider || 'semrush'
+    });
+
+    const competitors = await manager.getAdCompetitors(domain);
+    
+    res.json({
+      success: true,
+      domain,
+      totalCompetitors: competitors.length,
+      competitors: competitors.slice(0, 20)
+    });
+  } catch (error) {
+    console.error('Ad competitors error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ═══════════════════════════════════════════════════════════
 // KEYWORD DISCOVERY ENDPOINTS
 // ═══════════════════════════════════════════════════════════
