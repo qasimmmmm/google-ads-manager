@@ -1,5 +1,5 @@
 const express = require('express');
-const AIService = require('../services/aiService');
+const Anthropic = require('@anthropic-ai/sdk');
 const router = express.Router();
 
 // Store conversation history in memory (per session)
@@ -33,7 +33,119 @@ const getConversationId = (req) => {
   return authData?.user?.email || 'anonymous';
 };
 
-// Chat endpoint
+// System prompt
+const SYSTEM_PROMPT = `You are AdsPro AI, an expert Google Ads campaign manager and marketing assistant. You help users:
+
+1. **Create Campaigns**: When asked to create a campaign, provide a detailed plan including:
+   - Campaign name and type (Search, Display, Video, etc.)
+   - Recommended daily budget
+   - Target locations
+   - Suggested keywords (with estimated CPC and volume)
+   - Ad copy (headlines and descriptions)
+   - Bidding strategy recommendation
+
+2. **Keyword Research**: When asked about keywords:
+   - Suggest relevant keywords for their business
+   - Explain search intent (commercial, informational, navigational)
+   - Provide estimated metrics (volume, CPC, competition)
+   - Recommend match types (broad, phrase, exact)
+
+3. **Competitor Analysis**: When asked about competitors:
+   - Analyze their likely strategy
+   - Suggest keywords they might be targeting
+   - Recommend ways to differentiate
+
+4. **Optimization Tips**: Provide actionable advice on:
+   - Improving Quality Score
+   - Reducing CPC
+   - Increasing CTR
+   - Better conversion rates
+
+5. **Ad Copy Generation**: Write compelling:
+   - Headlines (max 30 characters each)
+   - Descriptions (max 90 characters each)
+   - Call-to-action phrases
+
+Always be specific, actionable, and data-driven. Format responses with markdown for clarity.
+
+The user's business is a telecommunications company (The Quantum Leap) selling internet and cable TV services across the US.`;
+
+// Streaming chat endpoint
+router.post('/chat/stream', requireAuth, async (req, res) => {
+  const { message, apiKey } = req.body;
+  
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
+
+  if (!apiKey) {
+    return res.status(400).json({ 
+      error: 'Claude API key is required',
+      needsApiKey: true 
+    });
+  }
+
+  // Set headers for SSE (Server-Sent Events)
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    const client = new Anthropic({ apiKey });
+    const conversationId = getConversationId(req);
+    
+    // Get conversation history
+    let history = conversations.get(conversationId) || [];
+    
+    // Build messages array
+    const messages = [
+      ...history,
+      { role: 'user', content: message }
+    ];
+
+    let fullResponse = '';
+
+    // Create streaming message
+    const stream = await client.messages.stream({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2048,
+      system: SYSTEM_PROMPT,
+      messages: messages
+    });
+
+    // Handle stream events
+    for await (const event of stream) {
+      if (event.type === 'content_block_delta' && event.delta?.text) {
+        const text = event.delta.text;
+        fullResponse += text;
+        
+        // Send chunk to client
+        res.write(`data: ${JSON.stringify({ type: 'chunk', text })}\n\n`);
+      }
+    }
+
+    // Update conversation history
+    history.push({ role: 'user', content: message });
+    history.push({ role: 'assistant', content: fullResponse });
+    
+    // Keep only last 20 messages
+    if (history.length > 20) {
+      history = history.slice(-20);
+    }
+    conversations.set(conversationId, history);
+
+    // Send completion signal
+    res.write(`data: ${JSON.stringify({ type: 'done', fullMessage: fullResponse })}\n\n`);
+    res.end();
+
+  } catch (error) {
+    console.error('Stream error:', error);
+    res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+    res.end();
+  }
+});
+
+// Non-streaming chat endpoint (fallback)
 router.post('/chat', requireAuth, async (req, res) => {
   const { message, apiKey } = req.body;
   
@@ -49,38 +161,39 @@ router.post('/chat', requireAuth, async (req, res) => {
   }
 
   try {
-    const aiService = new AIService(apiKey);
+    const client = new Anthropic({ apiKey });
     const conversationId = getConversationId(req);
     
-    // Get conversation history
     let history = conversations.get(conversationId) || [];
     
-    // Send message to AI
-    const response = await aiService.chat(history, message);
+    const messages = [
+      ...history,
+      { role: 'user', content: message }
+    ];
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2048,
+      system: SYSTEM_PROMPT,
+      messages: messages
+    });
+
+    const assistantMessage = response.content[0].text;
+
+    // Update history
+    history.push({ role: 'user', content: message });
+    history.push({ role: 'assistant', content: assistantMessage });
     
-    if (response.success) {
-      // Update conversation history
-      history.push({ role: 'user', content: message });
-      history.push({ role: 'assistant', content: response.message });
-      
-      // Keep only last 20 messages to manage context window
-      if (history.length > 20) {
-        history = history.slice(-20);
-      }
-      
-      conversations.set(conversationId, history);
-      
-      res.json({
-        success: true,
-        message: response.message,
-        usage: response.usage
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: response.error
-      });
+    if (history.length > 20) {
+      history = history.slice(-20);
     }
+    conversations.set(conversationId, history);
+
+    res.json({
+      success: true,
+      message: assistantMessage,
+      usage: response.usage
+    });
   } catch (error) {
     console.error('Chat error:', error);
     res.status(500).json({
@@ -95,74 +208,6 @@ router.post('/chat/clear', requireAuth, (req, res) => {
   const conversationId = getConversationId(req);
   conversations.delete(conversationId);
   res.json({ success: true, message: 'Conversation cleared' });
-});
-
-// Generate ad copy endpoint
-router.post('/generate/adcopy', requireAuth, async (req, res) => {
-  const { product, targetAudience, uniqueSellingPoints, apiKey } = req.body;
-  
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Claude API key is required', needsApiKey: true });
-  }
-
-  try {
-    const aiService = new AIService(apiKey);
-    const response = await aiService.generateAdCopy(product, targetAudience, uniqueSellingPoints);
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Generate keywords endpoint
-router.post('/generate/keywords', requireAuth, async (req, res) => {
-  const { seedKeyword, industry, location, apiKey } = req.body;
-  
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Claude API key is required', needsApiKey: true });
-  }
-
-  try {
-    const aiService = new AIService(apiKey);
-    const response = await aiService.generateKeywords(seedKeyword, industry, location);
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Create campaign plan endpoint
-router.post('/generate/campaign', requireAuth, async (req, res) => {
-  const { businessType, goals, budget, locations, apiKey } = req.body;
-  
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Claude API key is required', needsApiKey: true });
-  }
-
-  try {
-    const aiService = new AIService(apiKey);
-    const response = await aiService.createCampaignPlan(businessType, goals, budget, locations);
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Analyze campaign endpoint
-router.post('/analyze/campaign', requireAuth, async (req, res) => {
-  const { campaignData, apiKey } = req.body;
-  
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Claude API key is required', needsApiKey: true });
-  }
-
-  try {
-    const aiService = new AIService(apiKey);
-    const response = await aiService.analyzeCampaign(campaignData);
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
 });
 
 module.exports = router;
