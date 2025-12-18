@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdsPro AI - Competitor Research</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{font-family:'Inter',sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#1e293b}
+::-webkit-scrollbar-thumb{background:#475569;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#64748b}
+.glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.gradient-border{background:linear-gradient(135deg,#3b82f6,#8b5cf6);padding:1px;border-radius:12px}
+.gradient-border>div{background:#1e293b;border-radius:11px}
+.stat-card{transition:all 0.3s ease}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(59,130,246,0.15)}
+.nav-item.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);box-shadow:0 4px 15px rgba(59,130,246,0.4)}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.table-row:hover{background:rgba(59,130,246,0.08)}
+.tool-card{transition:all 0.3s ease;border:1px solid transparent}
+.tool-card:hover{border-color:#3b82f6;transform:scale(1.02)}
+.tool-card.connected{border-color:#10b981}
+.search-glow:focus{box-shadow:0 0 0 3px rgba(59,130,246,0.3)}
+.tab-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white}
+.progress-bar{background:linear-gradient(90deg,#3b82f6,#8b5cf6)}
+.difficulty-bar{height:8px;border-radius:4px;overflow:hidden}
+.trend-up{color:#10b981}
+.trend-down{color:#ef4444}
+</style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+
+<div class="flex">
+<!-- Sidebar -->
+<aside class="w-64 h-screen bg-slate-800/80 border-r border-slate-700/50 fixed left-0 top-0 glass z-50 flex flex-col">
+<div class="p-5 border-b border-slate-700/50">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+</div>
+<div>
+<h1 class="font-bold text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AdsPro AI</h1>
+<p class="text-xs text-slate-400">Competitor Research</p>
+</div>
+</div>
+</div>
+
+<nav class="flex-1 p-4 space-y-2">
+<a href="/" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+Dashboard
+</a>
+<a href="#" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+Competitor Research
+</a>
+<a href="#" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+Keyword Research
+</a>
+<a href="#" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+AI Assistant
+<span class="ml-auto px-2 py-0.5 rounded-full text-xs bg-purple-500/30 text-purple-300">New</span>
+</a>
+<a href="#" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+Campaigns
+</a>
+<a href="#" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+Reports
+</a>
+</nav>
+
+<div class="p-4 border-t border-slate-700/50">
+<div class="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30">
+<div class="flex items-center gap-2 mb-2">
+<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+<span class="text-sm font-semibold text-purple-300">Pro Features</span>
+</div>
+<p class="text-xs text-slate-400 mb-3">Unlock AI automation & unlimited research</p>
+<button class="w-full py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 transition-all">Upgrade Now</button>
+</div>
+</div>
+</aside>
+
+<!-- Main Content -->
+<main class="flex-1 ml-64">
+<!-- Header -->
+<header class="sticky top-0 z-40 bg-slate-900/80 border-b border-slate-700/50 glass">
+<div class="px-6 py-4 flex items-center justify-between">
+<div>
+<h2 class="text-xl font-bold">Competitor & Keyword Research</h2>
+<p class="text-sm text-slate-400">Analyze competitors and discover profitable keywords</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<input type="text" id="globalSearch" placeholder="Search anything..." class="w-80 pl-10 pr-4 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 placeholder-slate-500 focus:outline-none focus:border-blue-500 search-glow transition-all">
+<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+</div>
+<button class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+New Research
+</button>
+</div>
+</div>
+</header>
+
+<div class="p-6">
+<!-- Research Tools Integration -->
+<div class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-semibold">Connected Research Tools</h3>
+<button class="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+Add Integration
+</button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+<div class="tool-card connected bg-slate-800/60 border border-emerald-500/50 rounded-xl p-4 cursor-pointer">
+<div class="flex items-center justify-between mb-3">
+<div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+<span class="text-lg font-bold text-orange-400">S</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400">Connected</span>
+</div>
+<h4 class="font-medium text-sm">SEMrush</h4>
+<p class="text-xs text-slate-400 mt-1">Competitor analysis</p>
+</div>
+<div class="tool-card connected bg-slate-800/60 border border-emerald-500/50 rounded-xl p-4 cursor-pointer">
+<div class="flex items-center justify-between mb-3">
+<div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+<span class="text-lg font-bold text-blue-400">A</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400">Connected</span>
+</div>
+<h4 class="font-medium text-sm">Ahrefs</h4>
+<p class="text-xs text-slate-400 mt-1">Backlinks & keywords</p>
+</div>
+<div class="tool-card bg-slate-800/60 rounded-xl p-4 cursor-pointer hover:border-blue-500/50">
+<div class="flex items-center justify-between mb-3">
+<div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+<span class="text-lg font-bold text-green-400">SF</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs bg-slate-500/20 text-slate-400">Connect</span>
+</div>
+<h4 class="font-medium text-sm">SpyFu</h4>
+<p class="text-xs text-slate-400 mt-1">PPC competitor data</p>
+</div>
+<div class="tool-card connected bg-slate-800/60 border border-emerald-500/50 rounded-xl p-4 cursor-pointer">
+<div class="flex items-center justify-between mb-3">
+<div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+<span class="text-lg font-bold text-red-400">G</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400">Connected</span>
+</div>
+<h4 class="font-medium text-sm">Google KW</h4>
+<p class="text-xs text-slate-400 mt-1">Keyword Planner</p>
+</div>
+<div class="tool-card bg-slate-800/60 rounded-xl p-4 cursor-pointer hover:border-blue-500/50">
+<div class="flex items-center justify-between mb-3">
+<div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+<span class="text-lg font-bold text-purple-400">SW</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs bg-slate-500/20 text-slate-400">Connect</span>
+</div>
+<h4 class="font-medium text-sm">SimilarWeb</h4>
+<p class="text-xs text-slate-400 mt-1">Traffic analysis</p>
+</div>
+<div class="tool-card bg-slate-800/60 rounded-xl p-4 cursor-pointer hover:border-blue-500/50">
+<div class="flex items-center justify-between mb-3">
+<div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+<span class="text-lg font-bold text-amber-400">U</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs bg-slate-500/20 text-slate-400">Connect</span>
+</div>
+<h4 class="font-medium text-sm">Ubersuggest</h4>
+<p class="text-xs text-slate-400 mt-1">Keyword ideas</p>
+</div>
+</div>
+</div>
+
+<!-- Research Tabs -->
+<div class="mb-6">
+<div class="flex gap-2 p-1 bg-slate-800/60 rounded-xl w-fit">
+<button class="tab-btn active px-5 py-2.5 rounded-lg text-sm font-medium transition-all" onclick="switchTab('competitor')">Competitor Analysis</button>
+<button class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all" onclick="switchTab('keyword')">Keyword Research</button>
+<button class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all" onclick="switchTab('adcopy')">Ad Copy Spy</button>
+<button class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all" onclick="switchTab('gaps')">Keyword Gaps</button>
+</div>
+</div>
+
+<!-- Competitor Analysis Tab -->
+<div id="tab-competitor" class="tab-content">
+<!-- Competitor Search -->
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 mb-6">
+<h3 class="font-semibold mb-4">Analyze Competitor</h3>
+<div class="flex gap-4">
+<div class="flex-1 relative">
+<input type="text" id="competitorUrl" placeholder="Enter competitor website (e.g., spectrum.com)" class="w-full pl-12 pr-4 py-3 rounded-xl text-sm bg-slate-700 border border-slate-600 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+<svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+</div>
+<button onclick="analyzeCompetitor()" class="px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all flex items-center gap-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+Analyze
+</button>
+</div>
+<div class="flex flex-wrap gap-2 mt-4">
+<span class="text-xs text-slate-400">Recent:</span>
+<button class="px-3 py-1 rounded-full text-xs bg-slate-700 hover:bg-slate-600 transition-colors">xfinity.com</button>
+<button class="px-3 py-1 rounded-full text-xs bg-slate-700 hover:bg-slate-600 transition-colors">att.com/internet</button>
+<button class="px-3 py-1 rounded-full text-xs bg-slate-700 hover:bg-slate-600 transition-colors">verizon.com</button>
+<button class="px-3 py-1 rounded-full text-xs bg-slate-700 hover:bg-slate-600 transition-colors">t-mobile.com</button>
+</div>
+</div>
+
+<!-- Competitor Overview Cards -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+<!-- Main Competitor Card -->
+<div class="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-xl p-5">
+<div class="flex items-start justify-between mb-6">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold">S</div>
+<div>
+<h3 class="text-xl font-bold">spectrum.com</h3>
+<p class="text-sm text-slate-400">Charter Communications</p>
+<div class="flex items-center gap-3 mt-2">
+<span class="px-2 py-0.5 rounded-full text-xs bg-blue-500/20 text-blue-400">ISP</span>
+<span class="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-400">Telecom</span>
+<span class="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400">Enterprise</span>
+</div>
+</div>
+</div>
+<button class="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+</button>
+</div>
+
+<div class="grid grid-cols-4 gap-4 mb-6">
+<div class="text-center p-4 rounded-xl bg-slate-700/50">
+<p class="text-2xl font-bold text-blue-400">$2.4M</p>
+<p class="text-xs text-slate-400 mt-1">Est. Monthly Ad Spend</p>
+</div>
+<div class="text-center p-4 rounded-xl bg-slate-700/50">
+<p class="text-2xl font-bold text-purple-400">12.5K</p>
+<p class="text-xs text-slate-400 mt-1">Paid Keywords</p>
+</div>
+<div class="text-center p-4 rounded-xl bg-slate-700/50">
+<p class="text-2xl font-bold text-emerald-400">847</p>
+<p class="text-xs text-slate-400 mt-1">Active Ads</p>
+</div>
+<div class="text-center p-4 rounded-xl bg-slate-700/50">
+<p class="text-2xl font-bold text-amber-400">3.2%</p>
+<p class="text-xs text-slate-400 mt-1">Avg CTR</p>
+</div>
+</div>
+
+<div class="flex gap-3">
+<button class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors">View All Keywords</button>
+<button class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors">View All Ads</button>
+<button class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors">Export Data</button>
+</div>
+</div>
+
+<!-- Traffic Overview -->
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5">
+<h4 class="font-semibold mb-4">Traffic Overview</h4>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-sm text-slate-400">Organic Traffic</span>
+<span class="text-sm font-medium">8.2M/mo</span>
+</div>
+<div class="h-2 rounded-full bg-slate-700">
+<div class="h-full rounded-full bg-emerald-500" style="width:75%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-sm text-slate-400">Paid Traffic</span>
+<span class="text-sm font-medium">1.4M/mo</span>
+</div>
+<div class="h-2 rounded-full bg-slate-700">
+<div class="h-full rounded-full bg-blue-500" style="width:45%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-sm text-slate-400">Social Traffic</span>
+<span class="text-sm font-medium">320K/mo</span>
+</div>
+<div class="h-2 rounded-full bg-slate-700">
+<div class="h-full rounded-full bg-purple-500" style="width:20%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-sm text-slate-400">Direct Traffic</span>
+<span class="text-sm font-medium">5.1M/mo</span>
+</div>
+<div class="h-2 rounded-full bg-slate-700">
+<div class="h-full rounded-full bg-amber-500" style="width:60%"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-700">
+<canvas id="trafficChart" height="120"></canvas>
+</div>
+</div>
+</div>
+
+<!-- Competitor Keywords Table -->
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl overflow-hidden mb-6">
+<div class="p-4 border-b border-slate-700/50 flex items-center justify-between">
+<div>
+<h3 class="font-semibold">Top Paid Keywords</h3>
+<p class="text-xs text-slate-400 mt-1">Keywords your competitor is bidding on</p>
+</div>
+<div class="flex items-center gap-3">
+<select class="px-3 py-2 rounded-lg text-sm bg-slate-700 border border-slate-600">
+<option>All Keywords</option>
+<option>High Volume</option>
+<option>Low Competition</option>
+<option>High CPC</option>
+</select>
+<button class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+Export
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead>
+<tr class="text-xs uppercase text-slate-400 bg-slate-800/80">
+<th class="text-left p-4">Keyword</th>
+<th class="text-left p-4">Position</th>
+<th class="text-right p-4">Volume</th>
+<th class="text-right p-4">CPC</th>
+<th class="text-center p-4">Difficulty</th>
+<th class="text-right p-4">Traffic</th>
+<th class="text-right p-4">Traffic Cost</th>
+<th class="text-center p-4">Trend</th>
+<th class="text-center p-4">Action</th>
+</tr>
+</thead>
+<tbody id="competitorKeywords"></tbody>
+</table>
+</div>
+</div>
+
+<!-- Competitor Ads -->
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl overflow-hidden">
+<div class="p-4 border-b border-slate-700/50 flex items-center justify-between">
+<div>
+<h3 class="font-semibold">Competitor Ad Copies</h3>
+<p class="text-xs text-slate-400 mt-1">Active ads from this competitor</p>
+</div>
+<button class="text-sm text-blue-400 hover:text-blue-300">View All 847 Ads →</button>
+</div>
+<div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4" id="competitorAds"></div>
+</div>
+</div>
+
+<!-- Keyword Research Tab -->
+<div id="tab-keyword" class="tab-content hidden">
+<!-- Keyword Search -->
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 mb-6">
+<h3 class="font-semibold mb-4">Find Keywords</h3>
+<div class="flex gap-4">
+<div class="flex-1 relative">
+<input type="text" id="keywordSearch" placeholder="Enter seed keyword (e.g., home internet)" class="w-full pl-12 pr-4 py-3 rounded-xl text-sm bg-slate-700 border border-slate-600 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+<svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+</div>
+<select class="px-4 py-3 rounded-xl text-sm bg-slate-700 border border-slate-600">
+<option>United States</option>
+<option>United Kingdom</option>
+<option>Canada</option>
+<option>Australia</option>
+</select>
+<button onclick="searchKeywords()" class="px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all flex items-center gap-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+Research
+</button>
+</div>
+</div>
+
+<!-- Keyword Results -->
+<div class="grid grid-cols-4 gap-4 mb-6">
+<div class="stat-card bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
+<p class="text-xs text-slate-400 uppercase">Total Keywords</p>
+<p class="text-2xl font-bold mt-1">2,847</p>
+<p class="text-xs text-emerald-400 mt-2">+124 new this week</p>
+</div>
+<div class="stat-card bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
+<p class="text-xs text-slate-400 uppercase">Avg. Volume</p>
+<p class="text-2xl font-bold mt-1">12.4K</p>
+<p class="text-xs text-slate-400 mt-2">Monthly searches</p>
+</div>
+<div class="stat-card bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
+<p class="text-xs text-slate-400 uppercase">Avg. CPC</p>
+<p class="text-2xl font-bold mt-1">$4.82</p>
+<p class="text-xs text-amber-400 mt-2">+$0.34 vs last month</p>
+</div>
+<div class="stat-card bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
+<p class="text-xs text-slate-400 uppercase">Easy Wins</p>
+<p class="text-2xl font-bold mt-1 text-emerald-400">342</p>
+<p class="text-xs text-slate-400 mt-2">Low competition</p>
+</div>
+</div>
+
+<!-- Keywords Table -->
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl overflow-hidden">
+<div class="p-4 border-b border-slate-700/50 flex items-center justify-between">
+<h3 class="font-semibold">Keyword Ideas</h3>
+<div class="flex items-center gap-3">
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/20 text-blue-400">All</button>
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:bg-slate-700">Questions</button>
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:bg-slate-700">Long-tail</button>
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:bg-slate-700">Commercial</button>
+</div>
+</div>
+<div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+<table class="w-full text-sm">
+<thead class="sticky top-0 bg-slate-800">
+<tr class="text-xs uppercase text-slate-400">
+<th class="text-left p-4"><input type="checkbox" class="rounded"></th>
+<th class="text-left p-4">Keyword</th>
+<th class="text-left p-4">Intent</th>
+<th class="text-right p-4">Volume</th>
+<th class="text-right p-4">CPC</th>
+<th class="text-center p-4">Difficulty</th>
+<th class="text-right p-4">Competition</th>
+<th class="text-center p-4">Trend</th>
+<th class="text-center p-4">SERP</th>
+<th class="text-center p-4">Action</th>
+</tr>
+</thead>
+<tbody id="keywordResults"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Ad Copy Spy Tab -->
+<div id="tab-adcopy" class="tab-content hidden">
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 mb-6">
+<h3 class="font-semibold mb-4">Spy on Competitor Ads</h3>
+<div class="flex gap-4">
+<input type="text" placeholder="Enter keyword or competitor domain" class="flex-1 pl-4 pr-4 py-3 rounded-xl text-sm bg-slate-700 border border-slate-600 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+<button class="px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all">Search Ads</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="adCopyResults"></div>
+</div>
+
+<!-- Keyword Gaps Tab -->
+<div id="tab-gaps" class="tab-content hidden">
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 mb-6">
+<h3 class="font-semibold mb-4">Find Keyword Gaps</h3>
+<p class="text-sm text-slate-400 mb-4">Discover keywords your competitors rank for, but you don't.</p>
+<div class="grid grid-cols-2 gap-4 mb-4">
+<div>
+<label class="text-xs text-slate-400 block mb-2">Your Domain</label>
+<input type="text" placeholder="thequantumleap.us" class="w-full pl-4 pr-4 py-3 rounded-xl text-sm bg-slate-700 border border-slate-600 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+</div>
+<div>
+<label class="text-xs text-slate-400 block mb-2">Competitor Domains (up to 5)</label>
+<input type="text" placeholder="spectrum.com, xfinity.com, att.com" class="w-full pl-4 pr-4 py-3 rounded-xl text-sm bg-slate-700 border border-slate-600 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+</div>
+</div>
+<button class="px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all">Find Gaps</button>
+</div>
+
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl overflow-hidden">
+<div class="p-4 border-b border-slate-700/50">
+<h3 class="font-semibold">Keyword Gap Analysis</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead>
+<tr class="text-xs uppercase text-slate-400 bg-slate-800/80">
+<th class="text-left p-4">Keyword</th>
+<th class="text-center p-4">Your Position</th>
+<th class="text-center p-4">spectrum.com</th>
+<th class="text-center p-4">xfinity.com</th>
+<th class="text-center p-4">att.com</th>
+<th class="text-right p-4">Volume</th>
+<th class="text-right p-4">CPC</th>
+<th class="text-center p-4">Opportunity</th>
+</tr>
+</thead>
+<tbody id="gapResults"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+
+<script>
+// Sample Data
+const competitorKeywords = [
+{keyword:'home internet plans',pos:1,volume:74000,cpc:8.45,diff:78,traffic:18500,cost:156325,trend:'up'},
+{keyword:'cheap internet service',pos:2,volume:49500,cpc:6.20,diff:65,traffic:9900,cost:61380,trend:'up'},
+{keyword:'spectrum internet',pos:1,volume:165000,cpc:4.50,diff:45,traffic:82500,cost:371250,trend:'stable'},
+{keyword:'best internet provider',pos:3,volume:33100,cpc:7.80,diff:82,traffic:4965,cost:38727,trend:'up'},
+{keyword:'internet deals near me',pos:2,volume:27100,cpc:9.20,diff:71,traffic:5420,cost:49864,trend:'up'},
+{keyword:'high speed internet',pos:4,volume:40500,cpc:5.60,diff:68,traffic:4050,cost:22680,trend:'down'},
+{keyword:'fiber internet service',pos:1,volume:22200,cpc:11.30,diff:85,traffic:11100,cost:125430,trend:'up'},
+{keyword:'wifi plans for home',pos:3,volume:18100,cpc:6.80,diff:59,traffic:2715,cost:18462,trend:'stable'},
+{keyword:'unlimited internet',pos:2,volume:14800,cpc:5.90,diff:62,traffic:2960,cost:17464,trend:'up'},
+{keyword:'cable internet providers',pos:1,volume:12100,cpc:7.20,diff:55,traffic:6050,cost:43560,trend:'down'},
+];
+
+const competitorAds = [
+{headline1:'Fast Home Internet - Starting at $29.99/mo',headline2:'No Data Caps | Free Installation',headline3:'Stream, Game & Work From Home',desc:'Get reliable high-speed internet with speeds up to 1 Gig. Bundle with TV and save even more. Limited time offer - Act now!',url:'spectrum.com/internet',firstSeen:'Oct 2024',lastSeen:'Active'},
+{headline1:'Spectrum Internet® Official - Get Up to 300 Mbps',headline2:'No Contracts Required | Cancel Anytime',headline3:'Free Modem & Antivirus Included',desc:'Experience fast, reliable internet for the whole family. Connect all your devices with no slowdowns. Order online today.',url:'spectrum.com/offers',firstSeen:'Sep 2024',lastSeen:'Active'},
+{headline1:'Internet + TV Bundle Deals - Save $30/Month',headline2:'200+ Channels | DVR Included',headline3:'Best Value Internet Bundle',desc:'Get the ultimate entertainment package. Fast internet plus your favorite channels. Free professional installation.',url:'spectrum.com/bundles',firstSeen:'Nov 2024',lastSeen:'Active'},
+{headline1:'Student Internet Discount - Special Offer',headline2:'Perfect for Online Learning',headline3:'No Credit Check Required',desc:'Students get special rates on high-speed internet. Stay connected for classes, research, and entertainment.',url:'spectrum.com/student',firstSeen:'Aug 2024',lastSeen:'Active'},
+];
+
+const keywordIdeas = [
+{keyword:'home internet service providers',intent:'Commercial',volume:33100,cpc:7.80,diff:72,comp:'High',trend:'up'},
+{keyword:'best internet for streaming',intent:'Commercial',volume:22200,cpc:5.40,diff:58,comp:'Medium',trend:'up'},
+{keyword:'internet plans with no contract',intent:'Commercial',volume:18100,cpc:6.90,diff:65,comp:'High',trend:'stable'},
+{keyword:'how to get internet at home',intent:'Informational',volume:14800,cpc:3.20,diff:42,comp:'Low',trend:'up'},
+{keyword:'cheapest internet provider in my area',intent:'Commercial',volume:27100,cpc:8.50,diff:78,comp:'High',trend:'up'},
+{keyword:'internet and cable bundle deals',intent:'Commercial',volume:12100,cpc:9.20,diff:81,comp:'High',trend:'down'},
+{keyword:'wifi for rural areas',intent:'Commercial',volume:8100,cpc:4.80,diff:45,comp:'Medium',trend:'up'},
+{keyword:'internet speed test',intent:'Informational',volume:450000,cpc:1.20,diff:35,comp:'Low',trend:'stable'},
+{keyword:'5g home internet',intent:'Commercial',volume:40500,cpc:6.70,diff:62,comp:'Medium',trend:'up'},
+{keyword:'internet without phone line',intent:'Informational',volume:9900,cpc:4.50,diff:48,comp:'Medium',trend:'stable'},
+];
+
+const gapData = [
+{keyword:'spectrum vs xfinity',you:'-',comp1:2,comp2:1,comp3:8,volume:4400,cpc:3.20,opp:'High'},
+{keyword:'best internet for gaming',you:'-',comp1:3,comp2:5,comp3:2,volume:18100,cpc:5.80,opp:'High'},
+{keyword:'internet outage near me',you:'-',comp1:1,comp2:1,comp3:1,volume:74000,cpc:2.10,opp:'Medium'},
+{keyword:'upgrade internet speed',you:'-',comp1:4,comp2:2,comp3:3,volume:6600,cpc:4.90,opp:'High'},
+{keyword:'internet customer service',you:'-',comp1:1,comp2:1,comp3:1,volume:22200,cpc:3.40,opp:'Low'},
+];
+
+// Format helpers
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : n.toLocaleString();
+const fmtC = n => '$'+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+
+// Tab switching
+function switchTab(tab) {
+document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+document.getElementById('tab-'+tab).classList.remove('hidden');
+document.querySelectorAll('.tab-btn').forEach(b => {
+b.classList.remove('active');
+b.classList.add('text-slate-400');
+});
+event.target.classList.add('active');
+event.target.classList.remove('text-slate-400');
+}
+
+// Render competitor keywords
+function renderCompetitorKeywords() {
+const tbody = document.getElementById('competitorKeywords');
+tbody.innerHTML = competitorKeywords.map(k => `
+<tr class="table-row border-t border-slate-700/50">
+<td class="p-4">
+<div class="font-medium">${k.keyword}</div>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 rounded-full text-xs font-medium ${k.pos <= 3 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">#${k.pos}</span>
+</td>
+<td class="p-4 text-right font-medium">${fmt(k.volume)}</td>
+<td class="p-4 text-right">${fmtC(k.cpc)}</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 h-2 rounded-full bg-slate-700">
+<div class="h-full rounded-full ${k.diff >= 70 ? 'bg-rose-500' : k.diff >= 50 ? 'bg-amber-500' : 'bg-emerald-500'}" style="width:${k.diff}%"></div>
+</div>
+<span class="text-xs w-8">${k.diff}</span>
+</div>
+</td>
+<td class="p-4 text-right">${fmt(k.traffic)}</td>
+<td class="p-4 text-right text-emerald-400">${fmtC(k.cost)}</td>
+<td class="p-4 text-center">
+${k.trend === 'up' ? '<svg class="w-5 h-5 text-emerald-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>' : 
+k.trend === 'down' ? '<svg class="w-5 h-5 text-rose-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>' :
+'<svg class="w-5 h-5 text-slate-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>'}
+</td>
+<td class="p-4 text-center">
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors">+ Add</button>
+</td>
+</tr>
+`).join('');
+}
+
+// Render competitor ads
+function renderCompetitorAds() {
+const container = document.getElementById('competitorAds');
+container.innerHTML = competitorAds.map(ad => `
+<div class="bg-slate-700/50 rounded-xl p-4 border border-slate-600/50 hover:border-blue-500/50 transition-all">
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">Search Ad</span>
+<span class="text-xs text-slate-400">${ad.lastSeen}</span>
+</div>
+<div class="mb-3">
+<p class="text-blue-400 font-medium text-sm">${ad.headline1}</p>
+<p class="text-blue-400 text-sm">${ad.headline2}</p>
+<p class="text-blue-400 text-sm">${ad.headline3}</p>
+</div>
+<p class="text-xs text-slate-300 mb-3">${ad.desc}</p>
+<p class="text-xs text-emerald-400 mb-3">${ad.url}</p>
+<div class="flex items-center justify-between pt-3 border-t border-slate-600">
+<span class="text-xs text-slate-400">First seen: ${ad.firstSeen}</span>
+<div class="flex gap-2">
+<button class="p-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 transition-colors" title="Copy">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+</button>
+<button class="p-1.5 rounded-lg bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors" title="Generate Similar with AI">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+</button>
+</div>
+</div>
+</div>
+`).join('');
+}
+
+// Render keyword ideas
+function renderKeywordIdeas() {
+const tbody = document.getElementById('keywordResults');
+tbody.innerHTML = keywordIdeas.map(k => `
+<tr class="table-row border-t border-slate-700/50">
+<td class="p-4"><input type="checkbox" class="rounded"></td>
+<td class="p-4">
+<div class="font-medium">${k.keyword}</div>
+</td>
+<td class="p-4">
+<span class="px-2 py-0.5 rounded text-xs ${k.intent === 'Commercial' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}">${k.intent}</span>
+</td>
+<td class="p-4 text-right font-medium">${fmt(k.volume)}</td>
+<td class="p-4 text-right">${fmtC(k.cpc)}</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 h-2 rounded-full bg-slate-700">
+<div class="h-full rounded-full ${k.diff >= 70 ? 'bg-rose-500' : k.diff >= 50 ? 'bg-amber-500' : 'bg-emerald-500'}" style="width:${k.diff}%"></div>
+</div>
+<span class="text-xs w-8">${k.diff}</span>
+</div>
+</td>
+<td class="p-4 text-right">
+<span class="${k.comp === 'High' ? 'text-rose-400' : k.comp === 'Medium' ? 'text-amber-400' : 'text-emerald-400'}">${k.comp}</span>
+</td>
+<td class="p-4 text-center">
+${k.trend === 'up' ? '<svg class="w-5 h-5 text-emerald-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>' : 
+k.trend === 'down' ? '<svg class="w-5 h-5 text-rose-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>' :
+'<svg class="w-5 h-5 text-slate-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>'}
+</td>
+<td class="p-4 text-center">
+<button class="p-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 transition-colors" title="View SERP">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+</button>
+</td>
+<td class="p-4 text-center">
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors">+ Add</button>
+</td>
+</tr>
+`).join('');
+}
+
+// Render gap analysis
+function renderGapAnalysis() {
+const tbody = document.getElementById('gapResults');
+tbody.innerHTML = gapData.map(k => `
+<tr class="table-row border-t border-slate-700/50">
+<td class="p-4 font-medium">${k.keyword}</td>
+<td class="p-4 text-center">
+<span class="px-2 py-1 rounded-full text-xs ${k.you === '-' ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}">${k.you === '-' ? 'Not ranking' : '#'+k.you}</span>
+</td>
+<td class="p-4 text-center"><span class="text-sm font-medium">#${k.comp1}</span></td>
+<td class="p-4 text-center"><span class="text-sm font-medium">#${k.comp2}</span></td>
+<td class="p-4 text-center"><span class="text-sm font-medium">#${k.comp3}</span></td>
+<td class="p-4 text-right">${fmt(k.volume)}</td>
+<td class="p-4 text-right">${fmtC(k.cpc)}</td>
+<td class="p-4 text-center">
+<span class="px-2 py-1 rounded-full text-xs font-medium ${k.opp === 'High' ? 'bg-emerald-500/20 text-emerald-400' : k.opp === 'Medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}">${k.opp}</span>
+</td>
+</tr>
+`).join('');
+}
+
+// Render ad copies for spy tab
+function renderAdCopySpy() {
+const container = document.getElementById('adCopyResults');
+container.innerHTML = competitorAds.concat(competitorAds).map(ad => `
+<div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 hover:border-blue-500/50 transition-all">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">S</div>
+<span class="text-sm font-medium">spectrum.com</span>
+</div>
+<span class="text-xs text-slate-400">${ad.lastSeen}</span>
+</div>
+<div class="mb-3">
+<p class="text-blue-400 font-medium text-sm">${ad.headline1}</p>
+<p class="text-blue-400 text-sm">${ad.headline2}</p>
+</div>
+<p class="text-xs text-slate-300 mb-3">${ad.desc}</p>
+<p class="text-xs text-emerald-400 mb-3">${ad.url}</p>
+<div class="flex gap-2">
+<button class="flex-1 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 transition-colors">Copy</button>
+<button class="flex-1 py-2 rounded-lg text-xs font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors flex items-center justify-center gap-1">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+AI Rewrite
+</button>
+</div>
+</div>
+`).join('');
+}
+
+// Traffic chart
+function renderTrafficChart() {
+const ctx = document.getElementById('trafficChart').getContext('2d');
+new Chart(ctx, {
+type: 'line',
+data: {
+labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+datasets: [{
+label: 'Traffic',
+data: [8.1,8.4,8.9,9.2,9.5,9.8,10.1,10.4,9.9,9.6,10.2,10.8],
+borderColor: '#3b82f6',
+backgroundColor: 'rgba(59,130,246,0.1)',
+fill: true,
+tension: 0.4
+}]
+},
+options: {
+responsive: true,
+plugins: { legend: { display: false } },
+scales: {
+x: { grid: { color: '#334155' }, ticks: { color: '#64748b' } },
+y: { grid: { color: '#334155' }, ticks: { color: '#64748b', callback: v => v+'M' } }
+}
+}
+});
+}
+
+// Simulate analyze
+function analyzeCompetitor() {
+const url = document.getElementById('competitorUrl').value;
+if (url) {
+alert('Analyzing ' + url + '...\n\nIn production, this will fetch real data from SEMrush, Ahrefs, and SpyFu APIs.');
+}
+}
+
+function searchKeywords() {
+const kw = document.getElementById('keywordSearch').value;
+if (kw) {
+alert('Researching "' + kw + '"...\n\nIn production, this will fetch real data from Google Keyword Planner and other APIs.');
+}
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+renderCompetitorKeywords();
+renderCompetitorAds();
+renderKeywordIdeas();
+renderGapAnalysis();
+renderAdCopySpy();
+renderTrafficChart();
+});
+</script>
+</body>
+</html>
