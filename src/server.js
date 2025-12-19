@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
 const aiRoutes = require('./routes/ai');
 const automationRoutes = require('./routes/automation');
+const freeAutomationRoutes = require('./routes/freeAutomation');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,7 +28,8 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
 app.use('/ai', aiRoutes);
-app.use('/automation', automationRoutes);
+app.use('/automation', freeAutomationRoutes); // FREE routes (no API key needed!)
+app.use('/automation', automationRoutes);      // Paid routes (SEMrush, etc.)
 
 // Health check
 app.get('/health', (req, res) => {

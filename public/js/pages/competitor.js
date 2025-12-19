@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════
    Competitor Intelligence Module
+   NOW USING FREE Google Ads Transparency Center - NO API KEY NEEDED!
    ═══════════════════════════════════════════════════════════════════ */
 
 const Competitor = {
@@ -11,18 +12,11 @@ const Competitor = {
     if (input) input.value = domain;
   },
   
-  // Analyze competitor
+  // Analyze competitor using FREE Google Ads Transparency
   async analyze() {
     const domain = document.getElementById('competitorDomain')?.value.trim();
     if (!domain) {
       showAlert('Please enter a domain', 'error');
-      return;
-    }
-    
-    const semrushKey = Storage.getKey('semrush');
-    if (!semrushKey) {
-      showAlert('Add SEMrush API key in Settings', 'error');
-      showPage('settings');
       return;
     }
     
@@ -33,25 +27,33 @@ const Competitor = {
     }
     
     try {
-      const [keywordsRes, adsRes, organicRes, competitorsRes] = await Promise.all([
-        API.post('/automation/competitor/keywords', { domain, researchApiKey: semrushKey, researchProvider: 'semrush' }),
-        API.post('/automation/competitor/ads', { domain, researchApiKey: semrushKey, researchProvider: 'semrush' }),
-        API.post('/automation/competitor/organic', { domain, researchApiKey: semrushKey, researchProvider: 'semrush' }),
-        API.post('/automation/competitor/adcompetitors', { domain, researchApiKey: semrushKey, researchProvider: 'semrush' })
-      ]);
+      // Use FREE endpoint - no API key required!
+      const response = await API.post('/automation/free/competitor/full', { domain });
       
+      if (!response.success) {
+        showAlert(response.message || 'No ads found for this domain', 'warning');
+        document.getElementById('competitorResults')?.classList.add('hidden');
+        document.getElementById('competitorEmpty')?.classList.remove('hidden');
+        return;
+      }
+      
+      // Store data
       AppState.competitorData = {
-        domain,
-        keywords: keywordsRes.keywords || [],
-        ads: adsRes.ads || [],
-        organic: organicRes.keywords || [],
-        competitors: competitorsRes.competitors || []
+        domain: response.domain,
+        advertiser: response.advertiser,
+        ads: response.ads || [],
+        summary: response.summary || {},
+        keywords: [], // Not available in free version
+        organic: [],
+        competitors: []
       };
       
       this.renderResults();
       
       document.getElementById('competitorResults')?.classList.remove('hidden');
       document.getElementById('competitorEmpty')?.classList.add('hidden');
+      
+      showAlert(`Found ${response.summary.totalAds} ads for ${domain}! 🆓 FREE`, 'success');
       
     } catch (error) {
       showAlert('Error analyzing competitor: ' + error.message, 'error');
@@ -70,29 +72,39 @@ const Competitor = {
     
     if (!overview) return;
     
-    const totalSpend = data.keywords.reduce((sum, k) => sum + (k.trafficCost || 0), 0);
-    const avgCpc = data.keywords.length 
-      ? data.keywords.reduce((sum, k) => sum + (k.cpc || 0), 0) / data.keywords.length 
-      : 0;
+    const summary = data.summary || {};
     
     overview.innerHTML = `
       <div class="card p-4" style="border-left:4px solid #1a73e8">
-        <p class="text-2xl font-medium" style="color:#1a73e8">${data.keywords.length}</p>
-        <p class="text-xs" style="color:#5f6368">Paid Keywords</p>
+        <p class="text-2xl font-medium" style="color:#1a73e8">${summary.totalAds || 0}</p>
+        <p class="text-xs" style="color:#5f6368">Total Ads Found</p>
       </div>
       <div class="card p-4" style="border-left:4px solid #34a853">
-        <p class="text-2xl font-medium" style="color:#34a853">${data.ads.length}</p>
-        <p class="text-xs" style="color:#5f6368">Active Ads</p>
+        <p class="text-2xl font-medium" style="color:#34a853">${summary.textAds || 0}</p>
+        <p class="text-xs" style="color:#5f6368">Text Ads</p>
       </div>
       <div class="card p-4" style="border-left:4px solid #fbbc04">
-        <p class="text-2xl font-medium" style="color:#b06000">${formatCurrency(totalSpend, 0)}</p>
-        <p class="text-xs" style="color:#5f6368">Est. Monthly Spend</p>
+        <p class="text-2xl font-medium" style="color:#b06000">${summary.imageAds || 0}</p>
+        <p class="text-xs" style="color:#5f6368">Image Ads</p>
       </div>
       <div class="card p-4" style="border-left:4px solid #ea4335">
-        <p class="text-2xl font-medium" style="color:#ea4335">${formatCurrency(avgCpc)}</p>
-        <p class="text-xs" style="color:#5f6368">Avg CPC</p>
+        <p class="text-2xl font-medium" style="color:#ea4335">${summary.videoAds || 0}</p>
+        <p class="text-xs" style="color:#5f6368">Video Ads</p>
       </div>
     `;
+    
+    // Show link to full transparency center
+    if (data.advertiser?.transparencyUrl) {
+      overview.innerHTML += `
+        <div class="col-span-4 mt-2">
+          <a href="${data.advertiser.transparencyUrl}" target="_blank" 
+             class="text-sm flex items-center gap-1 hover:underline" style="color:#1a73e8">
+            <span class="material-icons-outlined text-lg">open_in_new</span>
+            View all ads on Google Ads Transparency Center
+          </a>
+        </div>
+      `;
+    }
     
     this.showTab('ads');
   },
@@ -129,136 +141,103 @@ const Competitor = {
     }
   },
   
-  // Render ads tab
+  // Render ads tab (FREE DATA!)
   renderAdsTab(ads) {
-    if (!ads.length) return '<p class="text-center py-8" style="color:#5f6368">No ads found</p>';
+    if (!ads || !ads.length) {
+      return '<p class="text-center py-8" style="color:#5f6368">No ads found for this domain</p>';
+    }
     
-    return ads.slice(0, 15).map((ad, i) => `
-      <div class="p-4 border rounded-lg mb-3 hover:border-blue-500 transition-colors" style="border-color:#dadce0">
-        <div class="flex justify-between mb-2">
-          <span class="text-xs" style="color:#5f6368">Ad #${i + 1}</span>
-          <span class="badge badge-blue">${esc(ad.keyword || '')}</span>
-        </div>
-        <h4 class="font-medium mb-1" style="color:#1a73e8">${esc(ad.title || '')}</h4>
-        <p class="text-sm mb-2" style="color:#5f6368">${esc(ad.description || '')}</p>
-        <div class="flex justify-between items-center">
-          <span class="text-xs" style="color:#34a853">${ad.visibleUrl || ''}</span>
-          <button onclick="Competitor.improveAd(${i})" class="text-sm hover:underline" style="color:#1a73e8">✨ Beat This Ad</button>
-        </div>
+    return `
+      <div class="mb-4 p-3 rounded-lg" style="background:#e6f4ea;border:1px solid #34a853">
+        <p class="text-sm" style="color:#137333">
+          <span class="material-icons-outlined text-lg align-middle">celebration</span>
+          <strong>FREE Data!</strong> Showing ${ads.length} ads from Google Ads Transparency Center. No API key needed!
+        </p>
       </div>
-    `).join('');
+      ${ads.slice(0, 20).map((ad, i) => `
+        <div class="p-4 border rounded-lg mb-3 hover:border-blue-500 transition-colors" style="border-color:#dadce0">
+          <div class="flex justify-between mb-2">
+            <span class="text-xs" style="color:#5f6368">Ad #${ad.position || i + 1}</span>
+            <span class="badge badge-${ad.format === 'video' ? 'red' : ad.format === 'image' ? 'yellow' : 'blue'}">${ad.format || 'text'}</span>
+          </div>
+          ${ad.imageUrl ? `
+            <div class="mb-3">
+              <img src="${ad.imageUrl}" alt="Ad preview" class="max-w-full h-auto rounded border" style="max-height:150px">
+            </div>
+          ` : ''}
+          <div class="flex justify-between items-center">
+            <a href="${ad.viewUrl || ad.previewUrl}" target="_blank" class="text-sm hover:underline" style="color:#1a73e8">
+              <span class="material-icons-outlined text-lg align-middle">visibility</span> View Full Ad
+            </a>
+            <button onclick="Competitor.analyzeAd(${i})" class="text-sm hover:underline" style="color:#34a853">
+              ✨ Get AI Tips
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    `;
   },
   
   // Render keywords tab
   renderKeywordsTab(keywords) {
-    if (!keywords.length) return '<p class="text-center py-8" style="color:#5f6368">No keywords found</p>';
-    
     return `
-      <div class="overflow-x-auto max-h-96">
-        <table class="w-full text-sm">
-          <thead class="sticky top-0" style="background:#f8f9fa">
-            <tr class="text-xs uppercase" style="color:#5f6368">
-              <th class="p-3 text-left">Keyword</th>
-              <th class="p-3 text-center">Pos</th>
-              <th class="p-3 text-right">Volume</th>
-              <th class="p-3 text-right">CPC</th>
-              <th class="p-3 text-right">Traffic</th>
-              <th class="p-3 text-right">Cost/Mo</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${keywords.slice(0, 50).map(k => `
-              <tr class="table-row">
-                <td class="p-3 font-medium">${esc(k.keyword)}</td>
-                <td class="p-3 text-center">
-                  <span class="badge ${k.position <= 3 ? 'badge-green' : 'badge-grey'}">#${k.position}</span>
-                </td>
-                <td class="p-3 text-right">${fmt(k.searchVolume)}</td>
-                <td class="p-3 text-right ${k.cpc < 5 ? 'trend-up' : k.cpc < 15 ? '' : 'trend-down'}">${formatCurrency(k.cpc)}</td>
-                <td class="p-3 text-right">${fmt(k.traffic)}</td>
-                <td class="p-3 text-right" style="color:#1a73e8">${formatCurrency(k.trafficCost, 0)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
+      <div class="p-4 text-center" style="color:#5f6368">
+        <span class="material-icons-outlined text-4xl mb-2" style="color:#fbbc04">lock</span>
+        <p class="font-medium">Competitor keyword data requires a paid API</p>
+        <p class="text-sm mt-1">SEMrush or similar services provide this data</p>
+        <button onclick="showPage('keyword-planner')" class="btn-primary px-4 py-2 mt-4 text-sm">
+          Use FREE Keyword Planner Instead
+        </button>
       </div>
     `;
   },
   
   // Render organic tab
   renderOrganicTab(organic) {
-    if (!organic.length) return '<p class="text-center py-8" style="color:#5f6368">No organic keywords found</p>';
-    
     return `
-      <div class="overflow-x-auto max-h-96">
-        <table class="w-full text-sm">
-          <thead class="sticky top-0" style="background:#f8f9fa">
-            <tr class="text-xs uppercase" style="color:#5f6368">
-              <th class="p-3 text-left">Keyword</th>
-              <th class="p-3 text-center">Position</th>
-              <th class="p-3 text-right">Volume</th>
-              <th class="p-3 text-right">Traffic</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${organic.slice(0, 50).map(k => `
-              <tr class="table-row">
-                <td class="p-3 font-medium">${esc(k.keyword)}</td>
-                <td class="p-3 text-center"><span class="badge badge-green">#${k.position}</span></td>
-                <td class="p-3 text-right">${fmt(k.searchVolume)}</td>
-                <td class="p-3 text-right">${fmt(k.traffic)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
+      <div class="p-4 text-center" style="color:#5f6368">
+        <span class="material-icons-outlined text-4xl mb-2" style="color:#fbbc04">lock</span>
+        <p class="font-medium">Organic keyword data requires a paid API</p>
+        <p class="text-sm mt-1">Use Ahrefs, SEMrush, or Moz for organic data</p>
       </div>
     `;
   },
   
   // Render competitors tab
   renderCompetitorsTab(competitors) {
-    if (!competitors.length) return '<p class="text-center py-8" style="color:#5f6368">No competitors found</p>';
-    
     return `
-      <div class="grid grid-cols-2 gap-4">
-        ${competitors.slice(0, 8).map(c => `
-          <div class="p-4 border rounded-lg cursor-pointer hover:border-blue-500 transition-colors" 
-               style="border-color:#dadce0"
-               onclick="Competitor.setDomain('${c.domain}');Competitor.analyze()">
-            <div class="flex justify-between mb-2">
-              <span class="font-medium">${c.domain}</span>
-              <span class="text-xs" style="color:#1a73e8">Analyze →</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <p style="color:#5f6368">Common KWs</p>
-                <p class="font-medium">${fmt(c.commonKeywords)}</p>
-              </div>
-              <div>
-                <p style="color:#5f6368">Ad Spend</p>
-                <p class="font-medium" style="color:#1a73e8">${formatCurrency(c.adsTrafficCost, 0)}</p>
-              </div>
-            </div>
-          </div>
-        `).join('')}
+      <div class="p-4 text-center" style="color:#5f6368">
+        <span class="material-icons-outlined text-4xl mb-2" style="color:#1a73e8">tips_and_updates</span>
+        <p class="font-medium">Try searching for similar companies!</p>
+        <p class="text-sm mt-1">Enter competitor domains in the search box above</p>
+        <div class="flex flex-wrap gap-2 justify-center mt-4">
+          <button onclick="Competitor.setDomain('spectrum.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">spectrum.com</button>
+          <button onclick="Competitor.setDomain('xfinity.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">xfinity.com</button>
+          <button onclick="Competitor.setDomain('att.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">att.com</button>
+          <button onclick="Competitor.setDomain('verizon.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">verizon.com</button>
+        </div>
       </div>
     `;
   },
   
-  // Improve ad with AI
-  improveAd(index) {
+  // Analyze ad with AI
+  analyzeAd(index) {
     const ad = AppState.competitorData.ads[index];
     if (!ad) return;
     
     showPage('ai-assistant');
     setTimeout(() => {
-      AIChat.quickPrompt(`Create a BETTER version of this competitor ad:
+      AIChat.quickPrompt(`Analyze this competitor's ${ad.format} ad and give me tips to create a better one:
 
-Title: "${ad.title}"
-Description: "${ad.description}"
-Keyword: "${ad.keyword}"
+Domain: ${AppState.competitorData.domain}
+Ad Format: ${ad.format}
+Ad Preview: ${ad.viewUrl || ad.previewUrl}
 
-Give me 5 better headlines and 2 better descriptions.`);
+Please suggest:
+1. What makes this ad effective (or not)
+2. 5 better headline ideas
+3. 2 better description ideas
+4. Call-to-action improvements`);
     }, 100);
   }
 };
