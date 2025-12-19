@@ -547,43 +547,80 @@
         <!-- ═══════════════════════════════════════════════════════════ -->
         <div id="page-keyword-planner" class="page-content" style="display:none">
           <div class="mb-6">
-            <p class="text-sm mt-1" style="color:#5f6368">Discover new keywords and get search volume estimates</p>
+            <p class="text-sm mt-1" style="color:#5f6368">Discover keywords and see live ads running on Google</p>
           </div>
-          <div class="card p-6 mb-6">
-            <div class="flex gap-4">
-              <div class="flex-1 relative">
-                <span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2" style="color:#5f6368">search</span>
-                <input type="text" id="kwPlannerInput" placeholder="Enter a keyword to find related keywords..." class="w-full pl-12 pr-4 py-3 border rounded-lg text-base" style="border-color:#dadce0">
+          
+          <!-- TWO SECTIONS: Keyword Research (FREE) + Current Ads (ScraperAPI) -->
+          <div class="grid grid-cols-2 gap-6 mb-6">
+            
+            <!-- Section 1: FREE Keyword Research -->
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-icons-outlined" style="color:#34a853">search</span>
+                <h3 class="font-medium">Keyword Research</h3>
+                <span class="badge badge-green text-xs">FREE</span>
               </div>
-              <button onclick="searchKeywords()" id="kwSearchBtn" class="btn-primary px-6 py-3 flex items-center gap-2">
-                <span class="material-icons-outlined">search</span>Find Keywords
-              </button>
+              <p class="text-sm mb-3" style="color:#5f6368">Find related keywords using Google Autocomplete</p>
+              <div class="flex gap-2">
+                <input type="text" id="kwPlannerInput" placeholder="Enter a seed keyword..." class="flex-1 px-4 py-2.5 border rounded-lg" style="border-color:#dadce0">
+                <button onclick="searchKeywords()" id="kwSearchBtn" class="btn-primary px-4 py-2.5 flex items-center gap-2">
+                  <span class="material-icons-outlined">search</span>Find Keywords
+                </button>
+              </div>
+              <p class="text-xs mt-2" style="color:#5f6368">✓ No API key required • 100% Free</p>
             </div>
-            <div class="grid grid-cols-4 gap-4 mt-4">
-              <div><label class="text-xs block mb-1" style="color:#5f6368">Max CPC</label><select id="kwMaxCpc" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="100">Any</option><option value="5">Under $5</option><option value="10" selected>Under $10</option><option value="20">Under $20</option></select></div>
-              <div><label class="text-xs block mb-1" style="color:#5f6368">Min Volume</label><select id="kwMinVol" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="0">Any</option><option value="100" selected>100+</option><option value="500">500+</option><option value="1000">1K+</option></select></div>
-              <div><label class="text-xs block mb-1" style="color:#5f6368">Competition</label><select id="kwComp" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="all">All</option><option value="low">Low</option><option value="medium">Medium</option></select></div>
-              <div><label class="text-xs block mb-1" style="color:#5f6368">Intent</label><select id="kwIntent" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="all">All</option><option value="commercial">Commercial</option><option value="transactional">Transactional</option></select></div>
+            
+            <!-- Section 2: Current Ads on Keywords (NEW!) -->
+            <div class="card p-5" style="border:2px solid #1a73e8">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-icons-outlined" style="color:#1a73e8">ads_click</span>
+                <h3 class="font-medium">Current Ads on Keywords</h3>
+                <span class="badge badge-blue text-xs">NEW!</span>
+              </div>
+              <p class="text-sm mb-3" style="color:#5f6368">See LIVE ads running on Google right now</p>
+              <div class="flex gap-2">
+                <input type="text" id="currentAdsInput" placeholder="Enter keyword to see ads..." class="flex-1 px-4 py-2.5 border rounded-lg" style="border-color:#dadce0">
+                <button onclick="searchCurrentAds()" id="currentAdsBtn" class="px-4 py-2.5 flex items-center gap-2 rounded-lg font-medium" style="background:#1a73e8;color:white">
+                  <span class="material-icons-outlined">ads_click</span>Search Current Ads
+                </button>
+              </div>
+              <p class="text-xs mt-2" style="color:#5f6368">⚡ Requires ScraperAPI key (FREE 1,000/month)</p>
             </div>
           </div>
+          
+          <!-- Current Ads Results (shown when searching) -->
+          <div id="currentAdsResults" class="hidden mb-6"></div>
+          
+          <!-- Keyword Research Results -->
           <div id="kwPlannerResults" class="hidden">
             <div id="kwPlannerSummary" class="grid grid-cols-4 gap-4 mb-4"></div>
             <div class="card overflow-hidden">
               <div class="p-4 border-b flex justify-between items-center" style="border-color:#e8eaed">
                 <div class="flex gap-2">
-                  <button onclick="filterKwPlanner('best')" class="badge badge-green cursor-pointer hover:opacity-80">💎 Best Opportunities</button>
-                  <button onclick="filterKwPlanner('lowcpc')" class="badge badge-blue cursor-pointer hover:opacity-80">💰 Low CPC</button>
-                  <button onclick="filterKwPlanner('highvol')" class="badge badge-yellow cursor-pointer hover:opacity-80">📈 High Volume</button>
+                  <button onclick="filterKw('best')" class="badge badge-green cursor-pointer hover:opacity-80">💎 Best Opportunities</button>
+                  <button onclick="filterKw('lowcpc')" class="badge badge-blue cursor-pointer hover:opacity-80">💰 Low CPC</button>
+                  <button onclick="filterKw('highvol')" class="badge badge-yellow cursor-pointer hover:opacity-80">📈 High Volume</button>
                 </div>
-                <button onclick="exportKwPlanner()" class="btn-secondary px-3 py-1.5 text-sm flex items-center gap-1"><span class="material-icons-outlined text-lg">download</span>Export</button>
+                <button onclick="exportKw()" class="btn-secondary px-3 py-1.5 text-sm flex items-center gap-1"><span class="material-icons-outlined text-lg">download</span>Export</button>
               </div>
               <div id="kwPlannerTable" class="overflow-x-auto max-h-[500px]"></div>
             </div>
           </div>
-          <div id="kwPlannerEmpty" class="text-center py-16">
-            <span class="material-icons-outlined text-6xl mb-4" style="color:#dadce0">manage_search</span>
-            <h3 class="font-medium mb-2" style="color:#202124">Search for keywords</h3>
-            <p class="text-sm" style="color:#5f6368">Enter a keyword to find related keywords and search volumes</p>
+          
+          <!-- Empty State -->
+          <div id="kwPlannerEmpty" class="text-center py-12">
+            <div class="grid grid-cols-2 gap-8 max-w-2xl mx-auto">
+              <div class="card p-6">
+                <span class="material-icons-outlined text-4xl mb-3" style="color:#34a853">search</span>
+                <h4 class="font-medium mb-2">Keyword Research</h4>
+                <p class="text-sm" style="color:#5f6368">Find related keywords and opportunities using FREE Google Autocomplete data</p>
+              </div>
+              <div class="card p-6">
+                <span class="material-icons-outlined text-4xl mb-3" style="color:#1a73e8">ads_click</span>
+                <h4 class="font-medium mb-2">Current Ads</h4>
+                <p class="text-sm" style="color:#5f6368">See which ads are currently running on Google for any keyword</p>
+              </div>
+            </div>
           </div>
         </div>
 

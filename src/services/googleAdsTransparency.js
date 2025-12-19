@@ -1,384 +1,380 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Google Ads Transparency Center Scraper with Proxy Support
+   Google Ads Intelligence - ScraperAPI Integration
    
-   Uses ScraperAPI (FREE 1,000 credits/month - no credit card!)
-   Sign up at: https://www.scraperapi.com/signup
+   Uses ScraperAPI's STRUCTURED GOOGLE SERP API
+   This returns clean JSON with ads included - no HTML parsing needed!
    
-   How it works:
-   1. ScraperAPI acts as a proxy to bypass Google's blocks
-   2. We scrape the actual Google Ads Transparency Center pages
-   3. Parse the HTML to extract ad data
+   Endpoint: https://api.scraperapi.com/structured/google/search
+   
+   FREE: 1,000 credits/month at https://www.scraperapi.com/signup
    ═══════════════════════════════════════════════════════════════════ */
 
 const https = require('https');
 const http = require('http');
 
-class GoogleAdsTransparencyScraper {
-  constructor() {
-    this.baseUrl = 'https://adstransparency.google.com';
-    this.scraperApiUrl = 'http://api.scraperapi.com';
-  }
+class GoogleAdsIntelligence {
 
   /**
    * Make HTTP/HTTPS request
    */
-  makeRequest(url, options = {}) {
+  makeRequest(url) {
     return new Promise((resolve, reject) => {
       const isHttps = url.startsWith('https');
       const client = isHttps ? https : http;
       
-      const reqOptions = {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          ...options.headers
-        },
-        timeout: 60000
-      };
-
-      client.get(url, reqOptions, (res) => {
+      console.log(`[Request] ${url.substring(0, 100)}...`);
+      
+      const req = client.get(url, { timeout: 120000 }, (res) => {
         let data = '';
         res.on('data', chunk => data += chunk);
-        res.on('end', () => resolve({ status: res.statusCode, data }));
-      }).on('error', reject).on('timeout', () => reject(new Error('Request timeout')));
-    });
-  }
-
-  /**
-   * Build ScraperAPI URL
-   */
-  buildProxyUrl(targetUrl, apiKey) {
-    if (!apiKey) return targetUrl;
-    
-    const params = new URLSearchParams({
-      api_key: apiKey,
-      url: targetUrl,
-      render: 'true',  // Enable JavaScript rendering
-      country_code: 'us'
-    });
-    
-    return `${this.scraperApiUrl}?${params.toString()}`;
-  }
-
-  /**
-   * Search for advertisers by domain
-   */
-  async searchAdvertisers(domain, apiKey) {
-    const cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
-    
-    console.log(`[Scraper] Searching for: ${cleanDomain}`);
-    console.log(`[Scraper] Using proxy: ${apiKey ? 'ScraperAPI' : 'Direct (may fail)'}`);
-    
-    // Build the target URL
-    const targetUrl = `${this.baseUrl}/?region=anywhere&domain=${encodeURIComponent(cleanDomain)}`;
-    const requestUrl = this.buildProxyUrl(targetUrl, apiKey);
-    
-    try {
-      const response = await this.makeRequest(requestUrl);
-      
-      if (response.status !== 200) {
-        console.log(`[Scraper] Response status: ${response.status}`);
-        return { 
-          success: false, 
-          error: `HTTP ${response.status}`,
-          hint: apiKey ? 'Check your ScraperAPI key' : 'Add ScraperAPI key for better results'
-        };
-      }
-      
-      return this.parseSearchResults(response.data, cleanDomain);
-    } catch (error) {
-      console.error('[Scraper] Error:', error.message);
-      return { 
-        success: false, 
-        error: error.message,
-        hint: 'Try adding a ScraperAPI key in Settings'
-      };
-    }
-  }
-
-  /**
-   * Parse search results HTML
-   */
-  parseSearchResults(html, domain) {
-    const advertisers = [];
-    
-    try {
-      // Extract advertiser IDs (format: AR followed by 17+ digits)
-      const idMatches = html.match(/AR\d{17,}/g) || [];
-      const uniqueIds = [...new Set(idMatches)];
-      
-      console.log(`[Scraper] Found ${uniqueIds.length} advertiser IDs`);
-      
-      // Try to extract names - look for patterns near IDs
-      uniqueIds.forEach((id, index) => {
-        // Look for name in various patterns
-        let name = domain;
-        
-        // Pattern 1: "name" ... AR123
-        const namePattern1 = new RegExp(`"([^"]{2,60})"[^"]{0,100}${id}`, 's');
-        const match1 = html.match(namePattern1);
-        if (match1) name = match1[1];
-        
-        // Pattern 2: AR123 ... "name"
-        const namePattern2 = new RegExp(`${id}[^"]{0,100}"([^"]{2,60})"`, 's');
-        const match2 = html.match(namePattern2);
-        if (match2 && match2[1].length > name.length) name = match2[1];
-        
-        advertisers.push({
-          advertiserId: id,
-          name: this.cleanName(name),
-          domain: domain,
-          position: index + 1,
-          transparencyUrl: `${this.baseUrl}/advertiser/${id}`
+        res.on('end', () => {
+          console.log(`[Response] Status: ${res.statusCode}, Size: ${data.length} bytes`);
+          resolve({ status: res.statusCode, data });
         });
       });
       
-      // Also try text search for company names
-      if (advertisers.length === 0) {
-        // Try alternate approach - look for advertiser cards
-        const cardPattern = /advertiser\/AR(\d{17,})/g;
-        let match;
-        while ((match = cardPattern.exec(html)) !== null) {
-          const id = 'AR' + match[1];
-          if (!advertisers.find(a => a.advertiserId === id)) {
-            advertisers.push({
-              advertiserId: id,
-              name: domain,
-              domain: domain,
-              transparencyUrl: `${this.baseUrl}/advertiser/${id}`
-            });
-          }
-        }
-      }
-
-    } catch (e) {
-      console.error('[Parser] Error:', e.message);
-    }
-
-    return {
-      success: advertisers.length > 0,
-      domain,
-      count: advertisers.length,
-      advertisers,
-      note: advertisers.length === 0 ? 'No advertisers found. Try company name instead of domain.' : null
-    };
+      req.on('error', err => {
+        console.error(`[Error] ${err.message}`);
+        reject(err);
+      });
+      
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+    });
   }
 
-  /**
-   * Get ads for an advertiser
-   */
-  async getAdvertiserAds(advertiserId, apiKey, options = {}) {
-    const { region = 'anywhere', format = null } = options;
+
+  /* ═══════════════════════════════════════════════════════════════════
+     KEYWORD ADS SEARCH 2.0
+     Uses ScraperAPI's Structured Google SERP API
+     Returns CLEAN JSON with ads - no parsing needed!
+     
+     Endpoint: https://api.scraperapi.com/structured/google/search
+     ═══════════════════════════════════════════════════════════════════ */
+
+  async searchKeywordAds(keyword, apiKey, options = {}) {
+    const { country = 'us' } = options;
     
-    console.log(`[Scraper] Getting ads for: ${advertiserId}`);
-    
-    // Build the target URL
-    let targetUrl = `${this.baseUrl}/advertiser/${advertiserId}?region=${region}`;
-    if (format) targetUrl += `&format=${format}`;
-    
-    const requestUrl = this.buildProxyUrl(targetUrl, apiKey);
+    console.log(`\n${'═'.repeat(55)}`);
+    console.log(`[Keyword Ads 2.0] Searching: "${keyword}"`);
+    console.log(`${'═'.repeat(55)}`);
+
+    if (!apiKey) {
+      return {
+        success: false,
+        error: 'NO_API_KEY',
+        message: 'ScraperAPI key required',
+        setupUrl: 'https://www.scraperapi.com/signup'
+      };
+    }
+
+    // Use ScraperAPI's STRUCTURED Google SERP API
+    // This returns JSON directly with ads included!
+    const apiUrl = `https://api.scraperapi.com/structured/google/search?` +
+      `api_key=${apiKey}` +
+      `&query=${encodeURIComponent(keyword)}` +
+      `&country_code=${country}` +
+      `&tld=com` +
+      `&num=20`;
     
     try {
-      const response = await this.makeRequest(requestUrl);
+      const response = await this.makeRequest(apiUrl);
       
-      if (response.status !== 200) {
-        return { success: false, error: `HTTP ${response.status}` };
+      if (response.status === 401) {
+        return { success: false, error: 'INVALID_API_KEY', message: 'Invalid ScraperAPI key' };
       }
       
-      return this.parseAdsPage(response.data, advertiserId);
+      if (response.status === 403) {
+        return { success: false, error: 'QUOTA_EXCEEDED', message: 'API quota exceeded. Check your ScraperAPI dashboard.' };
+      }
+      
+      if (response.status !== 200) {
+        return { success: false, error: `HTTP_${response.status}`, message: `Request failed: ${response.status}` };
+      }
+
+      // Parse JSON response
+      let json;
+      try {
+        json = JSON.parse(response.data);
+      } catch (e) {
+        console.error('[Parse] Failed to parse JSON:', e.message);
+        return { success: false, error: 'PARSE_ERROR', message: 'Failed to parse response' };
+      }
+
+      // Extract ads from the structured response
+      const ads = this.extractAdsFromSERP(json);
+      const organicResults = json.organic_results || [];
+      
+      return {
+        success: true,
+        keyword,
+        country,
+        totalAds: ads.length,
+        topAds: ads.filter(a => a.position <= 4).length,
+        bottomAds: ads.filter(a => a.position > 4).length,
+        ads,
+        organicCount: organicResults.length,
+        relatedSearches: (json.related_searches || []).slice(0, 10),
+        searchInfo: json.search_information || {},
+        creditsUsed: 5,  // Structured API uses 5 credits
+        timestamp: new Date().toISOString(),
+        source: 'Google SERP (ScraperAPI Structured API)',
+        searchUrl: `https://www.google.com/search?q=${encodeURIComponent(keyword)}`
+      };
+
     } catch (error) {
-      console.error('[Scraper] Error getting ads:', error.message);
+      console.error('[Keyword Ads] Error:', error.message);
       return { success: false, error: error.message };
     }
   }
 
   /**
-   * Parse ads page HTML
+   * Extract ads from ScraperAPI's structured response
    */
-  parseAdsPage(html, advertiserId) {
+  extractAdsFromSERP(json) {
     const ads = [];
     
-    try {
-      // Extract creative IDs (format: CR followed by 17+ digits)
-      const creativeIds = html.match(/CR\d{17,}/g) || [];
-      const uniqueCreatives = [...new Set(creativeIds)];
-      
-      console.log(`[Scraper] Found ${uniqueCreatives.length} creatives`);
-      
-      // Extract image URLs from Google's CDN
-      const imagePattern = /https:\/\/tpc\.googlesyndication\.com\/archive\/simgad\/\d+/g;
-      const imageUrls = html.match(imagePattern) || [];
-      
-      // Extract video indicators
-      const hasVideo = html.toLowerCase().includes('video-creative') || 
-                       html.toLowerCase().includes('format":"video');
-      
-      // Extract dates (format: YYYY-MM-DD or Month DD, YYYY)
-      const datePattern = /(\d{4}-\d{2}-\d{2})|((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})/gi;
-      const dates = html.match(datePattern) || [];
-      
-      uniqueCreatives.forEach((creativeId, index) => {
-        // Determine format
-        let format = 'text';
-        
-        // Check if this creative has an image
-        const creativeContext = html.substring(
-          Math.max(0, html.indexOf(creativeId) - 200),
-          Math.min(html.length, html.indexOf(creativeId) + 500)
-        );
-        
-        if (creativeContext.toLowerCase().includes('video') || 
-            creativeContext.includes('video-creative')) {
-          format = 'video';
-        } else if (imageUrls[index] || creativeContext.includes('simgad')) {
-          format = 'image';
-        }
-        
-        ads.push({
-          creativeId,
-          advertiserId,
-          position: index + 1,
-          format,
-          imageUrl: imageUrls[index] || null,
-          firstShown: dates[index * 2] || null,
-          lastShown: dates[index * 2 + 1] || null,
-          previewUrl: `${this.baseUrl}/advertiser/${advertiserId}/creative/${creativeId}`
-        });
+    // Top Ads (ads_results or top_ads)
+    const topAds = json.ads || json.ads_results || json.top_ads || [];
+    topAds.forEach((ad, i) => {
+      ads.push({
+        position: i + 1,
+        type: 'top',
+        title: ad.title || ad.headline || '',
+        displayUrl: ad.displayed_link || ad.display_url || ad.visible_url || '',
+        description: ad.description || ad.snippet || '',
+        link: ad.link || ad.url || '',
+        sitelinks: ad.sitelinks || [],
+        isSponsored: true
       });
+    });
+    
+    // Bottom Ads
+    const bottomAds = json.bottom_ads || [];
+    bottomAds.forEach((ad, i) => {
+      ads.push({
+        position: topAds.length + i + 1,
+        type: 'bottom',
+        title: ad.title || ad.headline || '',
+        displayUrl: ad.displayed_link || ad.display_url || '',
+        description: ad.description || ad.snippet || '',
+        link: ad.link || ad.url || '',
+        isSponsored: true
+      });
+    });
+    
+    // Shopping Ads
+    const shoppingAds = json.shopping_results || json.inline_shopping || [];
+    shoppingAds.forEach((ad, i) => {
+      ads.push({
+        position: ads.length + 1,
+        type: 'shopping',
+        title: ad.title || ad.name || '',
+        displayUrl: ad.source || ad.merchant || '',
+        description: ad.price || '',
+        link: ad.link || ad.url || '',
+        image: ad.thumbnail || ad.image || '',
+        price: ad.price || '',
+        isSponsored: true
+      });
+    });
 
-    } catch (e) {
-      console.error('[Parser] Ads error:', e.message);
-    }
-
-    return {
-      success: ads.length > 0,
-      advertiserId,
-      totalAds: ads.length,
-      ads
-    };
+    console.log(`[Ads] Found: ${topAds.length} top, ${bottomAds.length} bottom, ${shoppingAds.length} shopping`);
+    
+    return ads;
   }
 
   /**
-   * Full competitor analysis - main entry point
+   * Search multiple keywords
    */
-  async analyzeCompetitor(domain, apiKey, region = 'US') {
+  async searchMultipleKeywords(keywords, apiKey, options = {}) {
+    const results = [];
+    const maxKw = Math.min(keywords.length, 5);
+    
+    for (let i = 0; i < maxKw; i++) {
+      console.log(`\n[Batch] Keyword ${i + 1}/${maxKw}: "${keywords[i]}"`);
+      const result = await this.searchKeywordAds(keywords[i], apiKey, options);
+      results.push({ keyword: keywords[i], ...result });
+      
+      // 1 second delay between requests
+      if (i < maxKw - 1) {
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    }
+    
+    return {
+      success: true,
+      totalKeywords: results.length,
+      totalAdsFound: results.reduce((sum, r) => sum + (r.totalAds || 0), 0),
+      results,
+      creditsUsed: results.length * 5
+    };
+  }
+
+
+  /* ═══════════════════════════════════════════════════════════════════
+     COMPETITOR ADS (Google Ads Transparency Center)
+     Uses autoparse=true for structured response
+     ═══════════════════════════════════════════════════════════════════ */
+
+  async getCompetitorAds(domain, apiKey, options = {}) {
+    const { country = 'us' } = options;
+    
     console.log(`\n${'═'.repeat(55)}`);
-    console.log(`[Scraper] Analyzing: ${domain}`);
-    console.log(`[Scraper] API Key: ${apiKey ? 'Provided ✓' : 'Not provided ✗'}`);
-    console.log(`${'═'.repeat(55)}\n`);
+    console.log(`[Competitor] Analyzing: ${domain}`);
+    console.log(`${'═'.repeat(55)}`);
 
     if (!apiKey) {
       return {
         success: false,
-        domain,
-        message: 'ScraperAPI key required for competitor analysis.',
         error: 'NO_API_KEY',
-        setupInstructions: {
-          step1: 'Go to https://www.scraperapi.com/signup',
-          step2: 'Sign up for FREE (no credit card needed)',
-          step3: 'Copy your API key from the dashboard',
-          step4: 'Paste it in Settings > ScraperAPI Key',
-          benefit: '1,000 FREE scrapes per month!'
-        },
-        manualSearchUrl: `${this.baseUrl}/?domain=${domain}`
+        message: 'ScraperAPI key required',
+        setupUrl: 'https://www.scraperapi.com/signup'
       };
     }
 
-    // Step 1: Search for advertiser
-    const searchResult = await this.searchAdvertisers(domain, apiKey);
+    const cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
     
-    if (!searchResult.success || searchResult.advertisers.length === 0) {
-      // Try with just the domain name (without TLD)
-      const domainName = domain.split('.')[0];
-      console.log(`[Scraper] Retrying with: ${domainName}`);
+    // Use ScraperAPI with render=true for Transparency Center
+    const targetUrl = `https://adstransparency.google.com/?region=anywhere&domain=${encodeURIComponent(cleanDomain)}`;
+    const apiUrl = `http://api.scraperapi.com/?` +
+      `api_key=${apiKey}` +
+      `&url=${encodeURIComponent(targetUrl)}` +
+      `&render=true` +
+      `&country_code=${country}`;
+    
+    try {
+      const response = await this.makeRequest(apiUrl);
       
-      const altSearch = await this.searchAdvertisers(domainName, apiKey);
-      
-      if (!altSearch.success || altSearch.advertisers.length === 0) {
-        return {
-          success: false,
-          domain,
-          message: 'No advertisers found for this domain.',
-          suggestion: 'Try the company name (e.g., "Tesla" instead of "tesla.com")',
-          manualSearchUrl: `${this.baseUrl}/?domain=${domain}`,
-          creditsUsed: 1
+      if (response.status !== 200) {
+        return { 
+          success: false, 
+          error: `HTTP_${response.status}`,
+          message: 'Failed to fetch transparency data',
+          manualUrl: targetUrl
         };
       }
-      searchResult.advertisers = altSearch.advertisers;
+
+      // Parse the HTML response
+      const result = this.parseTransparencyHTML(response.data, cleanDomain);
+      
+      // If found an advertiser, get their ads
+      if (result.advertiserId) {
+        const adsUrl = `https://adstransparency.google.com/advertiser/${result.advertiserId}?region=anywhere`;
+        const adsApiUrl = `http://api.scraperapi.com/?` +
+          `api_key=${apiKey}` +
+          `&url=${encodeURIComponent(adsUrl)}` +
+          `&render=true` +
+          `&country_code=${country}`;
+        
+        console.log(`[Competitor] Getting ads for: ${result.advertiserId}`);
+        
+        const adsResponse = await this.makeRequest(adsApiUrl);
+        if (adsResponse.status === 200) {
+          result.ads = this.parseAdsHTML(adsResponse.data, result.advertiserId);
+        }
+      }
+
+      const ads = result.ads || [];
+      
+      return {
+        success: result.advertiserId ? true : false,
+        domain: cleanDomain,
+        advertiser: result.advertiserId ? {
+          id: result.advertiserId,
+          name: result.advertiserName || cleanDomain,
+          transparencyUrl: `https://adstransparency.google.com/advertiser/${result.advertiserId}`
+        } : null,
+        summary: {
+          totalAds: ads.length,
+          textAds: ads.filter(a => a.format === 'text').length,
+          imageAds: ads.filter(a => a.format === 'image').length,
+          videoAds: ads.filter(a => a.format === 'video').length
+        },
+        ads: ads.slice(0, 50),
+        creditsUsed: 20,
+        source: 'Google Ads Transparency Center',
+        manualUrl: targetUrl
+      };
+
+    } catch (error) {
+      console.error('[Competitor] Error:', error.message);
+      return { success: false, error: error.message };
     }
+  }
 
-    // Step 2: Get ads for the primary advertiser
-    const primaryAdvertiser = searchResult.advertisers[0];
-    const adsResult = await this.getAdvertiserAds(primaryAdvertiser.advertiserId, apiKey, { region });
-
-    // Categorize ads
-    const ads = adsResult.ads || [];
-    const textAds = ads.filter(a => a.format === 'text');
-    const imageAds = ads.filter(a => a.format === 'image');
-    const videoAds = ads.filter(a => a.format === 'video');
-
+  /**
+   * Parse Transparency Center HTML
+   */
+  parseTransparencyHTML(html, domain) {
+    // Find advertiser ID (AR + 17+ digits)
+    const idMatch = html.match(/AR\d{17,}/);
+    const advertiserId = idMatch ? idMatch[0] : null;
+    
+    console.log(`[Parse] Advertiser ID: ${advertiserId || 'Not found'}`);
+    
     return {
-      success: true,
-      domain,
-      advertiser: {
-        id: primaryAdvertiser.advertiserId,
-        name: primaryAdvertiser.name || domain,
-        transparencyUrl: primaryAdvertiser.transparencyUrl
-      },
-      summary: {
-        totalAds: ads.length,
-        textAds: textAds.length,
-        imageAds: imageAds.length,
-        videoAds: videoAds.length,
-        otherAdvertisers: searchResult.advertisers.length - 1
-      },
-      ads: ads.slice(0, 50).map((ad, i) => ({
-        id: ad.creativeId,
-        position: i + 1,
-        format: ad.format,
-        imageUrl: ad.imageUrl,
-        previewUrl: ad.previewUrl,
-        firstShown: ad.firstShown,
-        lastShown: ad.lastShown
-      })),
-      otherAdvertisers: searchResult.advertisers.slice(1, 5),
-      source: 'Google Ads Transparency Center (via ScraperAPI)',
-      creditsUsed: 2,  // 1 for search + 1 for ads
-      note: 'FREE 1,000 credits/month with ScraperAPI!'
+      advertiserId,
+      advertiserName: domain,
+      ads: []
     };
   }
 
   /**
-   * Clean extracted name
+   * Parse ads from Transparency page HTML
    */
-  cleanName(name) {
-    if (!name) return 'Unknown';
-    // Remove common junk
-    return name
-      .replace(/\\u[\dA-Fa-f]{4}/g, '')  // Unicode escapes
-      .replace(/\\[nrt]/g, ' ')           // Escape sequences
-      .replace(/\s+/g, ' ')               // Multiple spaces
-      .trim()
-      .slice(0, 60);                      // Max length
+  parseAdsHTML(html, advertiserId) {
+    const ads = [];
+    
+    // Find creative IDs (CR + 17+ digits)
+    const creativeIds = [...new Set(html.match(/CR\d{17,}/g) || [])];
+    
+    // Find image URLs
+    const imageUrls = html.match(/https:\/\/tpc\.googlesyndication\.com\/archive\/simgad\/\d+/g) || [];
+    
+    console.log(`[Parse] Found ${creativeIds.length} creatives, ${imageUrls.length} images`);
+    
+    creativeIds.forEach((id, i) => {
+      let format = 'text';
+      if (imageUrls[i]) format = 'image';
+      
+      // Check for video
+      const idx = html.indexOf(id);
+      if (idx > -1) {
+        const context = html.substring(Math.max(0, idx - 200), Math.min(html.length, idx + 200));
+        if (context.toLowerCase().includes('video')) format = 'video';
+      }
+      
+      ads.push({
+        id,
+        position: i + 1,
+        format,
+        imageUrl: imageUrls[i] || null,
+        previewUrl: `https://adstransparency.google.com/advertiser/${advertiserId}/creative/${id}`
+      });
+    });
+
+    return ads;
   }
 
   /**
-   * Quick test if API key works
+   * Test API key
    */
   async testApiKey(apiKey) {
     if (!apiKey) return { valid: false, error: 'No API key provided' };
     
     try {
-      const testUrl = `${this.scraperApiUrl}?api_key=${apiKey}&url=https://httpbin.org/ip`;
-      const response = await this.makeRequest(testUrl);
+      const url = `http://api.scraperapi.com/?api_key=${apiKey}&url=https://httpbin.org/ip`;
+      const response = await this.makeRequest(url);
       
-      if (response.status === 200 && response.data.includes('origin')) {
+      if (response.status === 200) {
         return { valid: true, message: 'API key is working!' };
-      } else if (response.status === 401 || response.status === 403) {
+      } else if (response.status === 401) {
         return { valid: false, error: 'Invalid API key' };
       } else {
-        return { valid: false, error: `Unexpected response: ${response.status}` };
+        return { valid: false, error: `HTTP ${response.status}` };
       }
     } catch (error) {
       return { valid: false, error: error.message };
@@ -386,4 +382,4 @@ class GoogleAdsTransparencyScraper {
   }
 }
 
-module.exports = new GoogleAdsTransparencyScraper();
+module.exports = new GoogleAdsIntelligence();
