@@ -3,159 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AdsPro AI - Enterprise Ads Management Platform</title>
+<title>AdsPro AI - Enterprise Multi-Account Ads Manager</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        google: { blue: '#1a73e8', red: '#ea4335', yellow: '#fbbc04', green: '#34a853', grey: '#5f6368', lightgrey: '#f8f9fa', darkgrey: '#202124', hover: '#e8f0fe' },
+        surface: { primary: '#ffffff', secondary: '#f8f9fa', tertiary: '#e8eaed' }
+      },
+      fontFamily: { google: ['Google Sans', 'Roboto', 'sans-serif'] }
+    }
+  }
+}
+</script>
 <style>
-*{font-family:'Inter',sans-serif;box-sizing:border-box}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:#0f172a}
-::-webkit-scrollbar-thumb{background:#3b82f6;border-radius:5px}
-body{background:linear-gradient(135deg,#0a0f1a 0%,#1a1f2e 100%)}
-.glass{background:rgba(15,23,42,0.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1)}
-.nav-item.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);box-shadow:0 4px 15px rgba(59,130,246,0.4)}
-.card{background:linear-gradient(135deg,rgba(30,41,59,0.8),rgba(15,23,42,0.9));border:1px solid rgba(255,255,255,0.1);border-radius:16px;transition:all 0.3s}
-.card:hover{border-color:rgba(59,130,246,0.5);transform:translateY(-2px)}
-.metric-card{position:relative;overflow:hidden}
-.metric-card::before{content:'';position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%)}
-.btn-primary{background:linear-gradient(135deg,#3b82f6,#8b5cf6);box-shadow:0 4px 15px rgba(59,130,246,0.3)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.4)}
-.btn-success{background:linear-gradient(135deg,#10b981,#059669)}
-.btn-warning{background:linear-gradient(135deg,#f59e0b,#d97706)}
-.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626)}
-.table-row{transition:all 0.2s}
-.table-row:hover{background:rgba(59,130,246,0.1)}
-.tab-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;box-shadow:0 4px 15px rgba(59,130,246,0.3)}
-.status-dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+*{font-family:'Google Sans','Roboto',sans-serif;box-sizing:border-box}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:#f1f3f4}::-webkit-scrollbar-thumb{background:#dadce0;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#bdc1c6}
+body{background:#f8f9fa;color:#202124}
+.nav-item{border-radius:0 24px 24px 0;margin-right:12px;transition:all 0.2s}
+.nav-item:hover{background:#e8f0fe}
+.nav-item.active{background:#e8f0fe;color:#1a73e8;font-weight:500}
+.nav-item.active .material-icons-outlined{color:#1a73e8}
+.card{background:white;border-radius:8px;box-shadow:0 1px 2px rgba(60,64,67,0.3),0 1px 3px rgba(60,64,67,0.15);transition:box-shadow 0.2s}
+.card:hover{box-shadow:0 1px 3px rgba(60,64,67,0.3),0 4px 8px rgba(60,64,67,0.15)}
+.metric-card{border-left:4px solid #1a73e8}
+.metric-card.green{border-left-color:#34a853}.metric-card.red{border-left-color:#ea4335}.metric-card.yellow{border-left-color:#fbbc04}
+.btn-primary{background:#1a73e8;color:white;border-radius:4px;font-weight:500;transition:all 0.2s;box-shadow:0 1px 2px rgba(60,64,67,0.3)}
+.btn-primary:hover{background:#1557b0;box-shadow:0 1px 3px rgba(60,64,67,0.3),0 4px 8px rgba(60,64,67,0.15)}
+.btn-secondary{background:white;color:#1a73e8;border:1px solid #dadce0;border-radius:4px;font-weight:500}
+.btn-secondary:hover{background:#f8f9fa;border-color:#1a73e8}
+.table-row{border-bottom:1px solid #e8eaed;transition:background 0.15s}
+.table-row:hover{background:#f8f9fa}
+.tab-btn{padding:12px 24px;border-bottom:3px solid transparent;font-weight:500;color:#5f6368;transition:all 0.2s}
+.tab-btn:hover{background:#f8f9fa}.tab-btn.active{color:#1a73e8;border-bottom-color:#1a73e8}
+.badge{padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500}
+.badge-blue{background:#e8f0fe;color:#1a73e8}.badge-green{background:#e6f4ea;color:#137333}.badge-red{background:#fce8e6;color:#c5221f}.badge-yellow{background:#fef7e0;color:#b06000}.badge-grey{background:#f1f3f4;color:#5f6368}
+.status-dot{width:8px;height:8px;border-radius:50%}
+.status-active{background:#34a853}.status-paused{background:#fbbc04}.status-removed{background:#ea4335}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,0.2)}
+.perf-indicator{height:4px;border-radius:2px;background:#e8eaed;overflow:hidden}
+.perf-fill{height:100%;border-radius:2px;transition:width 0.5s}
+.ai-pulse{animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-.ai-glow{box-shadow:0 0 30px rgba(139,92,246,0.3)}
-.trend-up{color:#10b981}.trend-down{color:#ef4444}
-.perf-bar{height:6px;border-radius:3px;background:#1e293b;overflow:hidden}
-.perf-fill{height:100%;border-radius:3px;transition:width 0.5s}
-.tooltip{position:relative}.tooltip:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1e293b;padding:4px 8px;border-radius:4px;font-size:12px;white-space:nowrap;z-index:100}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
 .typing-cursor{animation:blink 0.8s infinite}
 @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
-@keyframes spin{to{transform:rotate(360deg)}}
-.animate-spin{animation:spin 1s linear infinite}
-.ai-message p{margin-bottom:0.5rem}.ai-message ul{margin:0.5rem 0;padding-left:1.5rem}.ai-message strong{color:#60a5fa}.ai-message code{background:#1e293b;padding:2px 6px;border-radius:4px;font-size:0.9em}
-.ai-message table{width:100%;border-collapse:collapse;margin:0.5rem 0}.ai-message th,.ai-message td{border:1px solid #334155;padding:8px;text-align:left}.ai-message th{background:#1e293b}
-.notification{animation:slideIn 0.3s ease}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.skeleton{background:linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+.skeleton{background:linear-gradient(90deg,#f1f3f4 25%,#e8eaed 50%,#f1f3f4 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.dropdown{position:relative}.dropdown-menu{position:absolute;top:100%;left:0;background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.2);min-width:200px;z-index:100;display:none}
+.dropdown:hover .dropdown-menu{display:block}
+.notification{animation:slideIn 0.3s ease}
+@keyframes slideIn{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ai-message p{margin-bottom:8px}.ai-message ul,.ai-message ol{margin:8px 0;padding-left:20px}.ai-message li{margin:4px 0}
+.ai-message code{background:#f1f3f4;padding:2px 6px;border-radius:4px;font-family:monospace}
+.ai-message pre{background:#f8f9fa;padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0}
+.ai-message table{width:100%;border-collapse:collapse;margin:8px 0}.ai-message th,.ai-message td{border:1px solid #e8eaed;padding:8px;text-align:left}.ai-message th{background:#f8f9fa}
+.trend-up{color:#34a853}.trend-down{color:#ea4335}.trend-neutral{color:#5f6368}
+.qscore{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.qscore-high{background:#e6f4ea;color:#137333}.qscore-med{background:#fef7e0;color:#b06000}.qscore-low{background:#fce8e6;color:#c5221f}
+.optimization-score{width:80px;height:80px;border-radius:50%;border:6px solid #e8eaed;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700}
 </style>
 </head>
-<body class="text-white min-h-screen">
-<div id="app">
-<div class="flex">
+<body>
+<div id="app" class="flex min-h-screen">
 <!-- Sidebar -->
-<aside class="w-64 h-screen glass fixed left-0 top-0 z-50 flex flex-col">
-<div class="p-5 border-b border-slate-700/50">
+<aside id="sidebar" class="w-64 bg-white border-r border-gray-200 fixed h-full z-40 flex flex-col">
+<!-- Logo -->
+<div class="p-4 border-b border-gray-200">
 <div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-google-blue via-google-red to-google-yellow flex items-center justify-center">
+<span class="material-icons-outlined text-white text-xl">ads_click</span>
 </div>
-<div><h1 class="font-bold text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AdsPro AI</h1><p class="text-[10px] text-slate-500 uppercase tracking-wider">Enterprise Platform</p></div>
+<div>
+<h1 class="font-bold text-lg text-google-darkgrey">AdsPro AI</h1>
+<p class="text-xs text-google-grey">Multi-Account Manager</p>
+</div>
 </div>
 </div>
 
-<!-- Business Selector -->
-<div class="p-3 border-b border-slate-700/50">
-<label class="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">Business Account</label>
-<select id="businessSelector" onchange="switchBusiness(this.value)" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-800/50 border border-slate-700 cursor-pointer">
-<option value="all">📊 All Businesses (Overview)</option>
+<!-- Business/Account Selector -->
+<div class="p-3 border-b border-gray-200">
+<div class="mb-2">
+<label class="text-xs text-google-grey font-medium uppercase tracking-wide">Business</label>
+<select id="businessSelect" onchange="switchBusiness(this.value)" class="w-full mt-1 px-3 py-2 rounded border border-gray-300 text-sm bg-white">
+<option value="all">All Businesses</option>
 </select>
-<button onclick="showPage('businesses')" class="w-full mt-2 px-3 py-1.5 rounded-lg text-xs bg-slate-700/50 hover:bg-slate-700 flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Manage Businesses</button>
+</div>
+<div>
+<label class="text-xs text-google-grey font-medium uppercase tracking-wide">Account</label>
+<select id="accountSelect" onchange="switchAccount(this.value)" class="w-full mt-1 px-3 py-2 rounded border border-gray-300 text-sm bg-white">
+<option value="all">All Accounts</option>
+</select>
+</div>
 </div>
 
-<nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-2">Overview</p>
-<button onclick="showPage('dashboard')" class="nav-item active w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all" data-page="dashboard">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>Dashboard
+<!-- Navigation -->
+<nav class="flex-1 py-2 overflow-y-auto">
+<div class="mb-1">
+<button onclick="showPage('overview')" class="nav-item active w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" data-page="overview">
+<span class="material-icons-outlined text-xl text-google-grey">dashboard</span>Overview
 </button>
-<button onclick="showPage('ai-insights')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="ai-insights">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>AI Insights<span class="ml-auto w-2 h-2 rounded-full bg-purple-500 status-dot"></span>
+</div>
+
+<div class="px-4 py-2"><span class="text-xs font-medium text-google-grey uppercase tracking-wide">Campaigns</span></div>
+<button onclick="showPage('campaigns')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="campaigns">
+<span class="material-icons-outlined text-xl">campaign</span>All Campaigns
+</button>
+<button onclick="showPage('adgroups')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="adgroups">
+<span class="material-icons-outlined text-xl">folder</span>Ad Groups
+</button>
+<button onclick="showPage('ads')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="ads">
+<span class="material-icons-outlined text-xl">article</span>Ads & Assets
 </button>
 
-<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-4">Campaign Management</p>
-<button onclick="showPage('campaigns')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="campaigns">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Campaigns
+<div class="px-4 py-2 mt-2"><span class="text-xs font-medium text-google-grey uppercase tracking-wide">Audiences & Content</span></div>
+<button onclick="showPage('keywords')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="keywords">
+<span class="material-icons-outlined text-xl">key</span>Keywords
 </button>
-<button onclick="showPage('adgroups')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="adgroups">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Ad Groups
+<button onclick="showPage('audiences')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="audiences">
+<span class="material-icons-outlined text-xl">group</span>Audiences
 </button>
-<button onclick="showPage('keywords')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="keywords">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>Keywords
-</button>
-<button onclick="showPage('ads')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="ads">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Ads
+<button onclick="showPage('negatives')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="negatives">
+<span class="material-icons-outlined text-xl">block</span>Negative Keywords
 </button>
 
-<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-4">Intelligence</p>
-<button onclick="showPage('optimization')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="optimization">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>AI Optimization<span class="ml-auto px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400">NEW</span>
+<div class="px-4 py-2 mt-2"><span class="text-xs font-medium text-google-grey uppercase tracking-wide">AI Intelligence</span></div>
+<button onclick="showPage('ai-optimize')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="ai-optimize">
+<span class="material-icons-outlined text-xl">auto_awesome</span>AI Optimization
+<span class="ml-auto badge badge-blue">12</span>
 </button>
-<button onclick="showPage('competitor')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="competitor">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Competitor Spy
+<button onclick="showPage('competitor')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="competitor">
+<span class="material-icons-outlined text-xl">monitoring</span>Competitor Intel
 </button>
-<button onclick="showPage('keyword-research')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="keyword-research">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Keyword Research
+<button onclick="showPage('keyword-planner')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="keyword-planner">
+<span class="material-icons-outlined text-xl">manage_search</span>Keyword Planner
 </button>
-<button onclick="showPage('auction')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="auction">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>Auction Insights
+<button onclick="showPage('ai-assistant')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="ai-assistant">
+<span class="material-icons-outlined text-xl">smart_toy</span>AI Assistant
+<span class="w-2 h-2 rounded-full bg-google-green ml-auto ai-pulse"></span>
 </button>
 
-<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-4">Tools</p>
-<button onclick="showPage('ai-assistant')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="ai-assistant">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>AI Chat Assistant
+<div class="px-4 py-2 mt-2"><span class="text-xs font-medium text-google-grey uppercase tracking-wide">Insights & Reports</span></div>
+<button onclick="showPage('insights')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="insights">
+<span class="material-icons-outlined text-xl">insights</span>Insights
 </button>
-<button onclick="showPage('reports')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="reports">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Reports
+<button onclick="showPage('reports')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="reports">
+<span class="material-icons-outlined text-xl">assessment</span>Reports
 </button>
-<button onclick="showPage('settings')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="settings">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Settings
+<button onclick="showPage('auction')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="auction">
+<span class="material-icons-outlined text-xl">gavel</span>Auction Insights
+</button>
+
+<div class="px-4 py-2 mt-2"><span class="text-xs font-medium text-google-grey uppercase tracking-wide">Admin</span></div>
+<button onclick="showPage('businesses')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="businesses">
+<span class="material-icons-outlined text-xl">business</span>Businesses
+</button>
+<button onclick="showPage('settings')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-google-grey" data-page="settings">
+<span class="material-icons-outlined text-xl">settings</span>Settings
 </button>
 </nav>
 
-<div class="p-3 border-t border-slate-700/50">
-<div id="userInfo" class="flex items-center gap-2 p-2 rounded-lg bg-slate-800/30">
-<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold">?</div>
-<div class="flex-1 min-w-0"><p class="text-xs font-medium truncate">Not logged in</p><p class="text-[10px] text-slate-500 truncate">Sign in to continue</p></div>
+<!-- User Info -->
+<div class="p-3 border-t border-gray-200">
+<div id="userInfo" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-google-blue flex items-center justify-center text-white text-sm font-medium">?</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium text-google-darkgrey truncate">Not signed in</p>
+<p class="text-xs text-google-grey truncate">Click to sign in</p>
+</div>
 </div>
 </div>
 </aside>
 <!-- Main Content -->
-<main class="ml-64 flex-1 min-h-screen">
-<!-- Top Bar -->
-<header class="sticky top-0 z-40 glass border-b border-slate-700/50 px-6 py-3">
+<main class="ml-64 flex-1">
+<!-- Top Header Bar -->
+<header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 py-3">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-4">
-<div id="pageTitle" class="text-lg font-semibold">Dashboard</div>
-<div id="dateRangePicker" class="flex items-center gap-2">
-<select id="dateRange" onchange="handleDateChange()" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 border border-slate-700">
+<h2 id="pageTitle" class="text-xl font-medium text-google-darkgrey">Overview</h2>
+<div class="flex items-center gap-2 ml-4">
+<select id="dateRange" onchange="handleDateChange()" class="px-3 py-1.5 border border-gray-300 rounded text-sm">
 <option value="today">Today</option>
 <option value="yesterday">Yesterday</option>
 <option value="7">Last 7 days</option>
 <option value="14">Last 14 days</option>
 <option value="30" selected>Last 30 days</option>
 <option value="90">Last 90 days</option>
+<option value="custom">Custom range</option>
 </select>
+<span class="text-sm text-google-grey">vs. previous period</span>
 </div>
 </div>
 <div class="flex items-center gap-3">
-<div id="apiStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700">
-<span class="w-2 h-2 rounded-full bg-slate-500"></span>
-<span class="text-xs text-slate-400">APIs not configured</span>
+<div id="apiStatusHeader" class="flex items-center gap-2 px-3 py-1.5 rounded border border-gray-200 text-sm">
+<span class="status-dot bg-gray-400"></span>
+<span class="text-google-grey">Setup required</span>
 </div>
-<button onclick="refreshAllData()" class="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-blue-500 transition-colors tooltip" data-tip="Refresh Data">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+<button onclick="refreshData()" class="p-2 hover:bg-gray-100 rounded-full" title="Refresh">
+<span class="material-icons-outlined text-google-grey">refresh</span>
 </button>
-<button onclick="showNotifications()" class="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-blue-500 transition-colors relative">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-<span id="notifBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[10px] flex items-center justify-center">3</span>
+<button onclick="showNotifications()" class="p-2 hover:bg-gray-100 rounded-full relative" title="Notifications">
+<span class="material-icons-outlined text-google-grey">notifications</span>
+<span id="notifCount" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-google-red text-white text-xs rounded-full flex items-center justify-center">3</span>
+</button>
+<button onclick="showHelp()" class="p-2 hover:bg-gray-100 rounded-full" title="Help">
+<span class="material-icons-outlined text-google-grey">help_outline</span>
 </button>
 </div>
 </div>
@@ -168,287 +225,245 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6;box-sh
 <div id="page-login" class="page-content">
 <div class="max-w-md mx-auto mt-16">
 <div class="text-center mb-8">
-<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-6 shadow-2xl ai-glow">
-<svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-google-blue via-google-red to-google-yellow flex items-center justify-center mx-auto mb-6 shadow-lg">
+<span class="material-icons-outlined text-white text-4xl">ads_click</span>
 </div>
-<h2 class="text-2xl font-bold mb-2">Welcome to AdsPro AI</h2>
-<p class="text-slate-400 text-sm">Enterprise Google Ads Management Platform</p>
+<h2 class="text-2xl font-medium text-google-darkgrey mb-2">Welcome to AdsPro AI</h2>
+<p class="text-google-grey">Enterprise Multi-Account Google Ads Manager</p>
 </div>
 <div class="card p-6">
-<button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl bg-white text-gray-800 font-semibold hover:bg-gray-100 transition-all">
+<button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-Continue with Google
+Sign in with Google
 </button>
-<div class="mt-4 text-center text-xs text-slate-500">
-By signing in, you agree to our Terms of Service
+<p class="text-xs text-center text-google-grey mt-4">Connect your Google Ads account to get started</p>
+</div>
+<div class="mt-8 text-center">
+<p class="text-sm text-google-grey">Trusted by 10,000+ advertisers worldwide</p>
+<div class="flex justify-center gap-6 mt-4 opacity-50">
+<span class="text-2xl">🏢</span><span class="text-2xl">🏪</span><span class="text-2xl">🏭</span><span class="text-2xl">🏬</span>
 </div>
 </div>
 </div>
 </div>
 
-<!-- Dashboard Page -->
-<div id="page-dashboard" class="page-content hidden">
-<!-- AI Daily Summary Banner -->
-<div class="card p-4 mb-6 border-l-4 border-purple-500 ai-glow">
+<!-- Overview/Dashboard Page -->
+<div id="page-overview" class="page-content hidden">
+<!-- AI Daily Brief -->
+<div class="card p-4 mb-6 border-l-4 border-google-blue">
 <div class="flex items-start gap-4">
-<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+<div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+<span class="material-icons-outlined text-google-blue">auto_awesome</span>
 </div>
 <div class="flex-1">
-<div class="flex items-center justify-between mb-2">
-<h3 class="font-semibold text-purple-400">AI Daily Insights</h3>
-<span class="text-xs text-slate-500">Updated 2 hours ago</span>
+<div class="flex items-center justify-between mb-1">
+<h3 class="font-medium text-google-darkgrey">AI Daily Brief</h3>
+<span class="text-xs text-google-grey">Updated 2 hours ago</span>
 </div>
-<p id="aiDailySummary" class="text-sm text-slate-300">Loading AI analysis...</p>
+<p id="aiDailyBrief" class="text-sm text-google-grey">Analyzing your campaigns...</p>
 <div class="flex gap-2 mt-3">
-<button onclick="showPage('optimization')" class="px-3 py-1.5 rounded-lg text-xs bg-purple-500/20 text-purple-400 hover:bg-purple-500/30">View Recommendations</button>
-<button onclick="generateDailySummary()" class="px-3 py-1.5 rounded-lg text-xs bg-slate-700 hover:bg-slate-600">Refresh Analysis</button>
+<button onclick="showPage('ai-optimize')" class="btn-secondary px-3 py-1.5 text-sm">View Recommendations</button>
+<button onclick="generateDailyBrief()" class="text-sm text-google-blue hover:underline">Refresh</button>
 </div>
 </div>
 </div>
 </div>
 
-<!-- Quick Stats -->
+<!-- Key Metrics -->
 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
 <div class="card metric-card p-4">
-<div class="flex items-center justify-between mb-2">
-<span class="text-xs text-slate-500">Impressions</span>
-<span class="text-xs trend-up" id="impressionsTrend">+12%</span>
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-google-grey font-medium">IMPRESSIONS</span>
+<span class="text-xs trend-up" id="impressionsTrend">↑ 12%</span>
 </div>
-<p class="text-2xl font-bold" id="totalImpressions">0</p>
-<div class="perf-bar mt-2"><div class="perf-fill bg-blue-500" style="width:70%"></div></div>
+<p class="text-2xl font-medium text-google-darkgrey" id="totalImpressions">0</p>
+<div class="perf-indicator mt-2"><div class="perf-fill bg-google-blue" style="width:70%"></div></div>
 </div>
-<div class="card metric-card p-4">
-<div class="flex items-center justify-between mb-2">
-<span class="text-xs text-slate-500">Clicks</span>
-<span class="text-xs trend-up" id="clicksTrend">+8%</span>
+<div class="card metric-card green p-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-google-grey font-medium">CLICKS</span>
+<span class="text-xs trend-up" id="clicksTrend">↑ 8%</span>
 </div>
-<p class="text-2xl font-bold" id="totalClicks">0</p>
-<div class="perf-bar mt-2"><div class="perf-fill bg-purple-500" style="width:60%"></div></div>
-</div>
-<div class="card metric-card p-4">
-<div class="flex items-center justify-between mb-2">
-<span class="text-xs text-slate-500">CTR</span>
-<span class="text-xs trend-up" id="ctrTrend">+0.5%</span>
-</div>
-<p class="text-2xl font-bold" id="avgCTR">0%</p>
-<div class="perf-bar mt-2"><div class="perf-fill bg-emerald-500" style="width:45%"></div></div>
+<p class="text-2xl font-medium text-google-darkgrey" id="totalClicks">0</p>
+<div class="perf-indicator mt-2"><div class="perf-fill bg-google-green" style="width:65%"></div></div>
 </div>
 <div class="card metric-card p-4">
-<div class="flex items-center justify-between mb-2">
-<span class="text-xs text-slate-500">Conversions</span>
-<span class="text-xs trend-up" id="convTrend">+15%</span>
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-google-grey font-medium">CTR</span>
+<span class="text-xs trend-up" id="ctrTrend">↑ 0.3%</span>
 </div>
-<p class="text-2xl font-bold" id="totalConversions">0</p>
-<div class="perf-bar mt-2"><div class="perf-fill bg-amber-500" style="width:55%"></div></div>
+<p class="text-2xl font-medium text-google-darkgrey" id="avgCTR">0%</p>
+<div class="perf-indicator mt-2"><div class="perf-fill bg-google-blue" style="width:55%"></div></div>
 </div>
-<div class="card metric-card p-4">
-<div class="flex items-center justify-between mb-2">
-<span class="text-xs text-slate-500">Cost</span>
-<span class="text-xs trend-down" id="costTrend">-3%</span>
+<div class="card metric-card yellow p-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-google-grey font-medium">CONVERSIONS</span>
+<span class="text-xs trend-up" id="convTrend">↑ 15%</span>
 </div>
-<p class="text-2xl font-bold" id="totalCost">$0</p>
-<div class="perf-bar mt-2"><div class="perf-fill bg-rose-500" style="width:40%"></div></div>
+<p class="text-2xl font-medium text-google-darkgrey" id="totalConversions">0</p>
+<div class="perf-indicator mt-2"><div class="perf-fill bg-google-yellow" style="width:60%"></div></div>
 </div>
-<div class="card metric-card p-4">
-<div class="flex items-center justify-between mb-2">
-<span class="text-xs text-slate-500">ROAS</span>
-<span class="text-xs trend-up" id="roasTrend">+22%</span>
+<div class="card metric-card red p-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-google-grey font-medium">COST</span>
+<span class="text-xs trend-down" id="costTrend">↓ 3%</span>
 </div>
-<p class="text-2xl font-bold" id="avgROAS">0x</p>
-<div class="perf-bar mt-2"><div class="perf-fill bg-teal-500" style="width:75%"></div></div>
+<p class="text-2xl font-medium text-google-darkgrey" id="totalCost">$0</p>
+<div class="perf-indicator mt-2"><div class="perf-fill bg-google-red" style="width:45%"></div></div>
+</div>
+<div class="card metric-card green p-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-google-grey font-medium">ROAS</span>
+<span class="text-xs trend-up" id="roasTrend">↑ 22%</span>
+</div>
+<p class="text-2xl font-medium text-google-darkgrey" id="avgROAS">0x</p>
+<div class="perf-indicator mt-2"><div class="perf-fill bg-google-green" style="width:75%"></div></div>
 </div>
 </div>
 
-<!-- Charts Row -->
+<!-- Charts and Widgets -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 <div class="lg:col-span-2 card p-5">
 <div class="flex items-center justify-between mb-4">
-<h3 class="font-semibold">Performance Overview</h3>
+<h3 class="font-medium text-google-darkgrey">Performance Trend</h3>
 <div class="flex gap-2">
-<button onclick="setChartMetric('clicks')" class="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400">Clicks</button>
-<button onclick="setChartMetric('conversions')" class="px-2 py-1 rounded text-xs bg-slate-700 text-slate-400">Conversions</button>
-<button onclick="setChartMetric('cost')" class="px-2 py-1 rounded text-xs bg-slate-700 text-slate-400">Cost</button>
+<button onclick="setChartMetric('clicks')" class="px-3 py-1 rounded text-sm bg-blue-50 text-google-blue">Clicks</button>
+<button onclick="setChartMetric('conversions')" class="px-3 py-1 rounded text-sm text-google-grey hover:bg-gray-100">Conv.</button>
+<button onclick="setChartMetric('cost')" class="px-3 py-1 rounded text-sm text-google-grey hover:bg-gray-100">Cost</button>
 </div>
 </div>
-<canvas id="performanceChart" height="150"></canvas>
+<canvas id="performanceChart" height="140"></canvas>
 </div>
 <div class="card p-5">
-<h3 class="font-semibold mb-4">Campaign Health</h3>
-<canvas id="healthChart" height="200"></canvas>
+<h3 class="font-medium text-google-darkgrey mb-4">Account Health</h3>
+<div class="flex items-center justify-center mb-4">
+<div class="optimization-score" id="healthScore" style="border-color:#34a853">78</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-sm"><span class="text-google-grey">Quality Score Avg</span><span class="font-medium">7.2/10</span></div>
+<div class="flex items-center justify-between text-sm"><span class="text-google-grey">Ad Strength</span><span class="font-medium text-google-green">Good</span></div>
+<div class="flex items-center justify-between text-sm"><span class="text-google-grey">Budget Utilization</span><span class="font-medium">89%</span></div>
+<div class="flex items-center justify-between text-sm"><span class="text-google-grey">Optimization Score</span><span class="font-medium text-google-blue">78%</span></div>
+</div>
 </div>
 </div>
 
-<!-- Bottom Row -->
+<!-- Bottom Widgets -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<!-- Top Campaigns -->
+<!-- Top Performing Campaigns -->
 <div class="card p-5">
 <div class="flex items-center justify-between mb-4">
-<h3 class="font-semibold">Top Campaigns</h3>
-<button onclick="showPage('campaigns')" class="text-xs text-blue-400 hover:underline">View All</button>
+<h3 class="font-medium text-google-darkgrey">Top Campaigns</h3>
+<button onclick="showPage('campaigns')" class="text-sm text-google-blue hover:underline">View all</button>
 </div>
 <div id="topCampaigns" class="space-y-3">
-<div class="skeleton h-12 rounded-lg"></div>
-<div class="skeleton h-12 rounded-lg"></div>
-<div class="skeleton h-12 rounded-lg"></div>
+<div class="skeleton h-14 rounded"></div>
+<div class="skeleton h-14 rounded"></div>
+<div class="skeleton h-14 rounded"></div>
 </div>
 </div>
 
 <!-- AI Recommendations -->
 <div class="card p-5">
 <div class="flex items-center justify-between mb-4">
-<h3 class="font-semibold">AI Recommendations</h3>
-<span class="px-2 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400">3 new</span>
+<h3 class="font-medium text-google-darkgrey">AI Recommendations</h3>
+<span class="badge badge-blue">3 new</span>
 </div>
 <div id="aiRecommendations" class="space-y-3">
-<div class="skeleton h-16 rounded-lg"></div>
-<div class="skeleton h-16 rounded-lg"></div>
+<div class="skeleton h-16 rounded"></div>
+<div class="skeleton h-16 rounded"></div>
 </div>
 </div>
 
 <!-- Quick Actions -->
 <div class="card p-5">
-<h3 class="font-semibold mb-4">Quick Actions</h3>
-<div class="space-y-2">
-<button onclick="showPage('optimization')" class="w-full p-3 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-left hover:border-purple-500 transition-all">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center"><svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
-<div><p class="font-medium text-sm">Run AI Optimization</p><p class="text-[10px] text-slate-400">Analyze & improve campaigns</p></div>
-</div>
+<h3 class="font-medium text-google-darkgrey mb-4">Quick Actions</h3>
+<div class="grid grid-cols-2 gap-3">
+<button onclick="showPage('ai-optimize')" class="p-3 rounded-lg border border-gray-200 hover:border-google-blue hover:bg-blue-50 text-left transition-all">
+<span class="material-icons-outlined text-google-blue mb-1">auto_awesome</span>
+<p class="text-sm font-medium">Run AI Audit</p>
 </button>
-<button onclick="showPage('competitor')" class="w-full p-3 rounded-xl bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-left hover:border-orange-500 transition-all">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center"><svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
-<div><p class="font-medium text-sm">Spy Competitors</p><p class="text-[10px] text-slate-400">See what they're doing</p></div>
-</div>
+<button onclick="showPage('competitor')" class="p-3 rounded-lg border border-gray-200 hover:border-google-blue hover:bg-blue-50 text-left transition-all">
+<span class="material-icons-outlined text-google-blue mb-1">monitoring</span>
+<p class="text-sm font-medium">Spy Competitor</p>
 </button>
-<button onclick="showPage('ai-assistant')" class="w-full p-3 rounded-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-left hover:border-blue-500 transition-all">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></div>
-<div><p class="font-medium text-sm">Ask AI Assistant</p><p class="text-[10px] text-slate-400">Get instant help</p></div>
-</div>
+<button onclick="createCampaign()" class="p-3 rounded-lg border border-gray-200 hover:border-google-blue hover:bg-blue-50 text-left transition-all">
+<span class="material-icons-outlined text-google-blue mb-1">add_circle</span>
+<p class="text-sm font-medium">New Campaign</p>
+</button>
+<button onclick="showPage('ai-assistant')" class="p-3 rounded-lg border border-gray-200 hover:border-google-blue hover:bg-blue-50 text-left transition-all">
+<span class="material-icons-outlined text-google-blue mb-1">smart_toy</span>
+<p class="text-sm font-medium">Ask AI</p>
 </button>
 </div>
 </div>
 </div>
 </div>
-<!-- AI Optimization Page -->
-<div id="page-optimization" class="page-content hidden">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">AI Optimization Center</h2>
-<p class="text-sm text-slate-400">Get AI-powered recommendations to improve your campaigns</p>
-</div>
-<button onclick="runFullOptimization()" id="runOptBtn" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-Run Full Analysis
-</button>
-</div>
-
-<!-- Optimization Score -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-<div class="card p-5 border-l-4 border-blue-500">
-<div class="flex items-center justify-between">
-<div>
-<p class="text-xs text-slate-500 mb-1">Optimization Score</p>
-<p class="text-3xl font-bold text-blue-400" id="optScore">72%</p>
-</div>
-<div class="w-16 h-16 rounded-full border-4 border-blue-500 flex items-center justify-center">
-<span class="text-lg font-bold">B+</span>
-</div>
-</div>
-</div>
-<div class="card p-5">
-<p class="text-xs text-slate-500 mb-1">Potential Savings</p>
-<p class="text-2xl font-bold text-emerald-400" id="potentialSavings">$1,250/mo</p>
-<p class="text-xs text-slate-500 mt-1">By applying recommendations</p>
-</div>
-<div class="card p-5">
-<p class="text-xs text-slate-500 mb-1">Actionable Items</p>
-<p class="text-2xl font-bold text-amber-400" id="actionItems">12</p>
-<p class="text-xs text-slate-500 mt-1">Recommendations ready</p>
-</div>
-<div class="card p-5">
-<p class="text-xs text-slate-500 mb-1">Last Analysis</p>
-<p class="text-2xl font-bold" id="lastAnalysis">2h ago</p>
-<p class="text-xs text-slate-500 mt-1">Auto-updates daily</p>
-</div>
-</div>
-
-<!-- Recommendations Tabs -->
-<div class="flex gap-2 mb-4 overflow-x-auto pb-2">
-<button onclick="showOptTab('all')" class="tab-btn active px-4 py-2 rounded-lg text-sm whitespace-nowrap" data-tab="all">All (12)</button>
-<button onclick="showOptTab('budget')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="budget">💰 Budget (3)</button>
-<button onclick="showOptTab('keywords')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="keywords">🔑 Keywords (4)</button>
-<button onclick="showOptTab('ads')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="ads">📝 Ads (3)</button>
-<button onclick="showOptTab('bidding')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="bidding">📊 Bidding (2)</button>
-</div>
-
-<!-- Recommendations List -->
-<div id="optimizationList" class="space-y-4">
-<!-- Filled by JS -->
-</div>
-</div>
-
 <!-- Campaigns Page -->
 <div id="page-campaigns" class="page-content hidden">
 <div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">Campaigns</h2>
-<p class="text-sm text-slate-400">Manage all your advertising campaigns</p>
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-medium text-google-darkgrey">All Campaigns</h2>
+<span class="badge badge-grey" id="campaignCount">0 campaigns</span>
 </div>
 <div class="flex gap-2">
-<button onclick="createCampaignWithAI()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-Create with AI
+<button onclick="bulkAction('pause')" class="btn-secondary px-4 py-2 text-sm">Pause Selected</button>
+<button onclick="createCampaign()" class="btn-primary px-4 py-2 text-sm flex items-center gap-2">
+<span class="material-icons-outlined text-lg">add</span>New Campaign
 </button>
 </div>
 </div>
 
-<!-- Campaign Filters -->
+<!-- Filters -->
 <div class="card p-4 mb-4">
-<div class="flex flex-wrap gap-4 items-center">
-<div class="flex-1 min-w-[200px]">
-<input type="text" id="campaignSearch" placeholder="Search campaigns..." class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm" onkeyup="filterCampaigns()">
+<div class="flex flex-wrap items-center gap-4">
+<div class="flex-1 min-w-[250px] relative">
+<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-google-grey text-xl">search</span>
+<input type="text" id="campaignSearch" placeholder="Search campaigns..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded text-sm" onkeyup="filterCampaigns()">
 </div>
-<select id="campaignStatusFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm" onchange="filterCampaigns()">
-<option value="all">All Status</option>
+<select id="campaignStatusFilter" class="px-3 py-2 border border-gray-300 rounded text-sm" onchange="filterCampaigns()">
+<option value="all">All statuses</option>
 <option value="ENABLED">Enabled</option>
 <option value="PAUSED">Paused</option>
-<option value="REMOVED">Removed</option>
 </select>
-<select id="campaignTypeFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm" onchange="filterCampaigns()">
-<option value="all">All Types</option>
+<select id="campaignTypeFilter" class="px-3 py-2 border border-gray-300 rounded text-sm" onchange="filterCampaigns()">
+<option value="all">All types</option>
 <option value="SEARCH">Search</option>
 <option value="DISPLAY">Display</option>
 <option value="VIDEO">Video</option>
 <option value="SHOPPING">Shopping</option>
+<option value="PMAX">Performance Max</option>
 </select>
+<button class="px-3 py-2 border border-gray-300 rounded text-sm text-google-grey hover:bg-gray-50 flex items-center gap-1">
+<span class="material-icons-outlined text-lg">filter_list</span>More filters
+</button>
 </div>
 </div>
 
 <!-- Campaigns Table -->
 <div class="card overflow-hidden">
 <div class="overflow-x-auto">
-<table class="w-full text-sm">
-<thead class="bg-slate-800/50">
-<tr class="text-xs uppercase text-slate-400">
-<th class="text-left p-4"><input type="checkbox" class="rounded" onclick="toggleAllCampaigns(this)"></th>
-<th class="text-left p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('name')">Campaign ↕</th>
-<th class="text-left p-4">Status</th>
-<th class="text-left p-4">Type</th>
-<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('budget')">Budget ↕</th>
-<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('impressions')">Impr ↕</th>
-<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('clicks')">Clicks ↕</th>
-<th class="text-right p-4">CTR</th>
-<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('conversions')">Conv ↕</th>
-<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('cost')">Cost ↕</th>
-<th class="text-right p-4">CPA</th>
-<th class="text-center p-4">Actions</th>
+<table class="w-full">
+<thead class="bg-surface-secondary border-b border-gray-200">
+<tr class="text-xs font-medium text-google-grey uppercase">
+<th class="p-4 text-left w-10"><input type="checkbox" class="rounded" onclick="toggleAllCampaigns(this)"></th>
+<th class="p-4 text-left min-w-[200px]">Campaign</th>
+<th class="p-4 text-left">Status</th>
+<th class="p-4 text-left">Type</th>
+<th class="p-4 text-right">Budget</th>
+<th class="p-4 text-right">Impr.</th>
+<th class="p-4 text-right">Clicks</th>
+<th class="p-4 text-right">CTR</th>
+<th class="p-4 text-right">CPC</th>
+<th class="p-4 text-right">Conv.</th>
+<th class="p-4 text-right">Cost</th>
+<th class="p-4 text-right">Conv. Rate</th>
+<th class="p-4 text-right">CPA</th>
+<th class="p-4 text-center w-20">Actions</th>
 </tr>
 </thead>
 <tbody id="campaignsTableBody">
-<tr><td colspan="12" class="p-8 text-center text-slate-400">Loading campaigns...</td></tr>
+<tr><td colspan="14" class="p-8 text-center text-google-grey">Loading campaigns...</td></tr>
 </tbody>
 </table>
 </div>
@@ -458,343 +473,270 @@ Create with AI
 <!-- Keywords Page -->
 <div id="page-keywords" class="page-content hidden">
 <div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">Keywords Performance</h2>
-<p class="text-sm text-slate-400">Monitor and optimize your keyword performance</p>
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-medium text-google-darkgrey">Keywords</h2>
+<span class="badge badge-grey" id="keywordCount">0 keywords</span>
 </div>
 <div class="flex gap-2">
-<button onclick="addKeywordsWithAI()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-Add Keywords
+<button onclick="showPage('keyword-planner')" class="btn-secondary px-4 py-2 text-sm">Find Keywords</button>
+<button onclick="addKeywords()" class="btn-primary px-4 py-2 text-sm flex items-center gap-2">
+<span class="material-icons-outlined text-lg">add</span>Add Keywords
 </button>
 </div>
 </div>
 
-<!-- Keywords Stats -->
-<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-<div class="card p-4">
-<p class="text-xs text-slate-500">Total Keywords</p>
-<p class="text-2xl font-bold" id="totalKeywords">0</p>
-</div>
-<div class="card p-4">
-<p class="text-xs text-slate-500">Active</p>
-<p class="text-2xl font-bold text-emerald-400" id="activeKeywords">0</p>
-</div>
-<div class="card p-4">
-<p class="text-xs text-slate-500">Avg. QS</p>
-<p class="text-2xl font-bold text-blue-400" id="avgQualityScore">0</p>
-</div>
-<div class="card p-4">
-<p class="text-xs text-slate-500">Avg. CPC</p>
-<p class="text-2xl font-bold" id="avgCPC">$0</p>
-</div>
-<div class="card p-4">
-<p class="text-xs text-slate-500">Low QS Keywords</p>
-<p class="text-2xl font-bold text-amber-400" id="lowQSKeywords">0</p>
-</div>
+<!-- Keyword Stats -->
+<div class="grid grid-cols-5 gap-4 mb-6">
+<div class="card p-4"><p class="text-xs text-google-grey font-medium">TOTAL KEYWORDS</p><p class="text-2xl font-medium mt-1" id="totalKeywords">0</p></div>
+<div class="card p-4"><p class="text-xs text-google-grey font-medium">ACTIVE</p><p class="text-2xl font-medium mt-1 text-google-green" id="activeKeywords">0</p></div>
+<div class="card p-4"><p class="text-xs text-google-grey font-medium">AVG. QUALITY SCORE</p><p class="text-2xl font-medium mt-1 text-google-blue" id="avgQS">0</p></div>
+<div class="card p-4"><p class="text-xs text-google-grey font-medium">AVG. CPC</p><p class="text-2xl font-medium mt-1" id="avgKeywordCPC">$0</p></div>
+<div class="card p-4"><p class="text-xs text-google-grey font-medium">LOW QS (≤4)</p><p class="text-2xl font-medium mt-1 text-google-red" id="lowQSCount">0</p></div>
 </div>
 
-<!-- Keywords Filters -->
-<div class="card p-4 mb-4">
-<div class="flex flex-wrap gap-4 items-center">
-<input type="text" id="keywordSearch" placeholder="Search keywords..." class="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-<select id="keywordStatusFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-<option value="all">All Status</option>
-<option value="ENABLED">Enabled</option>
-<option value="PAUSED">Paused</option>
+<!-- Keywords Table -->
+<div class="card overflow-hidden">
+<div class="p-4 border-b border-gray-200 flex items-center justify-between">
+<div class="flex gap-2">
+<input type="text" id="keywordSearch" placeholder="Search keywords..." class="px-3 py-2 border border-gray-300 rounded text-sm w-64">
+<select id="qsFilter" class="px-3 py-2 border border-gray-300 rounded text-sm">
+<option value="all">All QS</option>
+<option value="low">Low (1-4)</option>
+<option value="med">Medium (5-7)</option>
+<option value="high">High (8-10)</option>
 </select>
-<select id="keywordMatchFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<select id="matchFilter" class="px-3 py-2 border border-gray-300 rounded text-sm">
 <option value="all">All Match Types</option>
 <option value="EXACT">Exact</option>
 <option value="PHRASE">Phrase</option>
 <option value="BROAD">Broad</option>
 </select>
-<select id="keywordQSFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-<option value="all">All Quality Scores</option>
-<option value="low">Low (1-4)</option>
-<option value="medium">Medium (5-7)</option>
-<option value="high">High (8-10)</option>
-</select>
 </div>
+<button onclick="exportKeywords()" class="btn-secondary px-3 py-2 text-sm flex items-center gap-1">
+<span class="material-icons-outlined text-lg">download</span>Export
+</button>
 </div>
-
-<!-- Keywords Table -->
-<div class="card overflow-hidden">
 <div class="overflow-x-auto max-h-[600px]">
-<table class="w-full text-sm">
-<thead class="bg-slate-800/50 sticky top-0">
-<tr class="text-xs uppercase text-slate-400">
-<th class="text-left p-4"><input type="checkbox" class="rounded"></th>
-<th class="text-left p-4">Keyword</th>
-<th class="text-left p-4">Match</th>
-<th class="text-center p-4">QS</th>
-<th class="text-left p-4">Status</th>
-<th class="text-right p-4">Impr</th>
-<th class="text-right p-4">Clicks</th>
-<th class="text-right p-4">CTR</th>
-<th class="text-right p-4">Avg CPC</th>
-<th class="text-right p-4">Conv</th>
-<th class="text-right p-4">Cost</th>
-<th class="text-center p-4">Actions</th>
+<table class="w-full">
+<thead class="bg-surface-secondary border-b border-gray-200 sticky top-0">
+<tr class="text-xs font-medium text-google-grey uppercase">
+<th class="p-4 text-left w-10"><input type="checkbox" class="rounded"></th>
+<th class="p-4 text-left">Keyword</th>
+<th class="p-4 text-center">Match</th>
+<th class="p-4 text-center">QS</th>
+<th class="p-4 text-left">Status</th>
+<th class="p-4 text-right">Impr.</th>
+<th class="p-4 text-right">Clicks</th>
+<th class="p-4 text-right">CTR</th>
+<th class="p-4 text-right">Avg. CPC</th>
+<th class="p-4 text-right">Conv.</th>
+<th class="p-4 text-right">Cost</th>
+<th class="p-4 text-center">Actions</th>
 </tr>
 </thead>
 <tbody id="keywordsTableBody">
-<tr><td colspan="12" class="p-8 text-center text-slate-400">Loading keywords...</td></tr>
+<tr><td colspan="12" class="p-8 text-center text-google-grey">Loading keywords...</td></tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
 
-<!-- Ads Page -->
-<div id="page-ads" class="page-content hidden">
+<!-- AI Optimization Page -->
+<div id="page-ai-optimize" class="page-content hidden">
 <div class="flex items-center justify-between mb-6">
 <div>
-<h2 class="text-xl font-bold">Ad Performance</h2>
-<p class="text-sm text-slate-400">Monitor and optimize your ad creatives</p>
+<h2 class="text-lg font-medium text-google-darkgrey">AI Optimization</h2>
+<p class="text-sm text-google-grey mt-1">AI-powered recommendations to improve your campaigns</p>
 </div>
-<button onclick="createAdWithAI()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-Create Ad with AI
+<button onclick="runAIAudit()" id="runAuditBtn" class="btn-primary px-4 py-2 text-sm flex items-center gap-2">
+<span class="material-icons-outlined text-lg">auto_awesome</span>Run Full Audit
 </button>
 </div>
 
-<!-- Ads Grid -->
-<div id="adsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-<div class="card p-6 text-center text-slate-400">Loading ads...</div>
+<!-- Optimization Score Card -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="card p-6 flex items-center gap-4">
+<div class="optimization-score" id="optScoreCircle" style="border-color:#1a73e8">72%</div>
+<div>
+<p class="text-sm text-google-grey">Optimization Score</p>
+<p class="text-lg font-medium text-google-darkgrey">Good</p>
+<p class="text-xs text-google-grey mt-1">+5% from last week</p>
+</div>
+</div>
+<div class="card p-6">
+<p class="text-sm text-google-grey mb-1">Potential Savings</p>
+<p class="text-2xl font-medium text-google-green">$2,450/mo</p>
+<p class="text-xs text-google-grey mt-1">By applying all recommendations</p>
+</div>
+<div class="card p-6">
+<p class="text-sm text-google-grey mb-1">Pending Actions</p>
+<p class="text-2xl font-medium text-google-blue" id="pendingActions">12</p>
+<p class="text-xs text-google-grey mt-1">Recommendations to review</p>
+</div>
+<div class="card p-6">
+<p class="text-sm text-google-grey mb-1">Applied This Week</p>
+<p class="text-2xl font-medium text-google-darkgrey">8</p>
+<p class="text-xs text-google-grey mt-1">Optimizations implemented</p>
 </div>
 </div>
 
-<!-- Ad Groups Page -->
-<div id="page-adgroups" class="page-content hidden">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">Ad Groups</h2>
-<p class="text-sm text-slate-400">Manage your ad groups across campaigns</p>
+<!-- Recommendation Categories -->
+<div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+<button onclick="filterOptimizations('all')" class="tab-btn active whitespace-nowrap" data-opt="all">All (12)</button>
+<button onclick="filterOptimizations('budget')" class="tab-btn whitespace-nowrap" data-opt="budget">💰 Budget (3)</button>
+<button onclick="filterOptimizations('keywords')" class="tab-btn whitespace-nowrap" data-opt="keywords">🔑 Keywords (4)</button>
+<button onclick="filterOptimizations('ads')" class="tab-btn whitespace-nowrap" data-opt="ads">📝 Ads (3)</button>
+<button onclick="filterOptimizations('bidding')" class="tab-btn whitespace-nowrap" data-opt="bidding">📊 Bidding (2)</button>
+</div>
+
+<!-- Recommendations List -->
+<div id="optimizationsList" class="space-y-4">
+<!-- Filled by JS -->
 </div>
 </div>
-<div class="card overflow-hidden">
-<table class="w-full text-sm">
-<thead class="bg-slate-800/50">
-<tr class="text-xs uppercase text-slate-400">
-<th class="text-left p-4">Ad Group</th>
-<th class="text-left p-4">Campaign</th>
-<th class="text-left p-4">Status</th>
-<th class="text-right p-4">Keywords</th>
-<th class="text-right p-4">Ads</th>
-<th class="text-right p-4">Impr</th>
-<th class="text-right p-4">Clicks</th>
-<th class="text-right p-4">Conv</th>
-<th class="text-right p-4">Cost</th>
-</tr>
-</thead>
-<tbody id="adGroupsTableBody">
-<tr><td colspan="9" class="p-8 text-center text-slate-400">Loading ad groups...</td></tr>
-</tbody>
-</table>
-</div>
-</div>
-<!-- Competitor Spy Page -->
+
+<!-- Competitor Intelligence Page -->
 <div id="page-competitor" class="page-content hidden">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">Competitor Intelligence</h2>
-<p class="text-sm text-slate-400">Spy on competitors' Google Ads strategy</p>
-</div>
-<div id="semrushStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">
-<span class="w-2 h-2 rounded-full bg-slate-500"></span>
-<span class="text-xs text-slate-400">Not connected</span>
-</div>
+<div class="mb-6">
+<h2 class="text-lg font-medium text-google-darkgrey">Competitor Intelligence</h2>
+<p class="text-sm text-google-grey mt-1">Analyze competitors' Google Ads strategies</p>
 </div>
 
-<!-- Search -->
-<div class="card p-5 mb-6">
+<!-- Search Box -->
+<div class="card p-6 mb-6">
 <div class="flex gap-4">
 <div class="flex-1 relative">
-<svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-<input type="text" id="competitorDomain" placeholder="Enter competitor domain (e.g., spectrum.com)" class="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-base">
+<span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-google-grey">language</span>
+<input type="text" id="competitorDomain" placeholder="Enter competitor domain (e.g., example.com)" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg text-base">
 </div>
-<button onclick="analyzeCompetitor()" id="analyzeBtn" class="btn-primary px-6 py-3 rounded-xl font-medium flex items-center gap-2">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-Analyze
+<button onclick="analyzeCompetitor()" id="analyzeCompBtn" class="btn-primary px-6 py-3 flex items-center gap-2">
+<span class="material-icons-outlined">search</span>Analyze
 </button>
 </div>
 <div class="flex gap-4 mt-3">
-<span class="text-xs text-slate-500">Quick:</span>
-<button onclick="setCompetitorDomain('spectrum.com')" class="text-xs text-blue-400 hover:underline">spectrum.com</button>
-<button onclick="setCompetitorDomain('xfinity.com')" class="text-xs text-blue-400 hover:underline">xfinity.com</button>
-<button onclick="setCompetitorDomain('att.com')" class="text-xs text-blue-400 hover:underline">att.com</button>
+<span class="text-sm text-google-grey">Quick:</span>
+<button onclick="setCompDomain('spectrum.com')" class="text-sm text-google-blue hover:underline">spectrum.com</button>
+<button onclick="setCompDomain('xfinity.com')" class="text-sm text-google-blue hover:underline">xfinity.com</button>
+<button onclick="setCompDomain('att.com')" class="text-sm text-google-blue hover:underline">att.com</button>
 </div>
 </div>
 
 <!-- Results -->
 <div id="competitorResults" class="hidden">
-<div id="competitorOverview" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"></div>
-<div class="flex gap-2 mb-4 overflow-x-auto">
-<button onclick="showCompTab('ads')" class="tab-btn active px-4 py-2 rounded-lg text-sm whitespace-nowrap" data-ctab="ads">📢 Ad Copies</button>
-<button onclick="showCompTab('keywords')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-ctab="keywords">🔑 Paid Keywords</button>
-<button onclick="showCompTab('organic')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-ctab="organic">🌱 Organic</button>
-<button onclick="showCompTab('competitors')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-ctab="competitors">🏢 Their Competitors</button>
+<div id="compOverview" class="grid grid-cols-4 gap-4 mb-6"></div>
+<div class="card overflow-hidden">
+<div class="flex border-b border-gray-200">
+<button onclick="showCompTab('ads')" class="tab-btn active" data-ctab="ads">Ad Copies</button>
+<button onclick="showCompTab('keywords')" class="tab-btn" data-ctab="keywords">Paid Keywords</button>
+<button onclick="showCompTab('organic')" class="tab-btn" data-ctab="organic">Organic</button>
+<button onclick="showCompTab('competitors')" class="tab-btn" data-ctab="competitors">Their Competitors</button>
 </div>
-<div id="ctab-ads" class="ctab-content">
-<div class="flex justify-between mb-4">
-<h3 class="font-semibold">Ad Copies</h3>
-<button onclick="generateBetterAds()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 text-sm font-medium">✨ AI: Generate Better Ads</button>
-</div>
-<div id="competitorAdsContainer" class="space-y-4"></div>
-</div>
-<div id="ctab-keywords" class="ctab-content hidden">
-<div id="competitorKeywordsContainer" class="card overflow-hidden"></div>
-</div>
-<div id="ctab-organic" class="ctab-content hidden">
-<div id="organicKeywordsContainer" class="card overflow-hidden"></div>
-</div>
-<div id="ctab-competitors" class="ctab-content hidden">
-<div id="adCompetitorsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+<div id="compTabContent" class="p-4"></div>
 </div>
 </div>
 <div id="competitorEmpty" class="text-center py-16">
-<div class="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
-<svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-</div>
-<h3 class="font-semibold mb-2">Enter a competitor domain</h3>
-<p class="text-sm text-slate-400">Discover their ads, keywords, and spending</p>
+<span class="material-icons-outlined text-6xl text-gray-300 mb-4">search</span>
+<h3 class="font-medium text-google-darkgrey mb-2">Enter a competitor domain</h3>
+<p class="text-sm text-google-grey">Discover their keywords, ads, and spending</p>
 </div>
 </div>
-
-<!-- Keyword Research Page -->
-<div id="page-keyword-research" class="page-content hidden">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">Keyword Research</h2>
-<p class="text-sm text-slate-400">Discover profitable keywords for your campaigns</p>
+<!-- Keyword Planner Page -->
+<div id="page-keyword-planner" class="page-content hidden">
+<div class="mb-6">
+<h2 class="text-lg font-medium text-google-darkgrey">Keyword Planner</h2>
+<p class="text-sm text-google-grey mt-1">Discover new keywords and get search volume estimates</p>
 </div>
-</div>
-<div class="card p-5 mb-6">
+<div class="card p-6 mb-6">
 <div class="flex gap-4">
-<input type="text" id="kwResearchInput" placeholder="Enter seed keyword..." class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700">
-<button onclick="researchKeywords()" id="kwResearchBtn" class="btn-success px-6 py-3 rounded-xl font-medium flex items-center gap-2">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-Research
+<div class="flex-1 relative">
+<span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-google-grey">search</span>
+<input type="text" id="kwPlannerInput" placeholder="Enter a keyword to find related keywords..." class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg text-base">
+</div>
+<button onclick="searchKeywords()" id="kwSearchBtn" class="btn-primary px-6 py-3 flex items-center gap-2">
+<span class="material-icons-outlined">search</span>Find Keywords
 </button>
 </div>
 <div class="grid grid-cols-4 gap-4 mt-4">
-<select id="kwMaxCpc" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-<option value="100">Any CPC</option>
-<option value="5">Under $5</option>
-<option value="10" selected>Under $10</option>
-<option value="20">Under $20</option>
-</select>
-<select id="kwMinVolume" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-<option value="0">Any Volume</option>
-<option value="100" selected>100+</option>
-<option value="500">500+</option>
-<option value="1000">1K+</option>
-</select>
-<select id="kwCompetition" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-<option value="all">All Competition</option>
-<option value="low">Low Only</option>
-</select>
-<select id="kwIntent" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-<option value="all">All Intent</option>
-<option value="commercial">Commercial</option>
-</select>
+<div><label class="text-xs text-google-grey block mb-1">Max CPC</label><select id="kwMaxCpc" class="w-full px-3 py-2 border border-gray-300 rounded text-sm"><option value="100">Any</option><option value="5">Under $5</option><option value="10" selected>Under $10</option><option value="20">Under $20</option></select></div>
+<div><label class="text-xs text-google-grey block mb-1">Min Volume</label><select id="kwMinVol" class="w-full px-3 py-2 border border-gray-300 rounded text-sm"><option value="0">Any</option><option value="100" selected>100+</option><option value="500">500+</option><option value="1000">1K+</option></select></div>
+<div><label class="text-xs text-google-grey block mb-1">Competition</label><select id="kwComp" class="w-full px-3 py-2 border border-gray-300 rounded text-sm"><option value="all">All</option><option value="low">Low</option><option value="medium">Medium</option></select></div>
+<div><label class="text-xs text-google-grey block mb-1">Intent</label><select id="kwIntent" class="w-full px-3 py-2 border border-gray-300 rounded text-sm"><option value="all">All</option><option value="commercial">Commercial</option><option value="transactional">Transactional</option></select></div>
 </div>
 </div>
-<div id="kwResults" class="hidden">
-<div id="kwSummary" class="grid grid-cols-4 gap-4 mb-4"></div>
+<div id="kwPlannerResults" class="hidden">
+<div id="kwPlannerSummary" class="grid grid-cols-4 gap-4 mb-4"></div>
 <div class="card overflow-hidden">
-<div class="p-4 border-b border-slate-700 flex justify-between items-center">
+<div class="p-4 border-b border-gray-200 flex justify-between items-center">
 <div class="flex gap-2">
-<button onclick="filterKwResults('best')" class="px-3 py-1.5 rounded-lg text-xs bg-emerald-500/20 text-emerald-400">💎 Best</button>
-<button onclick="filterKwResults('lowcpc')" class="px-3 py-1.5 rounded-lg text-xs bg-blue-500/20 text-blue-400">💰 Low CPC</button>
-<button onclick="filterKwResults('highvol')" class="px-3 py-1.5 rounded-lg text-xs bg-purple-500/20 text-purple-400">📈 High Volume</button>
+<button onclick="filterKwPlanner('best')" class="badge badge-green cursor-pointer hover:opacity-80">💎 Best Opportunities</button>
+<button onclick="filterKwPlanner('lowcpc')" class="badge badge-blue cursor-pointer hover:opacity-80">💰 Low CPC</button>
+<button onclick="filterKwPlanner('highvol')" class="badge badge-yellow cursor-pointer hover:opacity-80">📈 High Volume</button>
 </div>
-<button onclick="exportKwResults()" class="px-3 py-1.5 rounded-lg text-xs bg-slate-700">Export CSV</button>
+<button onclick="exportKwPlanner()" class="btn-secondary px-3 py-1.5 text-sm flex items-center gap-1"><span class="material-icons-outlined text-lg">download</span>Export</button>
 </div>
-<div id="kwTableContainer" class="overflow-x-auto max-h-[500px]"></div>
+<div id="kwPlannerTable" class="overflow-x-auto max-h-[500px]"></div>
 </div>
 </div>
-<div id="kwEmpty" class="text-center py-16">
-<div class="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
-<svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-</div>
-<h3 class="font-semibold mb-2">Enter a keyword to research</h3>
-<p class="text-sm text-slate-400">Find related keywords with volume, CPC, and competition data</p>
+<div id="kwPlannerEmpty" class="text-center py-16">
+<span class="material-icons-outlined text-6xl text-gray-300 mb-4">manage_search</span>
+<h3 class="font-medium text-google-darkgrey mb-2">Search for keywords</h3>
+<p class="text-sm text-google-grey">Enter a keyword to find related keywords and search volumes</p>
 </div>
 </div>
 
-<!-- Auction Insights Page -->
-<div id="page-auction" class="page-content hidden">
-<div class="flex items-center justify-between mb-6">
+<!-- AI Assistant Page -->
+<div id="page-ai-assistant" class="page-content hidden">
+<div class="flex gap-6 h-[calc(100vh-180px)]">
+<div class="flex-1 card flex flex-col overflow-hidden">
+<div class="p-4 border-b border-gray-200 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-google-blue to-google-green flex items-center justify-center">
+<span class="material-icons-outlined text-white">smart_toy</span>
+</div>
 <div>
-<h2 class="text-xl font-bold">Auction Insights</h2>
-<p class="text-sm text-slate-400">See how you compare to competitors in auctions</p>
+<h3 class="font-medium text-google-darkgrey">AI Assistant</h3>
+<span class="text-xs text-google-green flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-google-green ai-pulse"></span>Online</span>
 </div>
 </div>
-<div class="card p-5 mb-6">
-<p class="text-slate-400 text-center py-8">Auction insights data from Google Ads will appear here</p>
+<button onclick="clearChat()" class="p-2 hover:bg-gray-100 rounded-full text-google-grey"><span class="material-icons-outlined">delete_outline</span></button>
 </div>
+<div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-google-blue to-google-green flex items-center justify-center flex-shrink-0">
+<span class="material-icons-outlined text-white text-sm">smart_toy</span>
 </div>
-
-<!-- AI Insights Page -->
-<div id="page-ai-insights" class="page-content hidden">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">AI Insights Dashboard</h2>
-<p class="text-sm text-slate-400">AI-powered analysis of your ad performance</p>
-</div>
-<button onclick="generateInsights()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium">Refresh Insights</button>
-</div>
-<div id="aiInsightsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div class="card p-5">
-<h3 class="font-semibold mb-4">📈 Performance Trends</h3>
-<div id="trendInsights" class="text-sm text-slate-300 space-y-2"></div>
-</div>
-<div class="card p-5">
-<h3 class="font-semibold mb-4">⚠️ Issues Detected</h3>
-<div id="issueInsights" class="text-sm text-slate-300 space-y-2"></div>
-</div>
-<div class="card p-5">
-<h3 class="font-semibold mb-4">💡 Opportunities</h3>
-<div id="opportunityInsights" class="text-sm text-slate-300 space-y-2"></div>
-</div>
-<div class="card p-5">
-<h3 class="font-semibold mb-4">🎯 Recommendations</h3>
-<div id="recommendationInsights" class="text-sm text-slate-300 space-y-2"></div>
+<div class="bg-surface-secondary rounded-lg rounded-tl-none p-4 max-w-2xl">
+<p class="text-sm text-google-darkgrey">Hello! I'm your AI assistant for Google Ads. I can help you with:</p>
+<ul class="text-sm text-google-grey mt-2 space-y-1">
+<li>• Creating and optimizing campaigns</li>
+<li>• Writing high-converting ad copy</li>
+<li>• Finding profitable keywords</li>
+<li>• Analyzing performance data</li>
+<li>• Budget and bid optimization</li>
+</ul>
+<p class="text-sm text-google-darkgrey mt-2">What would you like to work on?</p>
 </div>
 </div>
 </div>
-
-<!-- Reports Page -->
-<div id="page-reports" class="page-content hidden">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold">Reports</h2>
-<p class="text-sm text-slate-400">Generate and download performance reports</p>
+<div class="p-4 border-t border-gray-200">
+<div class="flex gap-2">
+<input type="text" id="chatInput" placeholder="Ask me anything about Google Ads..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm" onkeypress="if(event.key==='Enter')sendChat()">
+<button onclick="sendChat()" id="sendChatBtn" class="btn-primary px-6 py-3">Send</button>
 </div>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="card p-5 hover:border-blue-500 cursor-pointer" onclick="generateReport('performance')">
-<div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-3">
-<svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
 </div>
-<h3 class="font-semibold mb-1">Performance Report</h3>
-<p class="text-xs text-slate-400">Complete overview of all campaigns</p>
+<div class="w-72 space-y-4">
+<div class="card p-4">
+<h4 class="font-medium text-google-darkgrey mb-3">Quick Prompts</h4>
+<div class="space-y-2">
+<button onclick="quickChat('Analyze my account performance and give me top 3 recommendations')" class="w-full p-3 rounded-lg bg-blue-50 text-left text-sm hover:bg-blue-100 text-google-blue">📊 Analyze Performance</button>
+<button onclick="quickChat('Create a search campaign for internet services with $50/day budget')" class="w-full p-3 rounded-lg bg-green-50 text-left text-sm hover:bg-green-100 text-google-green">🚀 Create Campaign</button>
+<button onclick="quickChat('Write 15 headlines and 4 descriptions for fiber internet')" class="w-full p-3 rounded-lg bg-yellow-50 text-left text-sm hover:bg-yellow-100 text-yellow-700">✍️ Write Ad Copy</button>
+<button onclick="quickChat('Find 20 high-intent keywords for cable TV services')" class="w-full p-3 rounded-lg bg-red-50 text-left text-sm hover:bg-red-100 text-google-red">🔑 Find Keywords</button>
+<button onclick="quickChat('How can I improve my Quality Score?')" class="w-full p-3 rounded-lg bg-purple-50 text-left text-sm hover:bg-purple-100 text-purple-700">⚡ Improve QS</button>
 </div>
-<div class="card p-5 hover:border-purple-500 cursor-pointer" onclick="generateReport('keywords')">
-<div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-3">
-<svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
 </div>
-<h3 class="font-semibold mb-1">Keywords Report</h3>
-<p class="text-xs text-slate-400">Detailed keyword performance analysis</p>
-</div>
-<div class="card p-5 hover:border-emerald-500 cursor-pointer" onclick="generateReport('optimization')">
-<div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-3">
-<svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-</div>
-<h3 class="font-semibold mb-1">Optimization Report</h3>
-<p class="text-xs text-slate-400">AI recommendations summary</p>
 </div>
 </div>
 </div>
@@ -803,176 +745,110 @@ Research
 <div id="page-businesses" class="page-content hidden">
 <div class="flex items-center justify-between mb-6">
 <div>
-<h2 class="text-xl font-bold">Manage Businesses</h2>
-<p class="text-sm text-slate-400">Add and manage multiple business accounts</p>
+<h2 class="text-lg font-medium text-google-darkgrey">Manage Businesses</h2>
+<p class="text-sm text-google-grey mt-1">Add and manage multiple businesses and their Google Ads accounts</p>
 </div>
-<button onclick="showAddBusinessModal()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-Add Business
+<button onclick="showAddBusiness()" class="btn-primary px-4 py-2 text-sm flex items-center gap-2">
+<span class="material-icons-outlined text-lg">add</span>Add Business
 </button>
 </div>
 <div id="businessesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 <!-- Filled by JS -->
 </div>
 </div>
-<!-- AI Assistant Page -->
-<div id="page-ai-assistant" class="page-content hidden">
-<div class="flex gap-6 h-[calc(100vh-10rem)]">
-<div class="flex-1 flex flex-col card overflow-hidden">
-<div class="p-4 border-b border-slate-700/50 flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center ai-glow">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-</div>
-<div>
-<h3 class="font-semibold">AI Assistant</h3>
-<span id="aiStatus" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400">Ready</span>
-</div>
-</div>
-<button onclick="clearChat()" class="p-2 rounded-lg hover:bg-slate-700 text-slate-400">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-</button>
-</div>
-<div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
-<div class="flex gap-3">
-<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-</div>
-<div class="bg-slate-800/50 rounded-xl rounded-tl-none p-4 max-w-2xl">
-<p class="text-sm">Hello! I'm your AI Google Ads assistant. I can help you:</p>
-<ul class="text-sm mt-2 space-y-1 text-slate-300">
-<li>• Create and optimize campaigns</li>
-<li>• Write high-converting ad copy</li>
-<li>• Find profitable keywords</li>
-<li>• Analyze performance data</li>
-<li>• Suggest budget optimizations</li>
-</ul>
-<p class="text-sm mt-2">What would you like to work on?</p>
-</div>
-</div>
-</div>
-<div class="p-4 border-t border-slate-700/50">
-<div class="flex gap-2">
-<input type="text" id="chatInput" placeholder="Ask me anything about Google Ads..." class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700" onkeypress="if(event.key==='Enter')sendChat()">
-<button onclick="sendChat()" id="sendChatBtn" class="btn-primary px-6 py-3 rounded-xl font-medium">Send</button>
-</div>
-</div>
-</div>
-<div class="w-72 space-y-4">
-<div class="card p-4">
-<h4 class="font-semibold text-sm mb-3">Quick Prompts</h4>
-<div class="space-y-2">
-<button onclick="quickChat('Analyze my campaign performance and suggest improvements')" class="w-full p-2 rounded-lg bg-blue-500/10 text-left text-xs hover:bg-blue-500/20 text-blue-400">📊 Analyze Performance</button>
-<button onclick="quickChat('Create a high-converting search campaign for internet services')" class="w-full p-2 rounded-lg bg-emerald-500/10 text-left text-xs hover:bg-emerald-500/20 text-emerald-400">🚀 Create Campaign</button>
-<button onclick="quickChat('Write 15 headlines and 4 descriptions for fiber internet ads')" class="w-full p-2 rounded-lg bg-purple-500/10 text-left text-xs hover:bg-purple-500/20 text-purple-400">✍️ Write Ad Copy</button>
-<button onclick="quickChat('Suggest keywords to target for cable TV and internet bundles')" class="w-full p-2 rounded-lg bg-amber-500/10 text-left text-xs hover:bg-amber-500/20 text-amber-400">🔑 Find Keywords</button>
-<button onclick="quickChat('How can I improve my Quality Score?')" class="w-full p-2 rounded-lg bg-rose-500/10 text-left text-xs hover:bg-rose-500/20 text-rose-400">⚡ Improve QS</button>
-<button onclick="quickChat('What bid strategy should I use for conversions?')" class="w-full p-2 rounded-lg bg-cyan-500/10 text-left text-xs hover:bg-cyan-500/20 text-cyan-400">💰 Bidding Strategy</button>
-</div>
-</div>
-<div class="card p-4">
-<h4 class="font-semibold text-sm mb-2">Context</h4>
-<p class="text-xs text-slate-400">AI has access to your campaign data and can provide personalized recommendations.</p>
-</div>
-</div>
-</div>
-</div>
 
 <!-- Settings Page -->
 <div id="page-settings" class="page-content hidden">
-<h2 class="text-xl font-bold mb-6">Settings</h2>
+<h2 class="text-lg font-medium text-google-darkgrey mb-6">Settings</h2>
 <div class="max-w-2xl space-y-6">
-<!-- SEMrush API -->
-<div class="card p-5">
-<div class="flex items-center gap-3 mb-4">
-<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+<div class="card p-6">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
+<span class="material-icons-outlined text-orange-600">search</span>
 </div>
 <div class="flex-1">
-<h3 class="font-semibold">SEMrush API</h3>
-<p class="text-xs text-slate-400">For competitor & keyword research</p>
+<h3 class="font-medium text-google-darkgrey">SEMrush API</h3>
+<p class="text-sm text-google-grey">For competitor and keyword research</p>
 </div>
-<span class="px-2 py-1 rounded text-xs bg-orange-500/20 text-orange-400">Required</span>
+<span class="badge badge-yellow">Required</span>
 </div>
 <div class="flex gap-2">
-<input type="password" id="semrushApiKey" placeholder="Enter SEMrush API key" class="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700">
-<button onclick="saveSemrushKey()" class="px-4 py-2.5 rounded-lg bg-orange-500 font-medium text-sm">Save</button>
+<input type="password" id="semrushKey" placeholder="Enter SEMrush API key" class="flex-1 px-4 py-2.5 border border-gray-300 rounded">
+<button onclick="saveSemrushKey()" class="btn-primary px-6 py-2.5">Save</button>
 </div>
-<p class="text-xs text-slate-500 mt-2">Get from: SEMrush → Settings → Subscription Info → API Key</p>
+<p class="text-xs text-google-grey mt-2">Get from: SEMrush → Settings → API</p>
 </div>
-
-<!-- Claude API -->
-<div class="card p-5">
-<div class="flex items-center gap-3 mb-4">
-<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+<div class="card p-6">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+<span class="material-icons-outlined text-purple-600">auto_awesome</span>
 </div>
 <div class="flex-1">
-<h3 class="font-semibold">Claude AI API</h3>
-<p class="text-xs text-slate-400">For AI assistant & recommendations</p>
+<h3 class="font-medium text-google-darkgrey">Claude AI API</h3>
+<p class="text-sm text-google-grey">For AI assistant and recommendations</p>
 </div>
-<span class="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400">Required</span>
+<span class="badge badge-blue">Required</span>
 </div>
 <div class="flex gap-2">
-<input type="password" id="claudeApiKey" placeholder="sk-ant-api03-..." class="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700">
-<button onclick="saveClaudeKey()" class="px-4 py-2.5 rounded-lg bg-purple-500 font-medium text-sm">Save</button>
+<input type="password" id="claudeKey" placeholder="sk-ant-api03-..." class="flex-1 px-4 py-2.5 border border-gray-300 rounded">
+<button onclick="saveClaudeKey()" class="btn-primary px-6 py-2.5">Save</button>
 </div>
-<p class="text-xs text-slate-500 mt-2">Get from: <a href="https://console.anthropic.com" target="_blank" class="text-purple-400 hover:underline">console.anthropic.com</a></p>
+<p class="text-xs text-google-grey mt-2">Get from: <a href="https://console.anthropic.com" target="_blank" class="text-google-blue hover:underline">console.anthropic.com</a></p>
 </div>
-
-<!-- Notification Settings -->
-<div class="card p-5">
-<h3 class="font-semibold mb-4">Notifications</h3>
+<div class="card p-6">
+<h3 class="font-medium text-google-darkgrey mb-4">Notifications</h3>
 <div class="space-y-3">
-<label class="flex items-center justify-between">
-<span class="text-sm">Daily performance summary</span>
-<input type="checkbox" checked class="rounded">
-</label>
-<label class="flex items-center justify-between">
-<span class="text-sm">Budget alerts</span>
-<input type="checkbox" checked class="rounded">
-</label>
-<label class="flex items-center justify-between">
-<span class="text-sm">AI optimization suggestions</span>
-<input type="checkbox" checked class="rounded">
-</label>
+<label class="flex items-center justify-between"><span class="text-sm text-google-darkgrey">Daily performance summary</span><input type="checkbox" checked class="rounded"></label>
+<label class="flex items-center justify-between"><span class="text-sm text-google-darkgrey">Budget alerts (80% spent)</span><input type="checkbox" checked class="rounded"></label>
+<label class="flex items-center justify-between"><span class="text-sm text-google-darkgrey">AI optimization suggestions</span><input type="checkbox" checked class="rounded"></label>
+<label class="flex items-center justify-between"><span class="text-sm text-google-darkgrey">Performance anomalies</span><input type="checkbox" checked class="rounded"></label>
 </div>
 </div>
 </div>
 </div>
+
+<!-- Other Pages Placeholders -->
+<div id="page-adgroups" class="page-content hidden"><div class="card p-8 text-center text-google-grey">Ad Groups management - Connect Google Ads to view</div></div>
+<div id="page-ads" class="page-content hidden"><div class="card p-8 text-center text-google-grey">Ads & Assets management - Connect Google Ads to view</div></div>
+<div id="page-audiences" class="page-content hidden"><div class="card p-8 text-center text-google-grey">Audience management - Connect Google Ads to view</div></div>
+<div id="page-negatives" class="page-content hidden"><div class="card p-8 text-center text-google-grey">Negative Keywords management - Connect Google Ads to view</div></div>
+<div id="page-insights" class="page-content hidden"><div class="card p-8 text-center text-google-grey">Insights - Connect Google Ads to view</div></div>
+<div id="page-reports" class="page-content hidden"><div class="card p-8 text-center text-google-grey">Reports - Connect Google Ads to view</div></div>
+<div id="page-auction" class="page-content hidden"><div class="card p-8 text-center text-google-grey">Auction Insights - Connect Google Ads to view</div></div>
 
 </div>
 </main>
 </div>
-</div>
 
-<!-- Modals -->
-<div id="modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center">
+<!-- Modal -->
+<div id="modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
 <div id="modalContent" class="card max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"></div>
 </div>
-
 <script>
-// ════════════════════════════════════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════════════════════════════════════
-let state = {
+// ═══════════════════════════════════════════════════════════════════
+// STATE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════
+const state = {
   currentPage: 'login',
   currentBusiness: 'all',
+  currentAccount: 'all',
   businesses: [],
   campaigns: [],
   keywords: [],
   ads: [],
   competitorData: { keywords: [], ads: [], organic: [], competitors: [] },
-  kwResearchData: [],
-  isTyping: false
+  kwPlannerData: [],
+  isTyping: false,
+  charts: {}
 };
 
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // INITIALIZATION
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
   loadSavedKeys();
+  loadBusinesses();
   updateApiStatus();
 });
 
@@ -980,9 +856,9 @@ function checkAuth() {
   fetch('/auth/status').then(r => r.json()).then(data => {
     if (data.authenticated) {
       document.getElementById('userInfo').innerHTML = `
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold">${data.user.name?.charAt(0) || 'U'}</div>
-        <div class="flex-1 min-w-0"><p class="text-xs font-medium truncate">${data.user.name || 'User'}</p><p class="text-[10px] text-slate-500 truncate">${data.user.email || ''}</p></div>`;
-      showPage('dashboard');
+        <div class="w-8 h-8 rounded-full bg-google-blue flex items-center justify-center text-white text-sm font-medium">${(data.user.name?.charAt(0) || 'U').toUpperCase()}</div>
+        <div class="flex-1 min-w-0"><p class="text-sm font-medium text-google-darkgrey truncate">${data.user.name || 'User'}</p><p class="text-xs text-google-grey truncate">${data.user.email || ''}</p></div>`;
+      showPage('overview');
       loadDashboardData();
     } else { showPage('login'); }
   }).catch(() => showPage('login'));
@@ -991,67 +867,57 @@ function checkAuth() {
 function loginWithGoogle() { window.location.href = '/auth/google'; }
 
 function loadSavedKeys() {
-  const sk = getKey('semrush'); if (sk) document.getElementById('semrushApiKey').value = sk;
-  const ck = getKey('claude'); if (ck) document.getElementById('claudeApiKey').value = ck;
+  const sk = getKey('semrush'); if (sk) document.getElementById('semrushKey').value = sk;
+  const ck = getKey('claude'); if (ck) document.getElementById('claudeKey').value = ck;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // NAVIGATION
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 function showPage(page) {
   state.currentPage = page;
   document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
   document.getElementById('page-' + page)?.classList.remove('hidden');
-  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.classList.add('text-slate-400'); });
-  const nav = document.querySelector(`.nav-item[data-page="${page}"]`);
-  if (nav) { nav.classList.add('active'); nav.classList.remove('text-slate-400'); }
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); });
+  document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
   
-  const titles = { dashboard: 'Dashboard', campaigns: 'Campaigns', keywords: 'Keywords', ads: 'Ads', adgroups: 'Ad Groups',
-    optimization: 'AI Optimization', competitor: 'Competitor Spy', 'keyword-research': 'Keyword Research', auction: 'Auction Insights',
-    'ai-assistant': 'AI Assistant', 'ai-insights': 'AI Insights', reports: 'Reports', businesses: 'Businesses', settings: 'Settings' };
-  document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
+  const titles = { overview: 'Overview', campaigns: 'All Campaigns', adgroups: 'Ad Groups', ads: 'Ads & Assets', keywords: 'Keywords', audiences: 'Audiences', negatives: 'Negative Keywords', 'ai-optimize': 'AI Optimization', competitor: 'Competitor Intelligence', 'keyword-planner': 'Keyword Planner', 'ai-assistant': 'AI Assistant', insights: 'Insights', reports: 'Reports', auction: 'Auction Insights', businesses: 'Manage Businesses', settings: 'Settings' };
+  document.getElementById('pageTitle').textContent = titles[page] || 'AdsPro AI';
   
-  if (page === 'dashboard') loadDashboardData();
+  if (page === 'overview') loadDashboardData();
   if (page === 'campaigns') loadCampaigns();
   if (page === 'keywords') loadKeywords();
-  if (page === 'ads') loadAds();
-  if (page === 'optimization') loadOptimizations();
-  if (page === 'businesses') loadBusinesses();
+  if (page === 'ai-optimize') loadOptimizations();
+  if (page === 'businesses') renderBusinesses();
   updateApiStatus();
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// API KEYS
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// API KEYS & STATUS
+// ═══════════════════════════════════════════════════════════════════
 function getKey(name) { return localStorage.getItem('adspro_' + name + '_key'); }
 function setKey(name, key) { localStorage.setItem('adspro_' + name + '_key', key); }
-function saveSemrushKey() { const k = document.getElementById('semrushApiKey').value.trim(); if (k) { setKey('semrush', k); showAlert('SEMrush API saved!', 'success'); updateApiStatus(); } }
-function saveClaudeKey() { const k = document.getElementById('claudeApiKey').value.trim(); if (k) { setKey('claude', k); showAlert('Claude API saved!', 'success'); updateApiStatus(); } }
+function saveSemrushKey() { const k = document.getElementById('semrushKey').value.trim(); if (k) { setKey('semrush', k); showAlert('SEMrush API key saved!', 'success'); updateApiStatus(); } }
+function saveClaudeKey() { const k = document.getElementById('claudeKey').value.trim(); if (k) { setKey('claude', k); showAlert('Claude API key saved!', 'success'); updateApiStatus(); } }
 
 function updateApiStatus() {
   const sk = getKey('semrush'), ck = getKey('claude');
-  const el = document.getElementById('apiStatus');
+  const el = document.getElementById('apiStatusHeader');
   if (sk && ck) {
-    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 status-dot"></span><span class="text-xs text-emerald-400">All APIs connected</span>';
-    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30';
+    el.innerHTML = '<span class="status-dot status-active"></span><span class="text-google-green text-sm">All APIs connected</span>';
+    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded border border-google-green text-sm bg-green-50';
   } else if (sk || ck) {
-    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 status-dot"></span><span class="text-xs text-amber-400">Some APIs missing</span>';
-    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30';
+    el.innerHTML = '<span class="status-dot status-paused"></span><span class="text-yellow-700 text-sm">Some APIs missing</span>';
+    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded border border-yellow-400 text-sm bg-yellow-50';
   } else {
-    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-xs text-slate-400">APIs not configured</span>';
-    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700';
-  }
-  // Update semrush status on competitor page
-  const ss = document.getElementById('semrushStatus');
-  if (ss) {
-    if (sk) { ss.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-xs text-emerald-400">Connected</span>'; ss.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30'; }
-    else { ss.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-xs text-slate-400">Not connected</span>'; }
+    el.innerHTML = '<span class="status-dot bg-gray-400"></span><span class="text-google-grey text-sm">Setup required</span>';
+    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded border border-gray-200 text-sm';
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // DASHBOARD
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 function loadDashboardData() {
   fetch('/api/dashboard').then(r => r.json()).then(d => {
     document.getElementById('totalImpressions').textContent = fmt(d.impressions || 0);
@@ -1063,76 +929,66 @@ function loadDashboardData() {
     renderCharts();
     loadTopCampaigns();
     loadAIRecommendations();
-    generateDailySummary();
-  }).catch(() => { renderCharts(); generateDailySummary(); });
+    generateDailyBrief();
+  }).catch(() => { renderCharts(); generateDailyBrief(); });
 }
 
 function renderCharts() {
-  // Performance Chart
   const ctx = document.getElementById('performanceChart');
-  if (ctx && !ctx.chart) {
-    ctx.chart = new Chart(ctx, {
+  if (ctx && !state.charts.performance) {
+    state.charts.performance = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         datasets: [{
           label: 'Clicks',
           data: [120, 145, 132, 178, 190, 165, 210],
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59,130,246,0.1)',
+          borderColor: '#1a73e8',
+          backgroundColor: 'rgba(26,115,232,0.1)',
           fill: true,
-          tension: 0.4
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#1a73e8'
         }]
       },
       options: {
         responsive: true,
         plugins: { legend: { display: false } },
-        scales: { x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } } }
+        scales: { x: { grid: { display: false }, ticks: { color: '#5f6368' } }, y: { grid: { color: '#e8eaed' }, ticks: { color: '#5f6368' } } }
       }
-    });
-  }
-  // Health Chart
-  const hctx = document.getElementById('healthChart');
-  if (hctx && !hctx.chart) {
-    hctx.chart = new Chart(hctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Excellent', 'Good', 'Needs Work', 'Poor'],
-        datasets: [{ data: [4, 3, 2, 1], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12 } } } }
     });
   }
 }
 
 function loadTopCampaigns() {
   document.getElementById('topCampaigns').innerHTML = `
-    <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/30"><div><p class="font-medium text-sm">Search - Internet</p><p class="text-xs text-slate-500">$2,450 spent</p></div><span class="text-xs text-emerald-400">+12% CTR</span></div>
-    <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/30"><div><p class="font-medium text-sm">Search - Cable TV</p><p class="text-xs text-slate-500">$1,890 spent</p></div><span class="text-xs text-emerald-400">+8% CTR</span></div>
-    <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/30"><div><p class="font-medium text-sm">Display - Bundles</p><p class="text-xs text-slate-500">$950 spent</p></div><span class="text-xs text-amber-400">-2% CTR</span></div>`;
+    <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"><div class="flex items-center gap-3"><span class="status-dot status-active"></span><div><p class="text-sm font-medium">Search - Internet Services</p><p class="text-xs text-google-grey">$2,450 spent</p></div></div><span class="text-xs text-google-green">↑12% CTR</span></div>
+    <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"><div class="flex items-center gap-3"><span class="status-dot status-active"></span><div><p class="text-sm font-medium">Search - Cable TV</p><p class="text-xs text-google-grey">$1,890 spent</p></div></div><span class="text-xs text-google-green">↑8% CTR</span></div>
+    <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"><div class="flex items-center gap-3"><span class="status-dot status-paused"></span><div><p class="text-sm font-medium">Display - Bundles</p><p class="text-xs text-google-grey">$950 spent</p></div></div><span class="text-xs text-google-red">↓2% CTR</span></div>`;
 }
 
 function loadAIRecommendations() {
   document.getElementById('aiRecommendations').innerHTML = `
-    <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30"><p class="text-sm font-medium text-emerald-400">💰 Increase budget for "internet service" campaign</p><p class="text-xs text-slate-400 mt-1">High conversion rate, limited by budget</p></div>
-    <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"><p class="text-sm font-medium text-amber-400">⚠️ 3 keywords with low Quality Score</p><p class="text-xs text-slate-400 mt-1">Review and optimize ad relevance</p></div>`;
+    <div class="p-3 rounded-lg border border-google-green bg-green-50"><p class="text-sm font-medium text-google-green">💰 Increase budget for "internet service"</p><p class="text-xs text-google-grey mt-1">High conversion rate, limited by budget</p></div>
+    <div class="p-3 rounded-lg border border-yellow-400 bg-yellow-50"><p class="text-sm font-medium text-yellow-700">⚠️ 3 keywords with low Quality Score</p><p class="text-xs text-google-grey mt-1">Review and optimize ad relevance</p></div>`;
 }
 
-async function generateDailySummary() {
-  const el = document.getElementById('aiDailySummary');
+async function generateDailyBrief() {
+  const el = document.getElementById('aiDailyBrief');
   const ck = getKey('claude');
   if (!ck) { el.textContent = 'Add Claude API key in Settings to enable AI insights.'; return; }
-  el.innerHTML = '<span class="text-slate-400">Analyzing your campaigns...</span>';
+  el.innerHTML = '<span class="text-google-grey">Analyzing your campaigns...</span>';
   try {
-    const r = await fetch('/ai/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Give me a brief 2-3 sentence summary of my Google Ads performance today. Focus on key metrics and one actionable insight.', claudeApiKey: ck }) });
+    const r = await fetch('/ai/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Give me a brief 2-3 sentence summary of my Google Ads performance. Focus on key metrics and one actionable insight.', claudeApiKey: ck }) });
     const d = await r.json();
     el.textContent = d.message || 'Unable to generate summary.';
   } catch (e) { el.textContent = 'Unable to generate AI summary. Check your API key.'; }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // CAMPAIGNS
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 function loadCampaigns() {
   fetch('/api/campaigns').then(r => r.json()).then(d => {
     state.campaigns = d.campaigns || [];
@@ -1142,38 +998,37 @@ function loadCampaigns() {
 
 function renderCampaignsTable() {
   const tbody = document.getElementById('campaignsTableBody');
+  document.getElementById('campaignCount').textContent = state.campaigns.length + ' campaigns';
   if (!state.campaigns.length) {
-    tbody.innerHTML = '<tr><td colspan="12" class="p-8 text-center text-slate-400">No campaigns found. Connect Google Ads to see your campaigns.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" class="p-8 text-center text-google-grey">No campaigns found. Connect Google Ads to see your campaigns.</td></tr>';
     return;
   }
   tbody.innerHTML = state.campaigns.map(c => `
-    <tr class="table-row border-b border-slate-700/50">
-      <td class="p-4"><input type="checkbox" class="rounded campaign-check" data-id="${c.id}"></td>
-      <td class="p-4"><div class="font-medium">${esc(c.name)}</div><div class="text-xs text-slate-500">${c.id}</div></td>
-      <td class="p-4"><span class="px-2 py-1 rounded text-xs ${c.status === 'ENABLED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">${c.status}</span></td>
-      <td class="p-4"><span class="text-xs text-slate-400">${c.type || 'SEARCH'}</span></td>
-      <td class="p-4 text-right">$${fmt(c.budget || 0)}/day</td>
-      <td class="p-4 text-right">${fmt(c.impressions || 0)}</td>
-      <td class="p-4 text-right">${fmt(c.clicks || 0)}</td>
-      <td class="p-4 text-right">${(c.ctr || 0).toFixed(2)}%</td>
-      <td class="p-4 text-right">${fmt(c.conversions || 0)}</td>
-      <td class="p-4 text-right">$${fmt(c.cost || 0)}</td>
-      <td class="p-4 text-right">$${c.conversions ? (c.cost / c.conversions).toFixed(2) : '0'}</td>
+    <tr class="table-row">
+      <td class="p-4"><input type="checkbox" class="rounded" data-id="${c.id}"></td>
+      <td class="p-4"><div class="font-medium text-sm">${esc(c.name)}</div><div class="text-xs text-google-grey">${c.id}</div></td>
+      <td class="p-4"><span class="inline-flex items-center gap-1"><span class="status-dot ${c.status === 'ENABLED' ? 'status-active' : 'status-paused'}"></span><span class="text-sm">${c.status === 'ENABLED' ? 'Active' : 'Paused'}</span></span></td>
+      <td class="p-4"><span class="badge badge-grey">${c.type || 'Search'}</span></td>
+      <td class="p-4 text-right text-sm">$${fmt(c.budget || 0)}/day</td>
+      <td class="p-4 text-right text-sm">${fmt(c.impressions || 0)}</td>
+      <td class="p-4 text-right text-sm">${fmt(c.clicks || 0)}</td>
+      <td class="p-4 text-right text-sm">${(c.ctr || 0).toFixed(2)}%</td>
+      <td class="p-4 text-right text-sm">$${(c.avgCpc || 0).toFixed(2)}</td>
+      <td class="p-4 text-right text-sm">${fmt(c.conversions || 0)}</td>
+      <td class="p-4 text-right text-sm">$${fmt(c.cost || 0)}</td>
+      <td class="p-4 text-right text-sm">${c.clicks ? ((c.conversions / c.clicks) * 100).toFixed(2) : 0}%</td>
+      <td class="p-4 text-right text-sm">$${c.conversions ? (c.cost / c.conversions).toFixed(2) : '0'}</td>
       <td class="p-4 text-center">
-        <button onclick="analyzeCampaign('${c.id}')" class="p-1.5 rounded hover:bg-slate-700 text-slate-400" title="AI Analysis"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></button>
+        <button onclick="analyzeCampaign('${c.id}')" class="p-1.5 rounded hover:bg-gray-100 text-google-grey" title="AI Analysis"><span class="material-icons-outlined text-lg">auto_awesome</span></button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
 
-function createCampaignWithAI() {
-  showPage('ai-assistant');
-  setTimeout(() => quickChat('Help me create a new Google Ads search campaign. Ask me about my business goals and target audience.'), 100);
-}
+function createCampaign() { showPage('ai-assistant'); setTimeout(() => quickChat('Help me create a new Google Ads search campaign. Ask me about my business goals.'), 100); }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // KEYWORDS
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 function loadKeywords() {
   fetch('/api/keywords').then(r => r.json()).then(d => {
     state.keywords = d.keywords || [];
@@ -1184,148 +1039,91 @@ function loadKeywords() {
 
 function renderKeywordsTable() {
   const tbody = document.getElementById('keywordsTableBody');
+  document.getElementById('keywordCount').textContent = state.keywords.length + ' keywords';
   if (!state.keywords.length) {
-    tbody.innerHTML = '<tr><td colspan="12" class="p-8 text-center text-slate-400">No keywords found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="p-8 text-center text-google-grey">No keywords found.</td></tr>';
     return;
   }
   tbody.innerHTML = state.keywords.map(k => `
-    <tr class="table-row border-b border-slate-700/50">
+    <tr class="table-row">
       <td class="p-4"><input type="checkbox" class="rounded"></td>
-      <td class="p-4 font-medium">${esc(k.keyword)}</td>
-      <td class="p-4"><span class="px-2 py-0.5 rounded text-xs bg-slate-700">${k.matchType || 'BROAD'}</span></td>
-      <td class="p-4 text-center"><span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${k.qualityScore >= 7 ? 'bg-emerald-500/20 text-emerald-400' : k.qualityScore >= 4 ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">${k.qualityScore || '-'}</span></td>
-      <td class="p-4"><span class="px-2 py-0.5 rounded text-xs ${k.status === 'ENABLED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">${k.status}</span></td>
-      <td class="p-4 text-right">${fmt(k.impressions || 0)}</td>
-      <td class="p-4 text-right">${fmt(k.clicks || 0)}</td>
-      <td class="p-4 text-right">${(k.ctr || 0).toFixed(2)}%</td>
-      <td class="p-4 text-right">$${(k.avgCpc || 0).toFixed(2)}</td>
-      <td class="p-4 text-right">${fmt(k.conversions || 0)}</td>
-      <td class="p-4 text-right">$${fmt(k.cost || 0)}</td>
-      <td class="p-4 text-center">
-        <button onclick="analyzeKeyword('${esc(k.keyword)}')" class="p-1.5 rounded hover:bg-slate-700 text-slate-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></button>
-      </td>
-    </tr>
-  `).join('');
+      <td class="p-4 font-medium text-sm">${esc(k.keyword)}</td>
+      <td class="p-4 text-center"><span class="badge badge-grey">${k.matchType || 'Broad'}</span></td>
+      <td class="p-4 text-center"><div class="qscore ${k.qualityScore >= 7 ? 'qscore-high' : k.qualityScore >= 4 ? 'qscore-med' : 'qscore-low'} mx-auto">${k.qualityScore || '-'}</div></td>
+      <td class="p-4"><span class="inline-flex items-center gap-1"><span class="status-dot ${k.status === 'ENABLED' ? 'status-active' : 'status-paused'}"></span><span class="text-sm">${k.status === 'ENABLED' ? 'Active' : 'Paused'}</span></span></td>
+      <td class="p-4 text-right text-sm">${fmt(k.impressions || 0)}</td>
+      <td class="p-4 text-right text-sm">${fmt(k.clicks || 0)}</td>
+      <td class="p-4 text-right text-sm">${(k.ctr || 0).toFixed(2)}%</td>
+      <td class="p-4 text-right text-sm">$${(k.avgCpc || 0).toFixed(2)}</td>
+      <td class="p-4 text-right text-sm">${fmt(k.conversions || 0)}</td>
+      <td class="p-4 text-right text-sm">$${fmt(k.cost || 0)}</td>
+      <td class="p-4 text-center"><button onclick="analyzeKeyword('${esc(k.keyword)}')" class="p-1.5 rounded hover:bg-gray-100 text-google-grey"><span class="material-icons-outlined text-lg">auto_awesome</span></button></td>
+    </tr>`).join('');
 }
 
 function updateKeywordStats() {
   document.getElementById('totalKeywords').textContent = state.keywords.length;
   document.getElementById('activeKeywords').textContent = state.keywords.filter(k => k.status === 'ENABLED').length;
   const qsArr = state.keywords.filter(k => k.qualityScore).map(k => k.qualityScore);
-  document.getElementById('avgQualityScore').textContent = qsArr.length ? (qsArr.reduce((a, b) => a + b) / qsArr.length).toFixed(1) : '0';
+  document.getElementById('avgQS').textContent = qsArr.length ? (qsArr.reduce((a, b) => a + b) / qsArr.length).toFixed(1) : '0';
   const cpcArr = state.keywords.filter(k => k.avgCpc).map(k => k.avgCpc);
-  document.getElementById('avgCPC').textContent = '$' + (cpcArr.length ? (cpcArr.reduce((a, b) => a + b) / cpcArr.length).toFixed(2) : '0');
-  document.getElementById('lowQSKeywords').textContent = state.keywords.filter(k => k.qualityScore && k.qualityScore < 5).length;
+  document.getElementById('avgKeywordCPC').textContent = '$' + (cpcArr.length ? (cpcArr.reduce((a, b) => a + b) / cpcArr.length).toFixed(2) : '0');
+  document.getElementById('lowQSCount').textContent = state.keywords.filter(k => k.qualityScore && k.qualityScore <= 4).length;
 }
 
-function addKeywordsWithAI() {
-  showPage('ai-assistant');
-  setTimeout(() => quickChat('Suggest 20 high-intent keywords for internet and cable TV services. Include search volume and competition estimates.'), 100);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// ADS
-// ════════════════════════════════════════════════════════════════════════════
-function loadAds() {
-  fetch('/api/ads').then(r => r.json()).then(d => {
-    state.ads = d.ads || [];
-    renderAdsGrid();
-  }).catch(() => { state.ads = []; renderAdsGrid(); });
-}
-
-function renderAdsGrid() {
-  const container = document.getElementById('adsContainer');
-  if (!state.ads.length) {
-    container.innerHTML = '<div class="card p-6 text-center text-slate-400 col-span-full">No ads found. Create ads to see them here.</div>';
-    return;
-  }
-  container.innerHTML = state.ads.map(a => `
-    <div class="card p-5">
-      <div class="flex items-center justify-between mb-3">
-        <span class="px-2 py-0.5 rounded text-xs ${a.status === 'ENABLED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">${a.status}</span>
-        <span class="text-xs text-slate-500">${a.type || 'RSA'}</span>
-      </div>
-      <h4 class="text-blue-400 font-semibold mb-1">${esc(a.headlines?.[0] || 'Headline')}</h4>
-      <p class="text-sm text-slate-300 mb-3">${esc(a.descriptions?.[0] || 'Description')}</p>
-      <div class="grid grid-cols-3 gap-2 text-center text-xs">
-        <div><p class="text-slate-500">Impr</p><p class="font-medium">${fmt(a.impressions || 0)}</p></div>
-        <div><p class="text-slate-500">Clicks</p><p class="font-medium">${fmt(a.clicks || 0)}</p></div>
-        <div><p class="text-slate-500">CTR</p><p class="font-medium">${(a.ctr || 0).toFixed(2)}%</p></div>
-      </div>
-      <button onclick="improveAdWithAI('${esc(a.headlines?.[0])}')" class="w-full mt-3 px-3 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-xs hover:bg-purple-500/30">✨ Improve with AI</button>
-    </div>
-  `).join('');
-}
-
-function createAdWithAI() {
-  showPage('ai-assistant');
-  setTimeout(() => quickChat('Create a responsive search ad with 15 headlines (max 30 chars) and 4 descriptions (max 90 chars) for high-speed fiber internet service.'), 100);
-}
-
-function improveAdWithAI(headline) {
-  showPage('ai-assistant');
-  setTimeout(() => quickChat(`Improve this Google Ad headline: "${headline}". Give me 5 better variations that are more compelling.`), 100);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// OPTIMIZATION
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// AI OPTIMIZATION
+// ═══════════════════════════════════════════════════════════════════
 function loadOptimizations() {
-  renderOptimizationList();
-}
-
-function renderOptimizationList() {
   const recommendations = [
-    { type: 'budget', priority: 'high', title: 'Increase budget for "Internet Services" campaign', desc: 'This campaign is limited by budget with 85% impression share lost. Increasing budget by $20/day could generate 150 more clicks.', impact: '+150 clicks/week', action: 'Apply' },
-    { type: 'keywords', priority: 'high', title: 'Pause low-performing keyword: "cheap wifi"', desc: 'This keyword has 0 conversions with $245 spend. Quality Score is 3/10.', impact: 'Save $245/month', action: 'Pause' },
-    { type: 'keywords', priority: 'medium', title: 'Add negative keyword: "free"', desc: 'Your ads are showing for "free internet" searches which have 0.1% conversion rate.', impact: 'Save $85/month', action: 'Add' },
-    { type: 'ads', priority: 'medium', title: 'Create new ad variations', desc: 'Ad Group "Fiber Internet" has only 2 ads. Adding more variations can improve performance.', impact: '+15% CTR potential', action: 'Create' },
-    { type: 'bidding', priority: 'low', title: 'Switch to Target CPA bidding', desc: 'Your campaigns have enough conversion data to use automated bidding effectively.', impact: '+20% conversions', action: 'Switch' },
+    { type: 'budget', priority: 'high', title: 'Increase budget for "Internet Services" campaign', desc: 'This campaign is limited by budget with 85% impression share lost to budget. Increasing by $20/day could generate 150+ more clicks.', impact: '+150 clicks/week', impactType: 'positive' },
+    { type: 'keywords', priority: 'high', title: 'Pause low-performing keyword: "cheap wifi"', desc: 'This keyword has 0 conversions with $245 spend in the last 30 days. Quality Score is 3/10.', impact: 'Save $245/month', impactType: 'positive' },
+    { type: 'keywords', priority: 'medium', title: 'Add negative keyword: "free"', desc: 'Your ads are showing for "free internet" searches which have 0.1% conversion rate vs 2.5% account average.', impact: 'Save $85/month', impactType: 'positive' },
+    { type: 'ads', priority: 'medium', title: 'Create new ad variations', desc: 'Ad Group "Fiber Internet" has only 2 responsive search ads. Adding more variations can improve CTR by 10-15%.', impact: '+15% CTR potential', impactType: 'positive' },
+    { type: 'bidding', priority: 'low', title: 'Switch to Target CPA bidding', desc: 'Your campaigns have enough conversion data (50+ conversions/month) to use automated Target CPA bidding effectively.', impact: '+20% conversions', impactType: 'positive' },
   ];
   
-  document.getElementById('optimizationList').innerHTML = recommendations.map(r => `
-    <div class="card p-5 border-l-4 ${r.priority === 'high' ? 'border-rose-500' : r.priority === 'medium' ? 'border-amber-500' : 'border-blue-500'}">
-      <div class="flex items-start justify-between">
+  document.getElementById('optimizationsList').innerHTML = recommendations.map(r => `
+    <div class="card p-5 border-l-4 ${r.priority === 'high' ? 'border-google-red' : r.priority === 'medium' ? 'border-google-yellow' : 'border-google-blue'}">
+      <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-2">
-            <span class="px-2 py-0.5 rounded text-xs ${r.priority === 'high' ? 'bg-rose-500/20 text-rose-400' : r.priority === 'medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}">${r.priority.toUpperCase()}</span>
-            <span class="px-2 py-0.5 rounded text-xs bg-slate-700">${r.type}</span>
+            <span class="badge ${r.priority === 'high' ? 'badge-red' : r.priority === 'medium' ? 'badge-yellow' : 'badge-blue'}">${r.priority.toUpperCase()}</span>
+            <span class="badge badge-grey">${r.type}</span>
           </div>
-          <h4 class="font-semibold mb-1">${r.title}</h4>
-          <p class="text-sm text-slate-400">${r.desc}</p>
-          <p class="text-sm text-emerald-400 mt-2">Impact: ${r.impact}</p>
+          <h4 class="font-medium text-google-darkgrey mb-1">${r.title}</h4>
+          <p class="text-sm text-google-grey">${r.desc}</p>
+          <p class="text-sm ${r.impactType === 'positive' ? 'text-google-green' : 'text-google-red'} mt-2 font-medium">Impact: ${r.impact}</p>
         </div>
-        <div class="flex gap-2 ml-4">
-          <button class="px-4 py-2 rounded-lg bg-slate-700 text-sm hover:bg-slate-600">Dismiss</button>
-          <button class="btn-primary px-4 py-2 rounded-lg text-sm">${r.action}</button>
+        <div class="flex gap-2 flex-shrink-0">
+          <button class="btn-secondary px-4 py-2 text-sm">Dismiss</button>
+          <button class="btn-primary px-4 py-2 text-sm">Apply</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function runFullOptimization() {
-  const btn = document.getElementById('runOptBtn');
+function runAIAudit() {
+  const btn = document.getElementById('runAuditBtn');
   btn.disabled = true;
-  btn.innerHTML = '<svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Analyzing...';
+  btn.innerHTML = '<span class="material-icons-outlined text-lg animate-spin">sync</span>Analyzing...';
   setTimeout(() => {
     btn.disabled = false;
-    btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Run Full Analysis';
-    showAlert('Analysis complete! Found 5 optimization opportunities.', 'success');
-    renderOptimizationList();
+    btn.innerHTML = '<span class="material-icons-outlined text-lg">auto_awesome</span>Run Full Audit';
+    showAlert('AI audit complete! Found 5 optimization opportunities.', 'success');
+    loadOptimizations();
   }, 2000);
 }
 
-function showOptTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.classList.add('bg-slate-800', 'text-slate-400'); });
-  document.querySelector(`.tab-btn[data-tab="${tab}"]`)?.classList.add('active');
-  document.querySelector(`.tab-btn[data-tab="${tab}"]`)?.classList.remove('bg-slate-800', 'text-slate-400');
+function filterOptimizations(type) {
+  document.querySelectorAll('[data-opt]').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-opt="${type}"]`)?.classList.add('active');
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// COMPETITOR RESEARCH
-// ════════════════════════════════════════════════════════════════════════════
-function setCompetitorDomain(d) { document.getElementById('competitorDomain').value = d; }
+// ═══════════════════════════════════════════════════════════════════
+// COMPETITOR INTELLIGENCE
+// ═══════════════════════════════════════════════════════════════════
+function setCompDomain(d) { document.getElementById('competitorDomain').value = d; }
 
 async function analyzeCompetitor() {
   const domain = document.getElementById('competitorDomain').value.trim();
@@ -1333,9 +1131,9 @@ async function analyzeCompetitor() {
   const sk = getKey('semrush');
   if (!sk) { showAlert('Add SEMrush API key in Settings', 'error'); showPage('settings'); return; }
   
-  const btn = document.getElementById('analyzeBtn');
+  const btn = document.getElementById('analyzeCompBtn');
   btn.disabled = true;
-  btn.innerHTML = '<svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Analyzing...';
+  btn.innerHTML = '<span class="material-icons-outlined animate-spin">sync</span>Analyzing...';
   
   try {
     const [kr, ar, or, cr] = await Promise.all([
@@ -1352,7 +1150,7 @@ async function analyzeCompetitor() {
   } catch (e) { showAlert('Error: ' + e.message, 'error'); }
   
   btn.disabled = false;
-  btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Analyze';
+  btn.innerHTML = '<span class="material-icons-outlined">search</span>Analyze';
 }
 
 function renderCompetitorResults() {
@@ -1360,168 +1158,110 @@ function renderCompetitorResults() {
   const ts = d.keywords.reduce((a, k) => a + (k.trafficCost || 0), 0);
   const ac = d.keywords.length ? d.keywords.reduce((a, k) => a + (k.cpc || 0), 0) / d.keywords.length : 0;
   
-  document.getElementById('competitorOverview').innerHTML = `
-    <div class="card p-4 border-l-4 border-blue-500"><p class="text-2xl font-bold text-blue-400">${d.keywords.length}</p><p class="text-xs text-slate-500">Paid Keywords</p></div>
-    <div class="card p-4 border-l-4 border-purple-500"><p class="text-2xl font-bold text-purple-400">${d.ads.length}</p><p class="text-xs text-slate-500">Active Ads</p></div>
-    <div class="card p-4 border-l-4 border-emerald-500"><p class="text-2xl font-bold text-emerald-400">$${fmt(ts)}</p><p class="text-xs text-slate-500">Est. Monthly Spend</p></div>
-    <div class="card p-4 border-l-4 border-amber-500"><p class="text-2xl font-bold text-amber-400">$${ac.toFixed(2)}</p><p class="text-xs text-slate-500">Avg CPC</p></div>`;
+  document.getElementById('compOverview').innerHTML = `
+    <div class="card p-4 border-l-4 border-google-blue"><p class="text-2xl font-medium text-google-blue">${d.keywords.length}</p><p class="text-xs text-google-grey">Paid Keywords</p></div>
+    <div class="card p-4 border-l-4 border-google-green"><p class="text-2xl font-medium text-google-green">${d.ads.length}</p><p class="text-xs text-google-grey">Active Ads</p></div>
+    <div class="card p-4 border-l-4 border-google-yellow"><p class="text-2xl font-medium text-yellow-600">$${fmt(ts)}</p><p class="text-xs text-google-grey">Est. Monthly Spend</p></div>
+    <div class="card p-4 border-l-4 border-google-red"><p class="text-2xl font-medium text-google-red">$${ac.toFixed(2)}</p><p class="text-xs text-google-grey">Avg CPC</p></div>`;
   
-  renderCompetitorAds();
-  renderCompetitorKeywords();
-  renderOrganicKeywords();
-  renderAdCompetitors();
   showCompTab('ads');
 }
 
-function renderCompetitorAds() {
-  const c = document.getElementById('competitorAdsContainer');
-  if (!state.competitorData.ads.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No ads found</p>'; return; }
-  c.innerHTML = state.competitorData.ads.slice(0, 15).map((a, i) => `
-    <div class="card p-4 border-l-4 border-blue-500 hover:border-purple-500 transition-all">
-      <div class="flex justify-between mb-2"><span class="text-xs text-slate-500">Ad #${i + 1}</span><span class="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">${esc(a.keyword || '')}</span></div>
-      <h4 class="text-blue-400 font-semibold mb-1">${esc(a.title || '')}</h4>
-      <p class="text-sm text-slate-300 mb-2">${esc(a.description || '')}</p>
-      <div class="flex justify-between items-center">
-        <span class="text-xs text-emerald-400">${a.visibleUrl || ''}</span>
-        <button onclick="improveCompetitorAd(${i})" class="text-xs text-purple-400 hover:underline">✨ Beat This Ad</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderCompetitorKeywords() {
-  const c = document.getElementById('competitorKeywordsContainer');
-  if (!state.competitorData.keywords.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No keywords found</p>'; return; }
-  c.innerHTML = `<div class="overflow-x-auto max-h-[500px]"><table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-3">Keyword</th><th class="text-center p-3">Pos</th><th class="text-right p-3">Volume</th><th class="text-right p-3">CPC</th><th class="text-right p-3">Traffic</th><th class="text-right p-3">Cost/Mo</th></tr></thead><tbody>${state.competitorData.keywords.slice(0, 100).map(k => `
-    <tr class="table-row border-b border-slate-700/50">
-      <td class="p-3 font-medium">${esc(k.keyword)}</td>
-      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs ${k.position <= 3 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">#${k.position}</span></td>
-      <td class="text-right p-3">${fmt(k.searchVolume)}</td>
-      <td class="text-right p-3 ${k.cpc < 5 ? 'text-emerald-400' : k.cpc < 15 ? 'text-amber-400' : 'text-rose-400'}">$${(k.cpc || 0).toFixed(2)}</td>
-      <td class="text-right p-3">${fmt(k.traffic)}</td>
-      <td class="text-right p-3 text-purple-400">$${fmt(k.trafficCost)}</td>
-    </tr>`).join('')}</tbody></table></div>`;
-}
-
-function renderOrganicKeywords() {
-  const c = document.getElementById('organicKeywordsContainer');
-  if (!state.competitorData.organic.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No organic keywords</p>'; return; }
-  c.innerHTML = `<div class="overflow-x-auto max-h-[500px]"><table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-3">Keyword</th><th class="text-center p-3">Pos</th><th class="text-right p-3">Volume</th><th class="text-right p-3">CPC</th><th class="text-right p-3">Traffic</th></tr></thead><tbody>${state.competitorData.organic.slice(0, 50).map(k => `
-    <tr class="table-row border-b border-slate-700/50">
-      <td class="p-3 font-medium">${esc(k.keyword)}</td>
-      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs bg-emerald-500/20 text-emerald-400">#${k.position}</span></td>
-      <td class="text-right p-3">${fmt(k.searchVolume)}</td>
-      <td class="text-right p-3">$${(k.cpc || 0).toFixed(2)}</td>
-      <td class="text-right p-3">${fmt(k.traffic)}</td>
-    </tr>`).join('')}</tbody></table></div>`;
-}
-
-function renderAdCompetitors() {
-  const c = document.getElementById('adCompetitorsContainer');
-  if (!state.competitorData.competitors.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8 col-span-2">No competitors found</p>'; return; }
-  c.innerHTML = state.competitorData.competitors.slice(0, 8).map(cp => `
-    <div class="card p-4 hover:border-blue-500 cursor-pointer" onclick="setCompetitorDomain('${cp.domain}');analyzeCompetitor()">
-      <div class="flex justify-between mb-3"><span class="font-semibold">${cp.domain}</span><span class="text-xs text-blue-400">Analyze →</span></div>
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div><p class="text-slate-500">Common KWs</p><p class="font-medium">${fmt(cp.commonKeywords)}</p></div>
-        <div><p class="text-slate-500">Ad Spend</p><p class="font-medium text-purple-400">$${fmt(cp.adsTrafficCost)}</p></div>
-      </div>
-    </div>
-  `).join('');
-}
-
 function showCompTab(tab) {
-  document.querySelectorAll('[data-ctab]').forEach(b => { b.classList.remove('active'); b.classList.add('bg-slate-800', 'text-slate-400'); });
+  document.querySelectorAll('[data-ctab]').forEach(b => b.classList.remove('active'));
   document.querySelector(`[data-ctab="${tab}"]`)?.classList.add('active');
-  document.querySelector(`[data-ctab="${tab}"]`)?.classList.remove('bg-slate-800', 'text-slate-400');
-  document.querySelectorAll('.ctab-content').forEach(c => c.classList.add('hidden'));
-  document.getElementById('ctab-' + tab)?.classList.remove('hidden');
+  const content = document.getElementById('compTabContent');
+  const d = state.competitorData;
+  
+  if (tab === 'ads') {
+    content.innerHTML = d.ads.length ? d.ads.slice(0, 15).map((a, i) => `
+      <div class="p-4 border border-gray-200 rounded-lg mb-3 hover:border-google-blue transition-colors">
+        <div class="flex justify-between mb-2"><span class="text-xs text-google-grey">Ad #${i + 1}</span><span class="badge badge-blue">${esc(a.keyword || '')}</span></div>
+        <h4 class="text-google-blue font-medium mb-1">${esc(a.title || '')}</h4>
+        <p class="text-sm text-google-grey mb-2">${esc(a.description || '')}</p>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-google-green">${a.visibleUrl || ''}</span>
+          <button onclick="improveAd(${i})" class="text-sm text-google-blue hover:underline">✨ Beat This Ad</button>
+        </div>
+      </div>`).join('') : '<p class="text-center text-google-grey py-8">No ads found</p>';
+  } else if (tab === 'keywords') {
+    content.innerHTML = d.keywords.length ? `<div class="overflow-x-auto max-h-[400px]"><table class="w-full text-sm"><thead class="sticky top-0 bg-surface-secondary"><tr class="text-xs text-google-grey uppercase"><th class="p-3 text-left">Keyword</th><th class="p-3 text-center">Pos</th><th class="p-3 text-right">Volume</th><th class="p-3 text-right">CPC</th><th class="p-3 text-right">Traffic</th><th class="p-3 text-right">Cost/Mo</th></tr></thead><tbody>${d.keywords.slice(0, 50).map(k => `<tr class="table-row"><td class="p-3 font-medium">${esc(k.keyword)}</td><td class="p-3 text-center"><span class="badge ${k.position <= 3 ? 'badge-green' : 'badge-grey'}">#${k.position}</span></td><td class="p-3 text-right">${fmt(k.searchVolume)}</td><td class="p-3 text-right ${k.cpc < 5 ? 'text-google-green' : k.cpc < 15 ? 'text-yellow-600' : 'text-google-red'}">$${(k.cpc || 0).toFixed(2)}</td><td class="p-3 text-right">${fmt(k.traffic)}</td><td class="p-3 text-right text-google-blue">$${fmt(k.trafficCost)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="text-center text-google-grey py-8">No keywords found</p>';
+  } else if (tab === 'organic') {
+    content.innerHTML = d.organic.length ? `<div class="overflow-x-auto max-h-[400px]"><table class="w-full text-sm"><thead class="sticky top-0 bg-surface-secondary"><tr class="text-xs text-google-grey uppercase"><th class="p-3 text-left">Keyword</th><th class="p-3 text-center">Pos</th><th class="p-3 text-right">Volume</th><th class="p-3 text-right">Traffic</th></tr></thead><tbody>${d.organic.slice(0, 50).map(k => `<tr class="table-row"><td class="p-3 font-medium">${esc(k.keyword)}</td><td class="p-3 text-center"><span class="badge badge-green">#${k.position}</span></td><td class="p-3 text-right">${fmt(k.searchVolume)}</td><td class="p-3 text-right">${fmt(k.traffic)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="text-center text-google-grey py-8">No organic keywords found</p>';
+  } else if (tab === 'competitors') {
+    content.innerHTML = d.competitors.length ? `<div class="grid grid-cols-2 gap-4">${d.competitors.slice(0, 8).map(c => `<div class="p-4 border border-gray-200 rounded-lg hover:border-google-blue cursor-pointer" onclick="setCompDomain('${c.domain}');analyzeCompetitor()"><div class="flex justify-between mb-2"><span class="font-medium">${c.domain}</span><span class="text-xs text-google-blue">Analyze →</span></div><div class="grid grid-cols-2 gap-2 text-xs"><div><p class="text-google-grey">Common KWs</p><p class="font-medium">${fmt(c.commonKeywords)}</p></div><div><p class="text-google-grey">Ad Spend</p><p class="font-medium text-google-blue">$${fmt(c.adsTrafficCost)}</p></div></div></div>`).join('')}</div>` : '<p class="text-center text-google-grey py-8">No competitors found</p>';
+  }
 }
 
-function generateBetterAds() {
-  const ads = state.competitorData.ads.slice(0, 3);
-  const kws = state.competitorData.keywords.slice(0, 5).map(k => k.keyword).join(', ');
-  showPage('ai-assistant');
-  setTimeout(() => quickChat(`Create BETTER Google Ads than these competitor ads:\n\n${ads.map(a => `Title: "${a.title}"\nDesc: "${a.description}"`).join('\n\n')}\n\nKeywords: ${kws}\n\nGive me 3 RSAs with 15 headlines and 4 descriptions each.`), 100);
-}
-
-function improveCompetitorAd(i) {
+function improveAd(i) {
   const a = state.competitorData.ads[i];
   showPage('ai-assistant');
   setTimeout(() => quickChat(`Create a BETTER version of this competitor ad:\n\nTitle: "${a.title}"\nDescription: "${a.description}"\nKeyword: "${a.keyword}"\n\nGive me 5 better headlines and 2 better descriptions.`), 100);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// KEYWORD RESEARCH
-// ════════════════════════════════════════════════════════════════════════════
-async function researchKeywords() {
-  const kw = document.getElementById('kwResearchInput').value.trim();
+// ═══════════════════════════════════════════════════════════════════
+// KEYWORD PLANNER
+// ═══════════════════════════════════════════════════════════════════
+async function searchKeywords() {
+  const kw = document.getElementById('kwPlannerInput').value.trim();
   if (!kw) return showAlert('Enter a keyword', 'error');
   const sk = getKey('semrush');
   if (!sk) { showAlert('Add SEMrush API key in Settings', 'error'); showPage('settings'); return; }
   
-  const btn = document.getElementById('kwResearchBtn');
+  const btn = document.getElementById('kwSearchBtn');
   btn.disabled = true;
-  btn.innerHTML = '<svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Researching...';
+  btn.innerHTML = '<span class="material-icons-outlined animate-spin">sync</span>Searching...';
   
   try {
     const r = await fetch('/automation/keywords/discover', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seedKeywords: [kw], maxCpc: parseFloat(document.getElementById('kwMaxCpc').value), researchApiKey: sk, researchProvider: 'semrush' }) });
     const d = await r.json();
-    state.kwResearchData = d.keywords || [];
-    renderKwResults();
-    document.getElementById('kwResults').classList.remove('hidden');
-    document.getElementById('kwEmpty').classList.add('hidden');
+    state.kwPlannerData = d.keywords || [];
+    renderKwPlannerResults();
+    document.getElementById('kwPlannerResults').classList.remove('hidden');
+    document.getElementById('kwPlannerEmpty').classList.add('hidden');
   } catch (e) { showAlert('Error: ' + e.message, 'error'); }
   
   btn.disabled = false;
-  btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Research';
+  btn.innerHTML = '<span class="material-icons-outlined">search</span>Find Keywords';
 }
 
-function renderKwResults() {
-  const d = state.kwResearchData;
+function renderKwPlannerResults() {
+  const d = state.kwPlannerData;
   const avgCpc = d.length ? d.reduce((a, k) => a + (k.cpc || 0), 0) / d.length : 0;
   const low = d.filter(k => k.difficulty === 'Easy').length;
   const opp = d.filter(k => k.opportunityScore >= 60).length;
   
-  document.getElementById('kwSummary').innerHTML = `
-    <div class="card p-3"><p class="text-xs text-slate-500">Keywords</p><p class="text-xl font-bold text-blue-400">${d.length}</p></div>
-    <div class="card p-3"><p class="text-xs text-slate-500">Avg CPC</p><p class="text-xl font-bold text-purple-400">$${avgCpc.toFixed(2)}</p></div>
-    <div class="card p-3"><p class="text-xs text-slate-500">Low Competition</p><p class="text-xl font-bold text-emerald-400">${low}</p></div>
-    <div class="card p-3"><p class="text-xs text-slate-500">Opportunities</p><p class="text-xl font-bold text-amber-400">${opp}</p></div>`;
+  document.getElementById('kwPlannerSummary').innerHTML = `
+    <div class="card p-4"><p class="text-xs text-google-grey">Keywords Found</p><p class="text-2xl font-medium text-google-blue">${d.length}</p></div>
+    <div class="card p-4"><p class="text-xs text-google-grey">Avg CPC</p><p class="text-2xl font-medium text-google-darkgrey">$${avgCpc.toFixed(2)}</p></div>
+    <div class="card p-4"><p class="text-xs text-google-grey">Low Competition</p><p class="text-2xl font-medium text-google-green">${low}</p></div>
+    <div class="card p-4"><p class="text-xs text-google-grey">Best Opportunities</p><p class="text-2xl font-medium text-yellow-600">${opp}</p></div>`;
   
-  renderKwTable(d);
+  renderKwPlannerTable(d);
 }
 
-function renderKwTable(data) {
-  document.getElementById('kwTableContainer').innerHTML = `<table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-3">Keyword</th><th class="text-right p-3">Volume</th><th class="text-right p-3">CPC</th><th class="text-center p-3">Difficulty</th><th class="text-center p-3">Opportunity</th><th class="text-center p-3">Intent</th></tr></thead><tbody>${data.slice(0, 100).map(k => `
-    <tr class="table-row border-b border-slate-700/50">
-      <td class="p-3 font-medium">${esc(k.keyword)}</td>
-      <td class="text-right p-3">${fmt(k.searchVolume)}</td>
-      <td class="text-right p-3 ${k.cpc < 3 ? 'text-emerald-400' : k.cpc < 10 ? 'text-amber-400' : 'text-rose-400'}">$${(k.cpc || 0).toFixed(2)}</td>
-      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs ${k.difficulty === 'Easy' ? 'bg-emerald-500/20 text-emerald-400' : k.difficulty === 'Medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">${k.difficulty}</span></td>
-      <td class="text-center p-3"><div class="flex items-center justify-center gap-1"><div class="w-10 h-1.5 rounded bg-slate-700"><div class="h-full rounded ${k.opportunityScore >= 60 ? 'bg-emerald-500' : 'bg-amber-500'}" style="width:${k.opportunityScore}%"></div></div><span class="text-xs">${k.opportunityScore}</span></div></td>
-      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs ${k.intent === 'Commercial' || k.intent === 'Transactional' ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-500/20 text-slate-400'}">${k.intent}</span></td>
-    </tr>`).join('')}</tbody></table>`;
+function renderKwPlannerTable(data) {
+  document.getElementById('kwPlannerTable').innerHTML = `<table class="w-full text-sm"><thead class="sticky top-0 bg-surface-secondary"><tr class="text-xs text-google-grey uppercase"><th class="p-3 text-left">Keyword</th><th class="p-3 text-right">Volume</th><th class="p-3 text-right">CPC</th><th class="p-3 text-center">Difficulty</th><th class="p-3 text-center">Opportunity</th><th class="p-3 text-center">Intent</th><th class="p-3 text-center">Action</th></tr></thead><tbody>${data.slice(0, 100).map(k => `<tr class="table-row"><td class="p-3 font-medium">${esc(k.keyword)}</td><td class="p-3 text-right">${fmt(k.searchVolume)}</td><td class="p-3 text-right ${k.cpc < 3 ? 'text-google-green' : k.cpc < 10 ? 'text-yellow-600' : 'text-google-red'}">$${(k.cpc || 0).toFixed(2)}</td><td class="p-3 text-center"><span class="badge ${k.difficulty === 'Easy' ? 'badge-green' : k.difficulty === 'Medium' ? 'badge-yellow' : 'badge-red'}">${k.difficulty}</span></td><td class="p-3 text-center"><div class="flex items-center justify-center gap-1"><div class="w-12 h-1.5 rounded bg-gray-200"><div class="h-full rounded ${k.opportunityScore >= 60 ? 'bg-google-green' : 'bg-google-yellow'}" style="width:${k.opportunityScore}%"></div></div><span class="text-xs">${k.opportunityScore}</span></div></td><td class="p-3 text-center"><span class="badge ${k.intent === 'Commercial' || k.intent === 'Transactional' ? 'badge-blue' : 'badge-grey'}">${k.intent}</span></td><td class="p-3 text-center"><button class="text-xs text-google-blue hover:underline">+ Add</button></td></tr>`).join('')}</tbody></table>`;
 }
 
-function filterKwResults(type) {
-  let f = [...state.kwResearchData];
+function filterKwPlanner(type) {
+  let f = [...state.kwPlannerData];
   if (type === 'best') f = f.filter(k => k.opportunityScore >= 60).sort((a, b) => b.opportunityScore - a.opportunityScore);
   else if (type === 'lowcpc') f = f.filter(k => k.cpc < 5).sort((a, b) => a.cpc - b.cpc);
   else if (type === 'highvol') f = f.sort((a, b) => b.searchVolume - a.searchVolume);
-  renderKwTable(f);
+  renderKwPlannerTable(f);
 }
 
-function exportKwResults() {
-  const csv = 'Keyword,Volume,CPC,Difficulty,Opportunity,Intent\n' + state.kwResearchData.map(k => `"${k.keyword}",${k.searchVolume},${k.cpc},"${k.difficulty}",${k.opportunityScore},"${k.intent}"`).join('\n');
+function exportKwPlanner() {
+  const csv = 'Keyword,Volume,CPC,Difficulty,Opportunity,Intent\n' + state.kwPlannerData.map(k => `"${k.keyword}",${k.searchVolume},${k.cpc},"${k.difficulty}",${k.opportunityScore},"${k.intent}"`).join('\n');
   const b = new Blob([csv], { type: 'text/csv' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'keywords.csv'; a.click();
-  showAlert('Downloaded!', 'success');
+  showAlert('Keywords exported!', 'success');
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// AI CHAT
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// AI ASSISTANT
+// ═══════════════════════════════════════════════════════════════════
 async function sendChat() {
   const inp = document.getElementById('chatInput');
   const msg = inp.value.trim();
@@ -1534,12 +1274,10 @@ async function sendChat() {
   inp.value = '';
   state.isTyping = true;
   document.getElementById('sendChatBtn').disabled = true;
-  document.getElementById('aiStatus').textContent = 'Thinking...';
-  document.getElementById('aiStatus').className = 'px-2 py-0.5 rounded-full text-[10px] bg-purple-500/20 text-purple-400 animate-pulse';
   
   const container = document.getElementById('chatMessages');
   const aiMsgId = 'ai-' + Date.now();
-  container.insertAdjacentHTML('beforeend', `<div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="bg-slate-800/50 rounded-xl rounded-tl-none p-4 max-w-2xl"><div id="${aiMsgId}" class="ai-message text-sm"></div></div></div>`);
+  container.insertAdjacentHTML('beforeend', `<div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-gradient-to-br from-google-blue to-google-green flex items-center justify-center flex-shrink-0"><span class="material-icons-outlined text-white text-sm">smart_toy</span></div><div class="bg-surface-secondary rounded-lg rounded-tl-none p-4 max-w-2xl"><div id="${aiMsgId}" class="ai-message text-sm"></div></div></div>`);
   container.scrollTop = container.scrollHeight;
   
   try {
@@ -1568,85 +1306,78 @@ async function sendChat() {
       }
     }
   } catch (e) {
-    document.getElementById(aiMsgId).innerHTML = '<span class="text-rose-400">Error: ' + e.message + '</span>';
+    document.getElementById(aiMsgId).innerHTML = '<span class="text-google-red">Error: ' + e.message + '</span>';
   }
   
   state.isTyping = false;
   document.getElementById('sendChatBtn').disabled = false;
-  document.getElementById('aiStatus').textContent = 'Ready';
-  document.getElementById('aiStatus').className = 'px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400';
 }
 
 function addChatMessage(role, content) {
   const container = document.getElementById('chatMessages');
   const isUser = role === 'user';
-  container.insertAdjacentHTML('beforeend', `<div class="flex gap-3 ${isUser ? 'justify-end' : ''}"><div class="${isUser ? 'bg-blue-500/20 rounded-xl rounded-tr-none' : 'bg-slate-800/50 rounded-xl rounded-tl-none'} p-4 max-w-2xl"><div class="text-sm">${esc(content)}</div></div></div>`);
+  container.insertAdjacentHTML('beforeend', `<div class="flex gap-3 ${isUser ? 'justify-end' : ''}"><div class="${isUser ? 'bg-google-blue text-white rounded-lg rounded-tr-none' : 'bg-surface-secondary rounded-lg rounded-tl-none'} p-4 max-w-2xl"><div class="text-sm">${esc(content)}</div></div></div>`);
   container.scrollTop = container.scrollHeight;
 }
 
-function quickChat(prompt) {
-  document.getElementById('chatInput').value = prompt;
-  sendChat();
-}
+function quickChat(prompt) { document.getElementById('chatInput').value = prompt; sendChat(); }
 
 function clearChat() {
-  document.getElementById('chatMessages').innerHTML = `<div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="bg-slate-800/50 rounded-xl rounded-tl-none p-4 max-w-2xl"><p class="text-sm">Chat cleared. How can I help you?</p></div></div>`;
+  document.getElementById('chatMessages').innerHTML = `<div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-gradient-to-br from-google-blue to-google-green flex items-center justify-center flex-shrink-0"><span class="material-icons-outlined text-white text-sm">smart_toy</span></div><div class="bg-surface-secondary rounded-lg rounded-tl-none p-4 max-w-2xl"><p class="text-sm text-google-darkgrey">Chat cleared. How can I help you?</p></div></div>`;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// BUSINESSES
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// BUSINESSES MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════
 function loadBusinesses() {
-  const saved = JSON.parse(localStorage.getItem('adspro_businesses') || '[]');
-  state.businesses = saved;
-  renderBusinesses();
+  state.businesses = JSON.parse(localStorage.getItem('adspro_businesses') || '[]');
   updateBusinessSelector();
+}
+
+function updateBusinessSelector() {
+  const sel = document.getElementById('businessSelect');
+  sel.innerHTML = '<option value="all">All Businesses</option>' + state.businesses.map((b, i) => `<option value="${i}">${esc(b.name)}</option>`).join('');
 }
 
 function renderBusinesses() {
   const c = document.getElementById('businessesList');
   if (!state.businesses.length) {
-    c.innerHTML = '<div class="card p-8 text-center col-span-full"><p class="text-slate-400 mb-4">No businesses added yet</p><button onclick="showAddBusinessModal()" class="btn-primary px-4 py-2 rounded-lg text-sm">Add Your First Business</button></div>';
+    c.innerHTML = '<div class="card p-8 text-center col-span-full"><p class="text-google-grey mb-4">No businesses added yet</p><button onclick="showAddBusiness()" class="btn-primary px-4 py-2 text-sm">Add Your First Business</button></div>';
     return;
   }
   c.innerHTML = state.businesses.map((b, i) => `
     <div class="card p-5">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-lg font-bold">${b.name.charAt(0)}</div>
-        <div class="flex-1"><h3 class="font-semibold">${esc(b.name)}</h3><p class="text-xs text-slate-500">${b.accountId || 'No account linked'}</p></div>
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-google-blue to-google-green flex items-center justify-center text-white text-lg font-medium">${b.name.charAt(0).toUpperCase()}</div>
+        <div class="flex-1"><h3 class="font-medium text-google-darkgrey">${esc(b.name)}</h3><p class="text-xs text-google-grey">${b.accounts?.length || 0} accounts connected</p></div>
       </div>
       <div class="grid grid-cols-2 gap-2 text-xs mb-4">
-        <div><p class="text-slate-500">Industry</p><p class="font-medium">${b.industry || 'Not set'}</p></div>
-        <div><p class="text-slate-500">Budget</p><p class="font-medium">$${b.monthlyBudget || 0}/mo</p></div>
+        <div><p class="text-google-grey">Industry</p><p class="font-medium">${b.industry || 'Not set'}</p></div>
+        <div><p class="text-google-grey">Monthly Budget</p><p class="font-medium">$${fmt(b.monthlyBudget || 0)}</p></div>
       </div>
       <div class="flex gap-2">
-        <button onclick="switchBusiness('${i}')" class="flex-1 px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-xs">Switch</button>
-        <button onclick="removeBusiness(${i})" class="px-3 py-2 rounded-lg bg-rose-500/20 text-rose-400 text-xs">Remove</button>
+        <button onclick="switchBusiness('${i}')" class="flex-1 btn-secondary px-3 py-2 text-sm">Switch</button>
+        <button onclick="editBusiness(${i})" class="btn-secondary px-3 py-2 text-sm"><span class="material-icons-outlined text-lg">edit</span></button>
+        <button onclick="removeBusiness(${i})" class="btn-secondary px-3 py-2 text-sm text-google-red"><span class="material-icons-outlined text-lg">delete</span></button>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function updateBusinessSelector() {
-  const sel = document.getElementById('businessSelector');
-  sel.innerHTML = '<option value="all">📊 All Businesses (Overview)</option>' + state.businesses.map((b, i) => `<option value="${i}">${esc(b.name)}</option>`).join('');
-}
-
-function showAddBusinessModal() {
+function showAddBusiness() {
   document.getElementById('modal').classList.remove('hidden');
   document.getElementById('modal').classList.add('flex');
   document.getElementById('modalContent').innerHTML = `
     <div class="p-6">
-      <h3 class="text-lg font-semibold mb-4">Add Business</h3>
+      <h3 class="text-lg font-medium text-google-darkgrey mb-4">Add Business</h3>
       <div class="space-y-4">
-        <div><label class="text-sm text-slate-400 block mb-1">Business Name *</label><input type="text" id="bizName" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700" placeholder="My Business"></div>
-        <div><label class="text-sm text-slate-400 block mb-1">Google Ads Account ID</label><input type="text" id="bizAccountId" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700" placeholder="123-456-7890"></div>
-        <div><label class="text-sm text-slate-400 block mb-1">Industry</label><select id="bizIndustry" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700"><option>Telecommunications</option><option>E-commerce</option><option>SaaS</option><option>Healthcare</option><option>Real Estate</option><option>Other</option></select></div>
-        <div><label class="text-sm text-slate-400 block mb-1">Monthly Budget</label><input type="number" id="bizBudget" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700" placeholder="5000"></div>
+        <div><label class="text-sm text-google-grey block mb-1">Business Name *</label><input type="text" id="bizName" class="w-full px-4 py-2.5 border border-gray-300 rounded" placeholder="My Business"></div>
+        <div><label class="text-sm text-google-grey block mb-1">Google Ads Account ID</label><input type="text" id="bizAccountId" class="w-full px-4 py-2.5 border border-gray-300 rounded" placeholder="123-456-7890"></div>
+        <div><label class="text-sm text-google-grey block mb-1">Industry</label><select id="bizIndustry" class="w-full px-4 py-2.5 border border-gray-300 rounded"><option>Telecommunications</option><option>E-commerce</option><option>SaaS</option><option>Healthcare</option><option>Real Estate</option><option>Other</option></select></div>
+        <div><label class="text-sm text-google-grey block mb-1">Monthly Budget</label><input type="number" id="bizBudget" class="w-full px-4 py-2.5 border border-gray-300 rounded" placeholder="5000"></div>
       </div>
       <div class="flex gap-2 mt-6">
-        <button onclick="closeModal()" class="flex-1 px-4 py-2 rounded-lg bg-slate-700">Cancel</button>
-        <button onclick="saveBusiness()" class="flex-1 btn-primary px-4 py-2 rounded-lg">Save</button>
+        <button onclick="closeModal()" class="flex-1 btn-secondary px-4 py-2.5">Cancel</button>
+        <button onclick="saveBusiness()" class="flex-1 btn-primary px-4 py-2.5">Save</button>
       </div>
     </div>`;
 }
@@ -1656,9 +1387,9 @@ function saveBusiness() {
   if (!name) { showAlert('Enter business name', 'error'); return; }
   state.businesses.push({
     name,
-    accountId: document.getElementById('bizAccountId').value.trim(),
+    accounts: [{ id: document.getElementById('bizAccountId').value.trim(), name: 'Primary Account' }],
     industry: document.getElementById('bizIndustry').value,
-    monthlyBudget: document.getElementById('bizBudget').value
+    monthlyBudget: document.getElementById('bizBudget').value || 0
   });
   localStorage.setItem('adspro_businesses', JSON.stringify(state.businesses));
   closeModal();
@@ -1668,6 +1399,7 @@ function saveBusiness() {
 }
 
 function removeBusiness(i) {
+  if (!confirm('Remove this business?')) return;
   state.businesses.splice(i, 1);
   localStorage.setItem('adspro_businesses', JSON.stringify(state.businesses));
   renderBusinesses();
@@ -1676,6 +1408,7 @@ function removeBusiness(i) {
 
 function switchBusiness(id) {
   state.currentBusiness = id;
+  document.getElementById('businessSelect').value = id;
   showAlert('Switched to ' + (id === 'all' ? 'All Businesses' : state.businesses[id]?.name), 'info');
 }
 
@@ -1684,25 +1417,31 @@ function closeModal() {
   document.getElementById('modal').classList.remove('flex');
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // UTILITIES
-// ════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 function fmt(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return n?.toLocaleString() || '0'; }
 function esc(t) { const d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
+
 function showAlert(msg, type = 'info') {
-  const colors = { success: 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400', error: 'bg-rose-500/20 border-rose-500/50 text-rose-400', info: 'bg-blue-500/20 border-blue-500/50 text-blue-400' };
-  document.getElementById('alertContainer').innerHTML = `<div class="notification p-4 rounded-xl border ${colors[type]} mb-4 flex items-center justify-between"><span>${msg}</span><button onclick="this.parentElement.remove()" class="ml-4 opacity-50 hover:opacity-100">✕</button></div>`;
+  const colors = { success: 'bg-green-50 border-google-green text-google-green', error: 'bg-red-50 border-google-red text-google-red', info: 'bg-blue-50 border-google-blue text-google-blue' };
+  document.getElementById('alertContainer').innerHTML = `<div class="notification p-4 rounded-lg border ${colors[type]} mb-4 flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-icons-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>${msg}</div><button onclick="this.parentElement.remove()" class="opacity-50 hover:opacity-100"><span class="material-icons-outlined">close</span></button></div>`;
   setTimeout(() => document.getElementById('alertContainer').innerHTML = '', 5000);
 }
-function refreshAllData() { loadDashboardData(); showAlert('Data refreshed', 'info'); }
+
+function refreshData() { loadDashboardData(); showAlert('Data refreshed', 'info'); }
 function handleDateChange() { loadDashboardData(); }
 function showNotifications() { showAlert('No new notifications', 'info'); }
-function generateReport(type) { showAlert('Generating ' + type + ' report...', 'info'); }
-function generateInsights() { showAlert('Generating AI insights...', 'info'); }
+function showHelp() { window.open('https://support.google.com/google-ads', '_blank'); }
 function analyzeCampaign(id) { showPage('ai-assistant'); setTimeout(() => quickChat('Analyze campaign ' + id + ' and suggest improvements.'), 100); }
-function analyzeKeyword(kw) { showPage('ai-assistant'); setTimeout(() => quickChat('Analyze keyword "' + kw + '" and suggest how to improve its Quality Score and performance.'), 100); }
+function analyzeKeyword(kw) { showPage('ai-assistant'); setTimeout(() => quickChat('Analyze keyword "' + kw + '" and suggest how to improve its Quality Score.'), 100); }
+function exportKeywords() { showAlert('Exporting keywords...', 'info'); }
+function addKeywords() { showPage('keyword-planner'); }
+function switchAccount(id) { state.currentAccount = id; }
+function filterCampaigns() {}
+function toggleAllCampaigns(el) {}
+function bulkAction(action) { showAlert('Bulk action: ' + action, 'info'); }
 
-// Close modal on outside click
 document.getElementById('modal')?.addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
 </script>
 </body>
