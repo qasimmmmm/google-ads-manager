@@ -104,11 +104,11 @@ router.post('/free/competitor/ads', async (req, res) => {
 /**
  * POST /automation/free/competitor/full
  * Get full competitor analysis (ads + info)
- * NO API KEY REQUIRED!
+ * Requires FREE ScraperAPI key (1000 credits/month)
  */
 router.post('/free/competitor/full', async (req, res) => {
   try {
-    const { domain, region = 'US' } = req.body;
+    const { domain, region = 'US', scraperApiKey } = req.body;
     
     if (!domain) {
       return res.status(400).json({ error: 'Domain is required' });
@@ -116,18 +116,8 @@ router.post('/free/competitor/full', async (req, res) => {
     
     console.log(`[FREE] Full competitor analysis: ${domain}`);
     
-    // Use the full analysis method
-    const result = await googleAdsTransparency.analyzeCompetitor(domain, region);
-    
-    if (!result.success) {
-      return res.json({
-        success: false,
-        domain,
-        message: result.message || 'No Google Ads found for this domain.',
-        suggestion: result.suggestion || 'Try searching for the company name instead.',
-        manualSearchUrl: result.manualSearchUrl || `https://adstransparency.google.com/?domain=${domain}`
-      });
-    }
+    // Use the full analysis method with ScraperAPI key
+    const result = await googleAdsTransparency.analyzeCompetitor(domain, scraperApiKey, region);
     
     res.json(result);
   } catch (error) {

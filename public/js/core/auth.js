@@ -80,12 +80,15 @@ const Auth = {
 function loadSavedKeys() {
   const semrushKey = Storage.getKey('semrush');
   const claudeKey = Storage.getKey('claude');
+  const scraperApiKey = Storage.getKey('scraperapi');
   
   const semrushInput = document.getElementById('semrushKey');
   const claudeInput = document.getElementById('claudeKey');
+  const scraperApiInput = document.getElementById('scraperApiKey');
   
   if (semrushInput && semrushKey) semrushInput.value = semrushKey;
   if (claudeInput && claudeKey) claudeInput.value = claudeKey;
+  if (scraperApiInput && scraperApiKey) scraperApiInput.value = scraperApiKey;
 }
 
 // Save SEMrush key
@@ -112,6 +115,18 @@ function saveClaudeKey() {
   }
 }
 
+// Save ScraperAPI key (FREE 1000 credits/month!)
+function saveScraperApiKey() {
+  const key = document.getElementById('scraperApiKey')?.value.trim();
+  if (key) {
+    Storage.setKey('scraperapi', key);
+    showAlert('ScraperAPI key saved! 🎉 You can now analyze competitor ads!', 'success');
+    updateApiStatusUI();
+  } else {
+    showAlert('Please enter a valid API key', 'error');
+  }
+}
+
 // Login button handler
 function loginWithGoogle() {
   Auth.login();
@@ -122,4 +137,5 @@ window.Auth = Auth;
 window.loadSavedKeys = loadSavedKeys;
 window.saveSemrushKey = saveSemrushKey;
 window.saveClaudeKey = saveClaudeKey;
+window.saveScraperApiKey = saveScraperApiKey;
 window.loginWithGoogle = loginWithGoogle;

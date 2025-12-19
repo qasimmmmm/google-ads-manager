@@ -664,20 +664,37 @@
           <div class="max-w-2xl space-y-6">
             <div class="card p-6">
               <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background:#e6f4ea">
+                  <span class="material-icons-outlined" style="color:#34a853">visibility</span>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-medium" style="color:#202124">ScraperAPI <span class="badge badge-green">FREE!</span></h3>
+                  <p class="text-sm" style="color:#5f6368">For competitor ad intelligence (1,000 free/month)</p>
+                </div>
+                <span class="badge badge-green">Recommended</span>
+              </div>
+              <div class="flex gap-2">
+                <input type="password" id="scraperApiKey" placeholder="Enter ScraperAPI key" class="flex-1 px-4 py-2.5 border rounded" style="border-color:#dadce0">
+                <button onclick="saveScraperApiKey()" class="btn-primary px-6 py-2.5">Save</button>
+              </div>
+              <p class="text-xs mt-2" style="color:#5f6368">FREE signup at: <a href="https://www.scraperapi.com/signup" target="_blank" style="color:#1a73e8" class="hover:underline">scraperapi.com/signup</a> (no credit card required)</p>
+            </div>
+            <div class="card p-6">
+              <div class="flex items-center gap-4 mb-4">
                 <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background:#fff4e5">
                   <span class="material-icons-outlined" style="color:#f57c00">search</span>
                 </div>
                 <div class="flex-1">
                   <h3 class="font-medium" style="color:#202124">SEMrush API</h3>
-                  <p class="text-sm" style="color:#5f6368">For competitor and keyword research</p>
+                  <p class="text-sm" style="color:#5f6368">For advanced competitor keyword research</p>
                 </div>
-                <span class="badge badge-yellow">Required</span>
+                <span class="badge badge-grey">Optional</span>
               </div>
               <div class="flex gap-2">
                 <input type="password" id="semrushKey" placeholder="Enter SEMrush API key" class="flex-1 px-4 py-2.5 border rounded" style="border-color:#dadce0">
                 <button onclick="saveSemrushKey()" class="btn-primary px-6 py-2.5">Save</button>
               </div>
-              <p class="text-xs mt-2" style="color:#5f6368">Get from: SEMrush → Settings → API</p>
+              <p class="text-xs mt-2" style="color:#5f6368">Get from: SEMrush → Settings → API (paid service)</p>
             </div>
             <div class="card p-6">
               <div class="flex items-center gap-4 mb-4">
