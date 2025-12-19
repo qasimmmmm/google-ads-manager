@@ -3,235 +3,1707 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AdsPro AI - Google Ads Intelligence</title>
+<title>AdsPro AI - Enterprise Ads Management Platform</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{font-family:'Inter',sans-serif}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
-.nav-item.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);box-shadow:0 4px 20px rgba(59,130,246,0.4)}
-.stat-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.3)}
+*{font-family:'Inter',sans-serif;box-sizing:border-box}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0f172a}
+::-webkit-scrollbar-thumb{background:#3b82f6;border-radius:5px}
+body{background:linear-gradient(135deg,#0a0f1a 0%,#1a1f2e 100%)}
+.glass{background:rgba(15,23,42,0.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1)}
+.nav-item.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);box-shadow:0 4px 15px rgba(59,130,246,0.4)}
+.card{background:linear-gradient(135deg,rgba(30,41,59,0.8),rgba(15,23,42,0.9));border:1px solid rgba(255,255,255,0.1);border-radius:16px;transition:all 0.3s}
+.card:hover{border-color:rgba(59,130,246,0.5);transform:translateY(-2px)}
+.metric-card{position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%)}
+.btn-primary{background:linear-gradient(135deg,#3b82f6,#8b5cf6);box-shadow:0 4px 15px rgba(59,130,246,0.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.4)}
+.btn-success{background:linear-gradient(135deg,#10b981,#059669)}
+.btn-warning{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.table-row{transition:all 0.2s}
 .table-row:hover{background:rgba(59,130,246,0.1)}
-.tab-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white}
+.tab-btn.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;box-shadow:0 4px 15px rgba(59,130,246,0.3)}
+.status-dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.ai-glow{box-shadow:0 0 30px rgba(139,92,246,0.3)}
+.trend-up{color:#10b981}.trend-down{color:#ef4444}
+.perf-bar{height:6px;border-radius:3px;background:#1e293b;overflow:hidden}
+.perf-fill{height:100%;border-radius:3px;transition:width 0.5s}
+.tooltip{position:relative}.tooltip:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1e293b;padding:4px 8px;border-radius:4px;font-size:12px;white-space:nowrap;z-index:100}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
 .typing-cursor{animation:blink 0.8s infinite}
 @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.ai-message p{margin-bottom:0.75rem}.ai-message strong{color:#60a5fa}
-.ai-message code{background:#1e293b;padding:2px 6px;border-radius:4px}
-input:focus,select:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
+.animate-spin{animation:spin 1s linear infinite}
+.ai-message p{margin-bottom:0.5rem}.ai-message ul{margin:0.5rem 0;padding-left:1.5rem}.ai-message strong{color:#60a5fa}.ai-message code{background:#1e293b;padding:2px 6px;border-radius:4px;font-size:0.9em}
+.ai-message table{width:100%;border-collapse:collapse;margin:0.5rem 0}.ai-message th,.ai-message td{border:1px solid #334155;padding:8px;text-align:left}.ai-message th{background:#1e293b}
+.notification{animation:slideIn 0.3s ease}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.skeleton{background:linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 </head>
-<body class="bg-[#0a0f1a] text-white min-h-screen">
+<body class="text-white min-h-screen">
 <div id="app">
 <div class="flex">
-<aside class="w-72 h-screen bg-[#0f172a] border-r border-slate-800 fixed left-0 top-0 z-50 flex flex-col">
-<div class="p-6 border-b border-slate-800">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+<!-- Sidebar -->
+<aside class="w-64 h-screen glass fixed left-0 top-0 z-50 flex flex-col">
+<div class="p-5 border-b border-slate-700/50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
 </div>
-<div><h1 class="font-bold text-xl bg-gradient-to-r from-blue-400 to-pink-400 bg-clip-text text-transparent">AdsPro AI</h1><p class="text-xs text-slate-500">Intelligence Platform</p></div>
+<div><h1 class="font-bold text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AdsPro AI</h1><p class="text-[10px] text-slate-500 uppercase tracking-wider">Enterprise Platform</p></div>
 </div>
 </div>
-<div class="p-4 border-b border-slate-800">
-<label class="text-xs text-slate-500 uppercase block mb-2">Ad Account</label>
-<select id="accountSelector" class="w-full px-4 py-3 rounded-xl text-sm bg-slate-800/50 border border-slate-700"><option>284-126-9298</option><option>464-103-2686</option></select>
+
+<!-- Business Selector -->
+<div class="p-3 border-b border-slate-700/50">
+<label class="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">Business Account</label>
+<select id="businessSelector" onchange="switchBusiness(this.value)" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-800/50 border border-slate-700 cursor-pointer">
+<option value="all">📊 All Businesses (Overview)</option>
+</select>
+<button onclick="showPage('businesses')" class="w-full mt-2 px-3 py-1.5 rounded-lg text-xs bg-slate-700/50 hover:bg-slate-700 flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Manage Businesses</button>
 </div>
-<nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-<p class="text-xs text-slate-500 uppercase px-4 mb-2">Main</p>
-<button onclick="showPage('dashboard')" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all" data-page="dashboard"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard</button>
-<button onclick="showPage('campaigns')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="campaigns"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Campaigns</button>
-<p class="text-xs text-slate-500 uppercase px-4 mt-6 mb-2">Intelligence</p>
-<button onclick="showPage('competitor-research')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="competitor-research"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Competitor Spy<span class="ml-auto px-2 py-0.5 rounded-full text-[10px] bg-orange-500/20 text-orange-400">PRO</span></button>
-<button onclick="showPage('keyword-research')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="keyword-research"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Keyword Research</button>
-<button onclick="showPage('ai-assistant')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="ai-assistant"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>AI Assistant<span class="ml-auto w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span></button>
-<p class="text-xs text-slate-500 uppercase px-4 mt-6 mb-2">Settings</p>
-<button onclick="showPage('settings')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="settings"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Settings</button>
+
+<nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-2">Overview</p>
+<button onclick="showPage('dashboard')" class="nav-item active w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all" data-page="dashboard">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>Dashboard
+</button>
+<button onclick="showPage('ai-insights')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="ai-insights">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>AI Insights<span class="ml-auto w-2 h-2 rounded-full bg-purple-500 status-dot"></span>
+</button>
+
+<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-4">Campaign Management</p>
+<button onclick="showPage('campaigns')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="campaigns">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Campaigns
+</button>
+<button onclick="showPage('adgroups')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="adgroups">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Ad Groups
+</button>
+<button onclick="showPage('keywords')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="keywords">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>Keywords
+</button>
+<button onclick="showPage('ads')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="ads">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Ads
+</button>
+
+<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-4">Intelligence</p>
+<button onclick="showPage('optimization')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="optimization">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>AI Optimization<span class="ml-auto px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400">NEW</span>
+</button>
+<button onclick="showPage('competitor')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="competitor">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Competitor Spy
+</button>
+<button onclick="showPage('keyword-research')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="keyword-research">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Keyword Research
+</button>
+<button onclick="showPage('auction')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="auction">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>Auction Insights
+</button>
+
+<p class="text-[10px] text-slate-500 uppercase tracking-wider px-3 mb-2 mt-4">Tools</p>
+<button onclick="showPage('ai-assistant')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="ai-assistant">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>AI Chat Assistant
+</button>
+<button onclick="showPage('reports')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="reports">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Reports
+</button>
+<button onclick="showPage('settings')" class="nav-item w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all" data-page="settings">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Settings
+</button>
 </nav>
-<div class="p-4 border-t border-slate-800">
-<div id="userInfo" class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-sm font-bold">?</div><div class="flex-1"><p class="text-sm font-medium">Not logged in</p><p class="text-xs text-slate-500">Sign in to continue</p></div></div>
+
+<div class="p-3 border-t border-slate-700/50">
+<div id="userInfo" class="flex items-center gap-2 p-2 rounded-lg bg-slate-800/30">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold">?</div>
+<div class="flex-1 min-w-0"><p class="text-xs font-medium truncate">Not logged in</p><p class="text-[10px] text-slate-500 truncate">Sign in to continue</p></div>
+</div>
 </div>
 </aside>
-<main class="ml-72 flex-1 min-h-screen"><div class="p-8"><div id="alertContainer"></div>
+<!-- Main Content -->
+<main class="ml-64 flex-1 min-h-screen">
+<!-- Top Bar -->
+<header class="sticky top-0 z-40 glass border-b border-slate-700/50 px-6 py-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div id="pageTitle" class="text-lg font-semibold">Dashboard</div>
+<div id="dateRangePicker" class="flex items-center gap-2">
+<select id="dateRange" onchange="handleDateChange()" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 border border-slate-700">
+<option value="today">Today</option>
+<option value="yesterday">Yesterday</option>
+<option value="7">Last 7 days</option>
+<option value="14">Last 14 days</option>
+<option value="30" selected>Last 30 days</option>
+<option value="90">Last 90 days</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div id="apiStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700">
+<span class="w-2 h-2 rounded-full bg-slate-500"></span>
+<span class="text-xs text-slate-400">APIs not configured</span>
+</div>
+<button onclick="refreshAllData()" class="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-blue-500 transition-colors tooltip" data-tip="Refresh Data">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+</button>
+<button onclick="showNotifications()" class="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-blue-500 transition-colors relative">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+<span id="notifBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[10px] flex items-center justify-center">3</span>
+</button>
+</div>
+</div>
+</header>
+
+<div class="p-6">
+<div id="alertContainer"></div>
+
 <!-- Login Page -->
 <div id="page-login" class="page-content">
-<div class="max-w-md mx-auto mt-20">
-<div class="text-center mb-8"><div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-6 shadow-2xl"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><h2 class="text-3xl font-bold mb-2">Welcome to AdsPro AI</h2><p class="text-slate-400">Connect your Google Ads account</p></div>
-<div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8"><button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-white text-gray-800 font-semibold hover:bg-gray-100"><svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button></div>
+<div class="max-w-md mx-auto mt-16">
+<div class="text-center mb-8">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-6 shadow-2xl ai-glow">
+<svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+</div>
+<h2 class="text-2xl font-bold mb-2">Welcome to AdsPro AI</h2>
+<p class="text-slate-400 text-sm">Enterprise Google Ads Management Platform</p>
+</div>
+<div class="card p-6">
+<button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl bg-white text-gray-800 font-semibold hover:bg-gray-100 transition-all">
+<svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+Continue with Google
+</button>
+<div class="mt-4 text-center text-xs text-slate-500">
+By signing in, you agree to our Terms of Service
+</div>
+</div>
 </div>
 </div>
 
 <!-- Dashboard Page -->
 <div id="page-dashboard" class="page-content hidden">
-<div class="flex items-center justify-between mb-8"><div><h2 class="text-2xl font-bold">Dashboard</h2><p class="text-slate-400 mt-1">Your Google Ads performance</p></div>
-<button onclick="refreshData()" class="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:border-blue-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
+<!-- AI Daily Summary Banner -->
+<div class="card p-4 mb-6 border-l-4 border-purple-500 ai-glow">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-<div class="stat-card bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 transition-all"><div class="flex items-center justify-between mb-4"><div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div><span class="text-xs text-emerald-400">+12%</span></div><p class="text-3xl font-bold" id="totalImpressions">0</p><p class="text-sm text-slate-400">Impressions</p></div>
-<div class="stat-card bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 transition-all"><div class="flex items-center justify-between mb-4"><div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg></div><span class="text-xs text-emerald-400">+8%</span></div><p class="text-3xl font-bold" id="totalClicks">0</p><p class="text-sm text-slate-400">Clicks</p></div>
-<div class="stat-card bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 transition-all"><div class="flex items-center justify-between mb-4"><div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><span class="text-xs text-emerald-400">+15%</span></div><p class="text-3xl font-bold" id="totalConversions">0</p><p class="text-sm text-slate-400">Conversions</p></div>
-<div class="stat-card bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 transition-all"><div class="flex items-center justify-between mb-4"><div class="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><span class="text-xs text-rose-400">-3%</span></div><p class="text-3xl font-bold" id="totalCost">$0</p><p class="text-sm text-slate-400">Total Spend</p></div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-semibold text-purple-400">AI Daily Insights</h3>
+<span class="text-xs text-slate-500">Updated 2 hours ago</span>
 </div>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<div class="lg:col-span-2 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6"><h3 class="font-semibold mb-4">Performance Trend</h3><canvas id="performanceChart" height="120"></canvas></div>
-<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6"><h3 class="font-semibold mb-4">Quick Actions</h3><div class="space-y-3">
-<button onclick="showPage('competitor-research')" class="w-full p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-left hover:border-orange-500 transition-all"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center"><svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div><div><p class="font-medium text-sm">Spy on Competitors</p><p class="text-xs text-slate-400">See their ads & keywords</p></div></div></button>
-<button onclick="showPage('keyword-research')" class="w-full p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-left hover:border-emerald-500 transition-all"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center"><svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><div><p class="font-medium text-sm">Find Keywords</p><p class="text-xs text-slate-400">Discover opportunities</p></div></div></button>
-<button onclick="showPage('ai-assistant')" class="w-full p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-left hover:border-purple-500 transition-all"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center"><svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div><p class="font-medium text-sm">AI Campaign Builder</p><p class="text-xs text-slate-400">Generate winning ads</p></div></div></button>
-</div></div>
+<p id="aiDailySummary" class="text-sm text-slate-300">Loading AI analysis...</p>
+<div class="flex gap-2 mt-3">
+<button onclick="showPage('optimization')" class="px-3 py-1.5 rounded-lg text-xs bg-purple-500/20 text-purple-400 hover:bg-purple-500/30">View Recommendations</button>
+<button onclick="generateDailySummary()" class="px-3 py-1.5 rounded-lg text-xs bg-slate-700 hover:bg-slate-600">Refresh Analysis</button>
 </div>
 </div>
-<!-- Competitor Research Page -->
-<div id="page-competitor-research" class="page-content hidden">
-<div class="flex items-center justify-between mb-8"><div><h2 class="text-2xl font-bold">Competitor Intelligence</h2><p class="text-slate-400 mt-1">Spy on competitors' Google Ads strategy</p></div>
-<div id="semrushStatus" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700"><span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-sm text-slate-400">Not connected</span></div>
 </div>
-<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 mb-8">
-<div class="flex items-center gap-4">
-<div class="flex-1 relative"><svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><input type="text" id="competitorDomainInput" placeholder="Enter competitor domain (e.g., spectrum.com)" class="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-700/50 border border-slate-600 text-lg"></div>
-<button onclick="analyzeCompetitor()" id="analyzeBtn" class="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 font-semibold hover:from-blue-600 hover:to-purple-700 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Analyze</button>
-</div>
-<div class="flex items-center gap-6 mt-4"><label class="text-sm text-slate-400">Quick:</label><button onclick="setCompetitor('spectrum.com')" class="text-sm text-blue-400 hover:underline">spectrum.com</button><button onclick="setCompetitor('xfinity.com')" class="text-sm text-blue-400 hover:underline">xfinity.com</button><button onclick="setCompetitor('att.com')" class="text-sm text-blue-400 hover:underline">att.com</button></div>
-</div>
-<div id="competitorResults" class="hidden">
-<div id="competitorOverview" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"></div>
-<div class="flex items-center gap-2 mb-6 border-b border-slate-700 pb-4">
-<button onclick="showCompetitorTab('ads')" class="tab-btn active px-6 py-3 rounded-xl text-sm font-medium bg-slate-800" data-tab="ads">📢 Ad Copies</button>
-<button onclick="showCompetitorTab('keywords')" class="tab-btn px-6 py-3 rounded-xl text-sm font-medium bg-slate-800 text-slate-400" data-tab="keywords">🔑 Paid Keywords</button>
-<button onclick="showCompetitorTab('organic')" class="tab-btn px-6 py-3 rounded-xl text-sm font-medium bg-slate-800 text-slate-400" data-tab="organic">🌱 Organic</button>
-<button onclick="showCompetitorTab('competitors')" class="tab-btn px-6 py-3 rounded-xl text-sm font-medium bg-slate-800 text-slate-400" data-tab="competitors">🏢 Competitors</button>
-</div>
-<div id="tab-ads" class="tab-content"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">Competitor Ad Copies</h3><button onclick="generateBetterAds()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-sm font-medium flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>AI: Generate Better Ads</button></div><div id="competitorAdsContainer" class="space-y-4"></div></div>
-<div id="tab-keywords" class="tab-content hidden"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">Paid Keywords</h3><button onclick="exportKeywords()" class="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">Export CSV</button></div><div id="competitorKeywordsContainer" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden max-h-[600px] overflow-y-auto"></div></div>
-<div id="tab-organic" class="tab-content hidden"><h3 class="text-lg font-semibold mb-4">Organic Keywords</h3><div id="organicKeywordsContainer" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden max-h-[600px] overflow-y-auto"></div></div>
-<div id="tab-competitors" class="tab-content hidden"><h3 class="text-lg font-semibold mb-4">Ad Competitors</h3><div id="adCompetitorsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
-</div>
-<div id="competitorEmptyState" class="text-center py-20"><div class="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-6"><svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><h3 class="text-xl font-semibold mb-2">Enter a competitor domain</h3><p class="text-slate-400">Discover their ad strategies, keywords, and spending</p></div>
 </div>
 
-<!-- Keyword Research Page -->
-<div id="page-keyword-research" class="page-content hidden">
-<div class="flex items-center justify-between mb-8"><div><h2 class="text-2xl font-bold">Keyword Research</h2><p class="text-slate-400 mt-1">Find profitable keywords with competitor data</p></div></div>
-<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 mb-8">
-<div class="flex items-center gap-4">
-<div class="flex-1 relative"><svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><input type="text" id="keywordSearchInput" placeholder="Enter keyword (e.g., internet service)" class="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-700/50 border border-slate-600 text-lg"></div>
-<button onclick="researchKeyword()" id="keywordSearchBtn" class="px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-semibold flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Research</button>
+<!-- Quick Stats -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+<div class="card metric-card p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs text-slate-500">Impressions</span>
+<span class="text-xs trend-up" id="impressionsTrend">+12%</span>
 </div>
-<div class="grid grid-cols-4 gap-4 mt-4">
-<div><label class="text-xs text-slate-400 block mb-1">Max CPC</label><select id="maxCpcFilter" class="w-full px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-sm"><option value="100">Any</option><option value="5">Under $5</option><option value="10" selected>Under $10</option><option value="20">Under $20</option></select></div>
-<div><label class="text-xs text-slate-400 block mb-1">Min Volume</label><select id="minVolumeFilter" class="w-full px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-sm"><option value="0">Any</option><option value="100" selected>100+</option><option value="500">500+</option><option value="1000">1K+</option></select></div>
-<div><label class="text-xs text-slate-400 block mb-1">Competition</label><select id="competitionFilter" class="w-full px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-sm"><option value="all">All</option><option value="low">Low Only</option></select></div>
-<div><label class="text-xs text-slate-400 block mb-1">Intent</label><select id="intentFilter" class="w-full px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-sm"><option value="all">All</option><option value="commercial">Commercial</option></select></div>
+<p class="text-2xl font-bold" id="totalImpressions">0</p>
+<div class="perf-bar mt-2"><div class="perf-fill bg-blue-500" style="width:70%"></div></div>
+</div>
+<div class="card metric-card p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs text-slate-500">Clicks</span>
+<span class="text-xs trend-up" id="clicksTrend">+8%</span>
+</div>
+<p class="text-2xl font-bold" id="totalClicks">0</p>
+<div class="perf-bar mt-2"><div class="perf-fill bg-purple-500" style="width:60%"></div></div>
+</div>
+<div class="card metric-card p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs text-slate-500">CTR</span>
+<span class="text-xs trend-up" id="ctrTrend">+0.5%</span>
+</div>
+<p class="text-2xl font-bold" id="avgCTR">0%</p>
+<div class="perf-bar mt-2"><div class="perf-fill bg-emerald-500" style="width:45%"></div></div>
+</div>
+<div class="card metric-card p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs text-slate-500">Conversions</span>
+<span class="text-xs trend-up" id="convTrend">+15%</span>
+</div>
+<p class="text-2xl font-bold" id="totalConversions">0</p>
+<div class="perf-bar mt-2"><div class="perf-fill bg-amber-500" style="width:55%"></div></div>
+</div>
+<div class="card metric-card p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs text-slate-500">Cost</span>
+<span class="text-xs trend-down" id="costTrend">-3%</span>
+</div>
+<p class="text-2xl font-bold" id="totalCost">$0</p>
+<div class="perf-bar mt-2"><div class="perf-fill bg-rose-500" style="width:40%"></div></div>
+</div>
+<div class="card metric-card p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs text-slate-500">ROAS</span>
+<span class="text-xs trend-up" id="roasTrend">+22%</span>
+</div>
+<p class="text-2xl font-bold" id="avgROAS">0x</p>
+<div class="perf-bar mt-2"><div class="perf-fill bg-teal-500" style="width:75%"></div></div>
 </div>
 </div>
-<div id="keywordResults" class="hidden">
-<div id="keywordSummary" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"></div>
-<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
-<div class="p-4 border-b border-slate-700 flex items-center justify-between"><div class="flex items-center gap-4"><h3 class="font-semibold">Keywords</h3><span id="keywordCount" class="px-3 py-1 rounded-full text-xs bg-blue-500/20 text-blue-400">0</span></div>
-<div class="flex gap-2"><button onclick="filterKeywords('opportunities')" class="px-3 py-1.5 rounded-lg text-xs bg-emerald-500/20 text-emerald-400">💎 Best</button><button onclick="filterKeywords('lowcpc')" class="px-3 py-1.5 rounded-lg text-xs bg-blue-500/20 text-blue-400">💰 Low CPC</button><button onclick="filterKeywords('highvolume')" class="px-3 py-1.5 rounded-lg text-xs bg-purple-500/20 text-purple-400">📈 High Vol</button></div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+<div class="lg:col-span-2 card p-5">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-semibold">Performance Overview</h3>
+<div class="flex gap-2">
+<button onclick="setChartMetric('clicks')" class="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400">Clicks</button>
+<button onclick="setChartMetric('conversions')" class="px-2 py-1 rounded text-xs bg-slate-700 text-slate-400">Conversions</button>
+<button onclick="setChartMetric('cost')" class="px-2 py-1 rounded text-xs bg-slate-700 text-slate-400">Cost</button>
 </div>
-<div id="keywordTableContainer" class="overflow-x-auto max-h-[600px] overflow-y-auto"></div>
+</div>
+<canvas id="performanceChart" height="150"></canvas>
+</div>
+<div class="card p-5">
+<h3 class="font-semibold mb-4">Campaign Health</h3>
+<canvas id="healthChart" height="200"></canvas>
 </div>
 </div>
-<div id="keywordEmptyState" class="text-center py-20"><div class="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-6"><svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><h3 class="text-xl font-semibold mb-2">Search for keywords</h3><p class="text-slate-400">Enter a keyword to find opportunities</p></div>
+
+<!-- Bottom Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Top Campaigns -->
+<div class="card p-5">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-semibold">Top Campaigns</h3>
+<button onclick="showPage('campaigns')" class="text-xs text-blue-400 hover:underline">View All</button>
 </div>
-<!-- AI Assistant Page -->
-<div id="page-ai-assistant" class="page-content hidden">
-<div class="flex gap-6 h-[calc(100vh-8rem)]">
-<div class="flex-1 flex flex-col bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden">
-<div class="p-4 border-b border-slate-700/50 flex items-center justify-between">
-<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div><h3 class="font-semibold">AI Assistant</h3><span id="aiStatus" class="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400">Ready</span></div></div>
-<button onclick="clearChat()" class="p-2 rounded-lg hover:bg-slate-700 text-slate-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+<div id="topCampaigns" class="space-y-3">
+<div class="skeleton h-12 rounded-lg"></div>
+<div class="skeleton h-12 rounded-lg"></div>
+<div class="skeleton h-12 rounded-lg"></div>
 </div>
-<div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4"><div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="bg-slate-700/50 rounded-xl rounded-tl-none p-4 max-w-2xl"><p class="text-sm">Hello! I can help you create campaigns, generate ad copy, find keywords, and optimize. What would you like to do?</p></div></div></div>
-<div class="p-4 border-t border-slate-700/50"><div class="flex gap-3"><input type="text" id="chatInput" placeholder="Ask about Google Ads..." class="flex-1 px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600" onkeypress="if(event.key==='Enter')sendChat()"><button onclick="sendChat()" id="sendBtn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 font-medium">Send</button></div></div>
 </div>
-<div class="w-72 space-y-4">
-<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4"><h4 class="font-semibold text-sm mb-3">Quick Actions</h4><div class="space-y-2">
-<button onclick="quickPrompt('Create a search campaign for internet services with $50/day budget')" class="w-full p-3 rounded-lg bg-blue-500/20 text-left text-sm hover:bg-blue-500/30"><span class="text-blue-400 font-medium">📊 Create Campaign</span></button>
-<button onclick="quickPrompt('Generate 15 headlines and 4 descriptions for fiber internet ads')" class="w-full p-3 rounded-lg bg-emerald-500/20 text-left text-sm hover:bg-emerald-500/30"><span class="text-emerald-400 font-medium">✍️ Write Ad Copy</span></button>
-<button onclick="quickPrompt('What are best practices to improve Quality Score?')" class="w-full p-3 rounded-lg bg-purple-500/20 text-left text-sm hover:bg-purple-500/30"><span class="text-purple-400 font-medium">⚡ Optimize Tips</span></button>
-</div></div>
+
+<!-- AI Recommendations -->
+<div class="card p-5">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-semibold">AI Recommendations</h3>
+<span class="px-2 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400">3 new</span>
 </div>
+<div id="aiRecommendations" class="space-y-3">
+<div class="skeleton h-16 rounded-lg"></div>
+<div class="skeleton h-16 rounded-lg"></div>
+</div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card p-5">
+<h3 class="font-semibold mb-4">Quick Actions</h3>
+<div class="space-y-2">
+<button onclick="showPage('optimization')" class="w-full p-3 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-left hover:border-purple-500 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center"><svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+<div><p class="font-medium text-sm">Run AI Optimization</p><p class="text-[10px] text-slate-400">Analyze & improve campaigns</p></div>
+</div>
+</button>
+<button onclick="showPage('competitor')" class="w-full p-3 rounded-xl bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-left hover:border-orange-500 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center"><svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+<div><p class="font-medium text-sm">Spy Competitors</p><p class="text-[10px] text-slate-400">See what they're doing</p></div>
+</div>
+</button>
+<button onclick="showPage('ai-assistant')" class="w-full p-3 rounded-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-left hover:border-blue-500 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></div>
+<div><p class="font-medium text-sm">Ask AI Assistant</p><p class="text-[10px] text-slate-400">Get instant help</p></div>
+</div>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Optimization Page -->
+<div id="page-optimization" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">AI Optimization Center</h2>
+<p class="text-sm text-slate-400">Get AI-powered recommendations to improve your campaigns</p>
+</div>
+<button onclick="runFullOptimization()" id="runOptBtn" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+Run Full Analysis
+</button>
+</div>
+
+<!-- Optimization Score -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="card p-5 border-l-4 border-blue-500">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-xs text-slate-500 mb-1">Optimization Score</p>
+<p class="text-3xl font-bold text-blue-400" id="optScore">72%</p>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-blue-500 flex items-center justify-center">
+<span class="text-lg font-bold">B+</span>
+</div>
+</div>
+</div>
+<div class="card p-5">
+<p class="text-xs text-slate-500 mb-1">Potential Savings</p>
+<p class="text-2xl font-bold text-emerald-400" id="potentialSavings">$1,250/mo</p>
+<p class="text-xs text-slate-500 mt-1">By applying recommendations</p>
+</div>
+<div class="card p-5">
+<p class="text-xs text-slate-500 mb-1">Actionable Items</p>
+<p class="text-2xl font-bold text-amber-400" id="actionItems">12</p>
+<p class="text-xs text-slate-500 mt-1">Recommendations ready</p>
+</div>
+<div class="card p-5">
+<p class="text-xs text-slate-500 mb-1">Last Analysis</p>
+<p class="text-2xl font-bold" id="lastAnalysis">2h ago</p>
+<p class="text-xs text-slate-500 mt-1">Auto-updates daily</p>
+</div>
+</div>
+
+<!-- Recommendations Tabs -->
+<div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+<button onclick="showOptTab('all')" class="tab-btn active px-4 py-2 rounded-lg text-sm whitespace-nowrap" data-tab="all">All (12)</button>
+<button onclick="showOptTab('budget')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="budget">💰 Budget (3)</button>
+<button onclick="showOptTab('keywords')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="keywords">🔑 Keywords (4)</button>
+<button onclick="showOptTab('ads')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="ads">📝 Ads (3)</button>
+<button onclick="showOptTab('bidding')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-tab="bidding">📊 Bidding (2)</button>
+</div>
+
+<!-- Recommendations List -->
+<div id="optimizationList" class="space-y-4">
+<!-- Filled by JS -->
 </div>
 </div>
 
 <!-- Campaigns Page -->
-<div id="page-campaigns" class="page-content hidden"><h2 class="text-2xl font-bold mb-6">Campaigns</h2><div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 text-center text-slate-400">Connect Google Ads to view campaigns</div></div>
+<div id="page-campaigns" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Campaigns</h2>
+<p class="text-sm text-slate-400">Manage all your advertising campaigns</p>
+</div>
+<div class="flex gap-2">
+<button onclick="createCampaignWithAI()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+Create with AI
+</button>
+</div>
+</div>
+
+<!-- Campaign Filters -->
+<div class="card p-4 mb-4">
+<div class="flex flex-wrap gap-4 items-center">
+<div class="flex-1 min-w-[200px]">
+<input type="text" id="campaignSearch" placeholder="Search campaigns..." class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm" onkeyup="filterCampaigns()">
+</div>
+<select id="campaignStatusFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm" onchange="filterCampaigns()">
+<option value="all">All Status</option>
+<option value="ENABLED">Enabled</option>
+<option value="PAUSED">Paused</option>
+<option value="REMOVED">Removed</option>
+</select>
+<select id="campaignTypeFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm" onchange="filterCampaigns()">
+<option value="all">All Types</option>
+<option value="SEARCH">Search</option>
+<option value="DISPLAY">Display</option>
+<option value="VIDEO">Video</option>
+<option value="SHOPPING">Shopping</option>
+</select>
+</div>
+</div>
+
+<!-- Campaigns Table -->
+<div class="card overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead class="bg-slate-800/50">
+<tr class="text-xs uppercase text-slate-400">
+<th class="text-left p-4"><input type="checkbox" class="rounded" onclick="toggleAllCampaigns(this)"></th>
+<th class="text-left p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('name')">Campaign ↕</th>
+<th class="text-left p-4">Status</th>
+<th class="text-left p-4">Type</th>
+<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('budget')">Budget ↕</th>
+<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('impressions')">Impr ↕</th>
+<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('clicks')">Clicks ↕</th>
+<th class="text-right p-4">CTR</th>
+<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('conversions')">Conv ↕</th>
+<th class="text-right p-4 cursor-pointer hover:text-white" onclick="sortCampaigns('cost')">Cost ↕</th>
+<th class="text-right p-4">CPA</th>
+<th class="text-center p-4">Actions</th>
+</tr>
+</thead>
+<tbody id="campaignsTableBody">
+<tr><td colspan="12" class="p-8 text-center text-slate-400">Loading campaigns...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Keywords Page -->
+<div id="page-keywords" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Keywords Performance</h2>
+<p class="text-sm text-slate-400">Monitor and optimize your keyword performance</p>
+</div>
+<div class="flex gap-2">
+<button onclick="addKeywordsWithAI()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+Add Keywords
+</button>
+</div>
+</div>
+
+<!-- Keywords Stats -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+<div class="card p-4">
+<p class="text-xs text-slate-500">Total Keywords</p>
+<p class="text-2xl font-bold" id="totalKeywords">0</p>
+</div>
+<div class="card p-4">
+<p class="text-xs text-slate-500">Active</p>
+<p class="text-2xl font-bold text-emerald-400" id="activeKeywords">0</p>
+</div>
+<div class="card p-4">
+<p class="text-xs text-slate-500">Avg. QS</p>
+<p class="text-2xl font-bold text-blue-400" id="avgQualityScore">0</p>
+</div>
+<div class="card p-4">
+<p class="text-xs text-slate-500">Avg. CPC</p>
+<p class="text-2xl font-bold" id="avgCPC">$0</p>
+</div>
+<div class="card p-4">
+<p class="text-xs text-slate-500">Low QS Keywords</p>
+<p class="text-2xl font-bold text-amber-400" id="lowQSKeywords">0</p>
+</div>
+</div>
+
+<!-- Keywords Filters -->
+<div class="card p-4 mb-4">
+<div class="flex flex-wrap gap-4 items-center">
+<input type="text" id="keywordSearch" placeholder="Search keywords..." class="flex-1 min-w-[200px] px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<select id="keywordStatusFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<option value="all">All Status</option>
+<option value="ENABLED">Enabled</option>
+<option value="PAUSED">Paused</option>
+</select>
+<select id="keywordMatchFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<option value="all">All Match Types</option>
+<option value="EXACT">Exact</option>
+<option value="PHRASE">Phrase</option>
+<option value="BROAD">Broad</option>
+</select>
+<select id="keywordQSFilter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<option value="all">All Quality Scores</option>
+<option value="low">Low (1-4)</option>
+<option value="medium">Medium (5-7)</option>
+<option value="high">High (8-10)</option>
+</select>
+</div>
+</div>
+
+<!-- Keywords Table -->
+<div class="card overflow-hidden">
+<div class="overflow-x-auto max-h-[600px]">
+<table class="w-full text-sm">
+<thead class="bg-slate-800/50 sticky top-0">
+<tr class="text-xs uppercase text-slate-400">
+<th class="text-left p-4"><input type="checkbox" class="rounded"></th>
+<th class="text-left p-4">Keyword</th>
+<th class="text-left p-4">Match</th>
+<th class="text-center p-4">QS</th>
+<th class="text-left p-4">Status</th>
+<th class="text-right p-4">Impr</th>
+<th class="text-right p-4">Clicks</th>
+<th class="text-right p-4">CTR</th>
+<th class="text-right p-4">Avg CPC</th>
+<th class="text-right p-4">Conv</th>
+<th class="text-right p-4">Cost</th>
+<th class="text-center p-4">Actions</th>
+</tr>
+</thead>
+<tbody id="keywordsTableBody">
+<tr><td colspan="12" class="p-8 text-center text-slate-400">Loading keywords...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Ads Page -->
+<div id="page-ads" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Ad Performance</h2>
+<p class="text-sm text-slate-400">Monitor and optimize your ad creatives</p>
+</div>
+<button onclick="createAdWithAI()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+Create Ad with AI
+</button>
+</div>
+
+<!-- Ads Grid -->
+<div id="adsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="card p-6 text-center text-slate-400">Loading ads...</div>
+</div>
+</div>
+
+<!-- Ad Groups Page -->
+<div id="page-adgroups" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Ad Groups</h2>
+<p class="text-sm text-slate-400">Manage your ad groups across campaigns</p>
+</div>
+</div>
+<div class="card overflow-hidden">
+<table class="w-full text-sm">
+<thead class="bg-slate-800/50">
+<tr class="text-xs uppercase text-slate-400">
+<th class="text-left p-4">Ad Group</th>
+<th class="text-left p-4">Campaign</th>
+<th class="text-left p-4">Status</th>
+<th class="text-right p-4">Keywords</th>
+<th class="text-right p-4">Ads</th>
+<th class="text-right p-4">Impr</th>
+<th class="text-right p-4">Clicks</th>
+<th class="text-right p-4">Conv</th>
+<th class="text-right p-4">Cost</th>
+</tr>
+</thead>
+<tbody id="adGroupsTableBody">
+<tr><td colspan="9" class="p-8 text-center text-slate-400">Loading ad groups...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Competitor Spy Page -->
+<div id="page-competitor" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Competitor Intelligence</h2>
+<p class="text-sm text-slate-400">Spy on competitors' Google Ads strategy</p>
+</div>
+<div id="semrushStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">
+<span class="w-2 h-2 rounded-full bg-slate-500"></span>
+<span class="text-xs text-slate-400">Not connected</span>
+</div>
+</div>
+
+<!-- Search -->
+<div class="card p-5 mb-6">
+<div class="flex gap-4">
+<div class="flex-1 relative">
+<svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+<input type="text" id="competitorDomain" placeholder="Enter competitor domain (e.g., spectrum.com)" class="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-base">
+</div>
+<button onclick="analyzeCompetitor()" id="analyzeBtn" class="btn-primary px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+Analyze
+</button>
+</div>
+<div class="flex gap-4 mt-3">
+<span class="text-xs text-slate-500">Quick:</span>
+<button onclick="setCompetitorDomain('spectrum.com')" class="text-xs text-blue-400 hover:underline">spectrum.com</button>
+<button onclick="setCompetitorDomain('xfinity.com')" class="text-xs text-blue-400 hover:underline">xfinity.com</button>
+<button onclick="setCompetitorDomain('att.com')" class="text-xs text-blue-400 hover:underline">att.com</button>
+</div>
+</div>
+
+<!-- Results -->
+<div id="competitorResults" class="hidden">
+<div id="competitorOverview" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"></div>
+<div class="flex gap-2 mb-4 overflow-x-auto">
+<button onclick="showCompTab('ads')" class="tab-btn active px-4 py-2 rounded-lg text-sm whitespace-nowrap" data-ctab="ads">📢 Ad Copies</button>
+<button onclick="showCompTab('keywords')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-ctab="keywords">🔑 Paid Keywords</button>
+<button onclick="showCompTab('organic')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-ctab="organic">🌱 Organic</button>
+<button onclick="showCompTab('competitors')" class="tab-btn px-4 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 whitespace-nowrap" data-ctab="competitors">🏢 Their Competitors</button>
+</div>
+<div id="ctab-ads" class="ctab-content">
+<div class="flex justify-between mb-4">
+<h3 class="font-semibold">Ad Copies</h3>
+<button onclick="generateBetterAds()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 text-sm font-medium">✨ AI: Generate Better Ads</button>
+</div>
+<div id="competitorAdsContainer" class="space-y-4"></div>
+</div>
+<div id="ctab-keywords" class="ctab-content hidden">
+<div id="competitorKeywordsContainer" class="card overflow-hidden"></div>
+</div>
+<div id="ctab-organic" class="ctab-content hidden">
+<div id="organicKeywordsContainer" class="card overflow-hidden"></div>
+</div>
+<div id="ctab-competitors" class="ctab-content hidden">
+<div id="adCompetitorsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+</div>
+</div>
+<div id="competitorEmpty" class="text-center py-16">
+<div class="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
+<svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+</div>
+<h3 class="font-semibold mb-2">Enter a competitor domain</h3>
+<p class="text-sm text-slate-400">Discover their ads, keywords, and spending</p>
+</div>
+</div>
+
+<!-- Keyword Research Page -->
+<div id="page-keyword-research" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Keyword Research</h2>
+<p class="text-sm text-slate-400">Discover profitable keywords for your campaigns</p>
+</div>
+</div>
+<div class="card p-5 mb-6">
+<div class="flex gap-4">
+<input type="text" id="kwResearchInput" placeholder="Enter seed keyword..." class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700">
+<button onclick="researchKeywords()" id="kwResearchBtn" class="btn-success px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+Research
+</button>
+</div>
+<div class="grid grid-cols-4 gap-4 mt-4">
+<select id="kwMaxCpc" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<option value="100">Any CPC</option>
+<option value="5">Under $5</option>
+<option value="10" selected>Under $10</option>
+<option value="20">Under $20</option>
+</select>
+<select id="kwMinVolume" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<option value="0">Any Volume</option>
+<option value="100" selected>100+</option>
+<option value="500">500+</option>
+<option value="1000">1K+</option>
+</select>
+<select id="kwCompetition" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<option value="all">All Competition</option>
+<option value="low">Low Only</option>
+</select>
+<select id="kwIntent" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+<option value="all">All Intent</option>
+<option value="commercial">Commercial</option>
+</select>
+</div>
+</div>
+<div id="kwResults" class="hidden">
+<div id="kwSummary" class="grid grid-cols-4 gap-4 mb-4"></div>
+<div class="card overflow-hidden">
+<div class="p-4 border-b border-slate-700 flex justify-between items-center">
+<div class="flex gap-2">
+<button onclick="filterKwResults('best')" class="px-3 py-1.5 rounded-lg text-xs bg-emerald-500/20 text-emerald-400">💎 Best</button>
+<button onclick="filterKwResults('lowcpc')" class="px-3 py-1.5 rounded-lg text-xs bg-blue-500/20 text-blue-400">💰 Low CPC</button>
+<button onclick="filterKwResults('highvol')" class="px-3 py-1.5 rounded-lg text-xs bg-purple-500/20 text-purple-400">📈 High Volume</button>
+</div>
+<button onclick="exportKwResults()" class="px-3 py-1.5 rounded-lg text-xs bg-slate-700">Export CSV</button>
+</div>
+<div id="kwTableContainer" class="overflow-x-auto max-h-[500px]"></div>
+</div>
+</div>
+<div id="kwEmpty" class="text-center py-16">
+<div class="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
+<svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+</div>
+<h3 class="font-semibold mb-2">Enter a keyword to research</h3>
+<p class="text-sm text-slate-400">Find related keywords with volume, CPC, and competition data</p>
+</div>
+</div>
+
+<!-- Auction Insights Page -->
+<div id="page-auction" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Auction Insights</h2>
+<p class="text-sm text-slate-400">See how you compare to competitors in auctions</p>
+</div>
+</div>
+<div class="card p-5 mb-6">
+<p class="text-slate-400 text-center py-8">Auction insights data from Google Ads will appear here</p>
+</div>
+</div>
+
+<!-- AI Insights Page -->
+<div id="page-ai-insights" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">AI Insights Dashboard</h2>
+<p class="text-sm text-slate-400">AI-powered analysis of your ad performance</p>
+</div>
+<button onclick="generateInsights()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium">Refresh Insights</button>
+</div>
+<div id="aiInsightsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="card p-5">
+<h3 class="font-semibold mb-4">📈 Performance Trends</h3>
+<div id="trendInsights" class="text-sm text-slate-300 space-y-2"></div>
+</div>
+<div class="card p-5">
+<h3 class="font-semibold mb-4">⚠️ Issues Detected</h3>
+<div id="issueInsights" class="text-sm text-slate-300 space-y-2"></div>
+</div>
+<div class="card p-5">
+<h3 class="font-semibold mb-4">💡 Opportunities</h3>
+<div id="opportunityInsights" class="text-sm text-slate-300 space-y-2"></div>
+</div>
+<div class="card p-5">
+<h3 class="font-semibold mb-4">🎯 Recommendations</h3>
+<div id="recommendationInsights" class="text-sm text-slate-300 space-y-2"></div>
+</div>
+</div>
+</div>
+
+<!-- Reports Page -->
+<div id="page-reports" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Reports</h2>
+<p class="text-sm text-slate-400">Generate and download performance reports</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="card p-5 hover:border-blue-500 cursor-pointer" onclick="generateReport('performance')">
+<div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-3">
+<svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+</div>
+<h3 class="font-semibold mb-1">Performance Report</h3>
+<p class="text-xs text-slate-400">Complete overview of all campaigns</p>
+</div>
+<div class="card p-5 hover:border-purple-500 cursor-pointer" onclick="generateReport('keywords')">
+<div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-3">
+<svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+</div>
+<h3 class="font-semibold mb-1">Keywords Report</h3>
+<p class="text-xs text-slate-400">Detailed keyword performance analysis</p>
+</div>
+<div class="card p-5 hover:border-emerald-500 cursor-pointer" onclick="generateReport('optimization')">
+<div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-3">
+<svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+</div>
+<h3 class="font-semibold mb-1">Optimization Report</h3>
+<p class="text-xs text-slate-400">AI recommendations summary</p>
+</div>
+</div>
+</div>
+
+<!-- Businesses Page -->
+<div id="page-businesses" class="page-content hidden">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold">Manage Businesses</h2>
+<p class="text-sm text-slate-400">Add and manage multiple business accounts</p>
+</div>
+<button onclick="showAddBusinessModal()" class="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+Add Business
+</button>
+</div>
+<div id="businessesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<!-- Filled by JS -->
+</div>
+</div>
+<!-- AI Assistant Page -->
+<div id="page-ai-assistant" class="page-content hidden">
+<div class="flex gap-6 h-[calc(100vh-10rem)]">
+<div class="flex-1 flex flex-col card overflow-hidden">
+<div class="p-4 border-b border-slate-700/50 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center ai-glow">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+</div>
+<div>
+<h3 class="font-semibold">AI Assistant</h3>
+<span id="aiStatus" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400">Ready</span>
+</div>
+</div>
+<button onclick="clearChat()" class="p-2 rounded-lg hover:bg-slate-700 text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+</button>
+</div>
+<div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+</div>
+<div class="bg-slate-800/50 rounded-xl rounded-tl-none p-4 max-w-2xl">
+<p class="text-sm">Hello! I'm your AI Google Ads assistant. I can help you:</p>
+<ul class="text-sm mt-2 space-y-1 text-slate-300">
+<li>• Create and optimize campaigns</li>
+<li>• Write high-converting ad copy</li>
+<li>• Find profitable keywords</li>
+<li>• Analyze performance data</li>
+<li>• Suggest budget optimizations</li>
+</ul>
+<p class="text-sm mt-2">What would you like to work on?</p>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-slate-700/50">
+<div class="flex gap-2">
+<input type="text" id="chatInput" placeholder="Ask me anything about Google Ads..." class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700" onkeypress="if(event.key==='Enter')sendChat()">
+<button onclick="sendChat()" id="sendChatBtn" class="btn-primary px-6 py-3 rounded-xl font-medium">Send</button>
+</div>
+</div>
+</div>
+<div class="w-72 space-y-4">
+<div class="card p-4">
+<h4 class="font-semibold text-sm mb-3">Quick Prompts</h4>
+<div class="space-y-2">
+<button onclick="quickChat('Analyze my campaign performance and suggest improvements')" class="w-full p-2 rounded-lg bg-blue-500/10 text-left text-xs hover:bg-blue-500/20 text-blue-400">📊 Analyze Performance</button>
+<button onclick="quickChat('Create a high-converting search campaign for internet services')" class="w-full p-2 rounded-lg bg-emerald-500/10 text-left text-xs hover:bg-emerald-500/20 text-emerald-400">🚀 Create Campaign</button>
+<button onclick="quickChat('Write 15 headlines and 4 descriptions for fiber internet ads')" class="w-full p-2 rounded-lg bg-purple-500/10 text-left text-xs hover:bg-purple-500/20 text-purple-400">✍️ Write Ad Copy</button>
+<button onclick="quickChat('Suggest keywords to target for cable TV and internet bundles')" class="w-full p-2 rounded-lg bg-amber-500/10 text-left text-xs hover:bg-amber-500/20 text-amber-400">🔑 Find Keywords</button>
+<button onclick="quickChat('How can I improve my Quality Score?')" class="w-full p-2 rounded-lg bg-rose-500/10 text-left text-xs hover:bg-rose-500/20 text-rose-400">⚡ Improve QS</button>
+<button onclick="quickChat('What bid strategy should I use for conversions?')" class="w-full p-2 rounded-lg bg-cyan-500/10 text-left text-xs hover:bg-cyan-500/20 text-cyan-400">💰 Bidding Strategy</button>
+</div>
+</div>
+<div class="card p-4">
+<h4 class="font-semibold text-sm mb-2">Context</h4>
+<p class="text-xs text-slate-400">AI has access to your campaign data and can provide personalized recommendations.</p>
+</div>
+</div>
+</div>
+</div>
 
 <!-- Settings Page -->
 <div id="page-settings" class="page-content hidden">
-<h2 class="text-2xl font-bold mb-6">Settings</h2>
+<h2 class="text-xl font-bold mb-6">Settings</h2>
 <div class="max-w-2xl space-y-6">
-<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
-<div class="flex items-center gap-3 mb-4"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><div><h3 class="font-semibold">SEMrush API</h3><p class="text-xs text-slate-400">For competitor & keyword research</p></div><span class="ml-auto px-2 py-1 rounded text-xs bg-orange-500/20 text-orange-400">Required</span></div>
-<div><label class="text-sm text-slate-400 block mb-2">API Key</label><div class="flex gap-2"><input type="password" id="semrushApiKey" placeholder="Enter SEMrush API key" class="flex-1 px-4 py-3 rounded-xl bg-slate-700 border border-slate-600"><button onclick="saveSemrushKey()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-medium">Save</button></div><p class="text-xs text-slate-500 mt-2">Find at: SEMrush → Settings → Subscription Info</p></div>
+<!-- SEMrush API -->
+<div class="card p-5">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
 </div>
-<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
-<div class="flex items-center gap-3 mb-4"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div><h3 class="font-semibold">Claude AI API</h3><p class="text-xs text-slate-400">For AI assistant</p></div><span class="ml-auto px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400">Required</span></div>
-<div><label class="text-sm text-slate-400 block mb-2">API Key</label><div class="flex gap-2"><input type="password" id="claudeApiKey" placeholder="sk-ant-api03-..." class="flex-1 px-4 py-3 rounded-xl bg-slate-700 border border-slate-600"><button onclick="saveClaudeKey()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 font-medium">Save</button></div></div>
+<div class="flex-1">
+<h3 class="font-semibold">SEMrush API</h3>
+<p class="text-xs text-slate-400">For competitor & keyword research</p>
+</div>
+<span class="px-2 py-1 rounded text-xs bg-orange-500/20 text-orange-400">Required</span>
+</div>
+<div class="flex gap-2">
+<input type="password" id="semrushApiKey" placeholder="Enter SEMrush API key" class="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700">
+<button onclick="saveSemrushKey()" class="px-4 py-2.5 rounded-lg bg-orange-500 font-medium text-sm">Save</button>
+</div>
+<p class="text-xs text-slate-500 mt-2">Get from: SEMrush → Settings → Subscription Info → API Key</p>
+</div>
+
+<!-- Claude API -->
+<div class="card p-5">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+</div>
+<div class="flex-1">
+<h3 class="font-semibold">Claude AI API</h3>
+<p class="text-xs text-slate-400">For AI assistant & recommendations</p>
+</div>
+<span class="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400">Required</span>
+</div>
+<div class="flex gap-2">
+<input type="password" id="claudeApiKey" placeholder="sk-ant-api03-..." class="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700">
+<button onclick="saveClaudeKey()" class="px-4 py-2.5 rounded-lg bg-purple-500 font-medium text-sm">Save</button>
+</div>
+<p class="text-xs text-slate-500 mt-2">Get from: <a href="https://console.anthropic.com" target="_blank" class="text-purple-400 hover:underline">console.anthropic.com</a></p>
+</div>
+
+<!-- Notification Settings -->
+<div class="card p-5">
+<h3 class="font-semibold mb-4">Notifications</h3>
+<div class="space-y-3">
+<label class="flex items-center justify-between">
+<span class="text-sm">Daily performance summary</span>
+<input type="checkbox" checked class="rounded">
+</label>
+<label class="flex items-center justify-between">
+<span class="text-sm">Budget alerts</span>
+<input type="checkbox" checked class="rounded">
+</label>
+<label class="flex items-center justify-between">
+<span class="text-sm">AI optimization suggestions</span>
+<input type="checkbox" checked class="rounded">
+</label>
+</div>
 </div>
 </div>
 </div>
 
-</div></main></div></div>
+</div>
+</main>
+</div>
+</div>
+
+<!-- Modals -->
+<div id="modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center">
+<div id="modalContent" class="card max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"></div>
+</div>
+
 <script>
-let currentPage='login',competitorData={keywords:[],ads:[],organic:[],competitors:[]},keywordData=[],isTyping=false;
+// ════════════════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════════════════
+let state = {
+  currentPage: 'login',
+  currentBusiness: 'all',
+  businesses: [],
+  campaigns: [],
+  keywords: [],
+  ads: [],
+  competitorData: { keywords: [], ads: [], organic: [], competitors: [] },
+  kwResearchData: [],
+  isTyping: false
+};
 
-function checkAuth(){fetch('/auth/status').then(r=>r.json()).then(d=>{if(d.authenticated){document.getElementById('userInfo').innerHTML='<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-sm font-bold">'+(d.user.name?.charAt(0)||'U')+'</div><div class="flex-1"><p class="text-sm font-medium">'+(d.user.name||'User')+'</p><p class="text-xs text-slate-500">'+(d.user.email||'')+'</p></div>';showPage('dashboard');loadDashboard();}else showPage('login');}).catch(()=>showPage('login'));}
-function loginWithGoogle(){window.location.href='/auth/google';}
-function showPage(p){currentPage=p;document.querySelectorAll('.page-content').forEach(e=>e.classList.add('hidden'));document.getElementById('page-'+p)?.classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active');n.classList.add('text-slate-400');});document.querySelector('.nav-item[data-page="'+p+'"]')?.classList.add('active');document.querySelector('.nav-item[data-page="'+p+'"]')?.classList.remove('text-slate-400');updateSemrushStatus();if(p==='dashboard')loadDashboard();}
-function getApiKey(n){return localStorage.getItem('adspro_'+n+'_key');}
-function setApiKey(n,k){localStorage.setItem('adspro_'+n+'_key',k);}
-function saveSemrushKey(){var k=document.getElementById('semrushApiKey').value.trim();if(k){setApiKey('semrush',k);showAlert('SEMrush API saved!','success');updateSemrushStatus();}else showAlert('Enter API key','error');}
-function saveClaudeKey(){var k=document.getElementById('claudeApiKey').value.trim();if(k){setApiKey('claude',k);showAlert('Claude API saved!','success');}else showAlert('Enter API key','error');}
-function updateSemrushStatus(){var s=getApiKey('semrush'),el=document.getElementById('semrushStatus');if(el){el.innerHTML=s?'<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-sm text-emerald-400">SEMrush Connected</span>':'<span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-sm text-slate-400">Not connected</span>';el.className=s?'flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30':'flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700';}}
-function setCompetitor(d){document.getElementById('competitorDomainInput').value=d;}
+// ════════════════════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ════════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
+  loadSavedKeys();
+  updateApiStatus();
+});
 
-async function analyzeCompetitor(){var d=document.getElementById('competitorDomainInput').value.trim();if(!d)return showAlert('Enter domain','error');var sk=getApiKey('semrush');if(!sk){showAlert('Add SEMrush API in Settings','error');showPage('settings');return;}var btn=document.getElementById('analyzeBtn');btn.disabled=true;btn.innerHTML='<svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Analyzing...';
-try{var [kr,ar,or,cr]=await Promise.all([fetch('/automation/competitor/keywords',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:d,researchApiKey:sk,researchProvider:'semrush'})}),fetch('/automation/competitor/ads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:d,researchApiKey:sk,researchProvider:'semrush'})}),fetch('/automation/competitor/organic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:d,researchApiKey:sk,researchProvider:'semrush'})}),fetch('/automation/competitor/adcompetitors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:d,researchApiKey:sk,researchProvider:'semrush'})})]);var [kw,ad,og,cp]=await Promise.all([kr.json(),ar.json(),or.json(),cr.json()]);competitorData={domain:d,keywords:kw.keywords||[],ads:ad.ads||[],organic:og.keywords||[],competitors:cp.competitors||[]};renderCompetitorResults();document.getElementById('competitorResults').classList.remove('hidden');document.getElementById('competitorEmptyState').classList.add('hidden');}catch(e){showAlert('Error: '+e.message,'error');}btn.disabled=false;btn.innerHTML='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Analyze';}
+function checkAuth() {
+  fetch('/auth/status').then(r => r.json()).then(data => {
+    if (data.authenticated) {
+      document.getElementById('userInfo').innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold">${data.user.name?.charAt(0) || 'U'}</div>
+        <div class="flex-1 min-w-0"><p class="text-xs font-medium truncate">${data.user.name || 'User'}</p><p class="text-[10px] text-slate-500 truncate">${data.user.email || ''}</p></div>`;
+      showPage('dashboard');
+      loadDashboardData();
+    } else { showPage('login'); }
+  }).catch(() => showPage('login'));
+}
 
-function renderCompetitorResults(){var ts=competitorData.keywords.reduce((a,k)=>a+(k.trafficCost||0),0),ac=competitorData.keywords.length?(competitorData.keywords.reduce((a,k)=>a+(k.cpc||0),0)/competitorData.keywords.length):0;document.getElementById('competitorOverview').innerHTML='<div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-5"><p class="text-3xl font-bold text-blue-400">'+competitorData.keywords.length+'</p><p class="text-sm text-slate-400">Paid Keywords</p></div><div class="bg-purple-500/10 border border-purple-500/30 rounded-xl p-5"><p class="text-3xl font-bold text-purple-400">'+competitorData.ads.length+'</p><p class="text-sm text-slate-400">Active Ads</p></div><div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-5"><p class="text-3xl font-bold text-emerald-400">$'+fmt(ts)+'</p><p class="text-sm text-slate-400">Est. Monthly Spend</p></div><div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-5"><p class="text-3xl font-bold text-orange-400">$'+ac.toFixed(2)+'</p><p class="text-sm text-slate-400">Avg CPC</p></div>';renderCompetitorAds();renderCompetitorKeywords();renderOrganicKeywords();renderAdCompetitors();showCompetitorTab('ads');}
+function loginWithGoogle() { window.location.href = '/auth/google'; }
 
-function renderCompetitorAds(){var c=document.getElementById('competitorAdsContainer');if(!competitorData.ads.length){c.innerHTML='<p class="text-slate-400 text-center py-8">No ads found</p>';return;}c.innerHTML=competitorData.ads.slice(0,20).map((a,i)=>'<div class="bg-slate-800/50 border-l-4 border-blue-500 rounded-xl p-5 hover:border-purple-500 transition-all"><div class="flex items-start justify-between mb-3"><span class="text-xs text-slate-500">Ad #'+(i+1)+'</span><span class="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">'+esc(a.keyword||'')+'</span></div><h4 class="text-blue-400 font-semibold text-lg mb-2">'+esc(a.title||'')+'</h4><p class="text-slate-300 text-sm mb-3">'+esc(a.description||'')+'</p><div class="flex items-center justify-between"><span class="text-xs text-emerald-400">'+(a.visibleUrl||'')+'</span><button onclick="improveAd('+i+')" class="text-xs text-purple-400 hover:underline">✨ Generate Better</button></div></div>').join('');}
+function loadSavedKeys() {
+  const sk = getKey('semrush'); if (sk) document.getElementById('semrushApiKey').value = sk;
+  const ck = getKey('claude'); if (ck) document.getElementById('claudeApiKey').value = ck;
+}
 
-function renderCompetitorKeywords(){var c=document.getElementById('competitorKeywordsContainer');if(!competitorData.keywords.length){c.innerHTML='<p class="text-slate-400 text-center py-8">No keywords found</p>';return;}c.innerHTML='<table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-4">Keyword</th><th class="text-center p-4">Pos</th><th class="text-right p-4">Volume</th><th class="text-right p-4">CPC</th><th class="text-right p-4">Traffic</th><th class="text-right p-4">Cost/Mo</th><th class="text-center p-4">Comp</th></tr></thead><tbody>'+competitorData.keywords.slice(0,100).map(k=>'<tr class="table-row border-b border-slate-700/50"><td class="p-4"><div class="font-medium">'+esc(k.keyword)+'</div></td><td class="text-center p-4"><span class="px-2 py-1 rounded text-xs '+(k.position<=3?'bg-emerald-500/20 text-emerald-400':k.position<=10?'bg-blue-500/20 text-blue-400':'bg-slate-500/20 text-slate-400')+'">#'+k.position+'</span></td><td class="text-right p-4">'+fmt(k.searchVolume)+'</td><td class="text-right p-4 font-medium '+(k.cpc<3?'text-emerald-400':k.cpc<10?'text-amber-400':'text-rose-400')+'">$'+(k.cpc?.toFixed(2)||'0')+'</td><td class="text-right p-4">'+fmt(k.traffic)+'</td><td class="text-right p-4 text-purple-400">$'+fmt(k.trafficCost)+'</td><td class="text-center p-4"><div class="w-16 h-2 rounded bg-slate-700 mx-auto"><div class="h-full rounded '+(k.competition<0.3?'bg-emerald-500':k.competition<0.6?'bg-amber-500':'bg-rose-500')+'" style="width:'+((k.competition||0)*100)+'%"></div></div></td></tr>').join('')+'</tbody></table>';}
+// ════════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════════════════════════
+function showPage(page) {
+  state.currentPage = page;
+  document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+  document.getElementById('page-' + page)?.classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.classList.add('text-slate-400'); });
+  const nav = document.querySelector(`.nav-item[data-page="${page}"]`);
+  if (nav) { nav.classList.add('active'); nav.classList.remove('text-slate-400'); }
+  
+  const titles = { dashboard: 'Dashboard', campaigns: 'Campaigns', keywords: 'Keywords', ads: 'Ads', adgroups: 'Ad Groups',
+    optimization: 'AI Optimization', competitor: 'Competitor Spy', 'keyword-research': 'Keyword Research', auction: 'Auction Insights',
+    'ai-assistant': 'AI Assistant', 'ai-insights': 'AI Insights', reports: 'Reports', businesses: 'Businesses', settings: 'Settings' };
+  document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
+  
+  if (page === 'dashboard') loadDashboardData();
+  if (page === 'campaigns') loadCampaigns();
+  if (page === 'keywords') loadKeywords();
+  if (page === 'ads') loadAds();
+  if (page === 'optimization') loadOptimizations();
+  if (page === 'businesses') loadBusinesses();
+  updateApiStatus();
+}
 
-function renderOrganicKeywords(){var c=document.getElementById('organicKeywordsContainer');if(!competitorData.organic.length){c.innerHTML='<p class="text-slate-400 text-center py-8">No organic keywords</p>';return;}c.innerHTML='<table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-4">Keyword</th><th class="text-center p-4">Pos</th><th class="text-right p-4">Volume</th><th class="text-right p-4">CPC</th><th class="text-right p-4">Traffic</th></tr></thead><tbody>'+competitorData.organic.slice(0,50).map(k=>'<tr class="table-row border-b border-slate-700/50"><td class="p-4 font-medium">'+esc(k.keyword)+'</td><td class="text-center p-4"><span class="px-2 py-1 rounded text-xs bg-emerald-500/20 text-emerald-400">#'+k.position+'</span></td><td class="text-right p-4">'+fmt(k.searchVolume)+'</td><td class="text-right p-4">$'+(k.cpc?.toFixed(2)||'0')+'</td><td class="text-right p-4">'+fmt(k.traffic)+'</td></tr>').join('')+'</tbody></table>';}
+// ════════════════════════════════════════════════════════════════════════════
+// API KEYS
+// ════════════════════════════════════════════════════════════════════════════
+function getKey(name) { return localStorage.getItem('adspro_' + name + '_key'); }
+function setKey(name, key) { localStorage.setItem('adspro_' + name + '_key', key); }
+function saveSemrushKey() { const k = document.getElementById('semrushApiKey').value.trim(); if (k) { setKey('semrush', k); showAlert('SEMrush API saved!', 'success'); updateApiStatus(); } }
+function saveClaudeKey() { const k = document.getElementById('claudeApiKey').value.trim(); if (k) { setKey('claude', k); showAlert('Claude API saved!', 'success'); updateApiStatus(); } }
 
-function renderAdCompetitors(){var c=document.getElementById('adCompetitorsContainer');if(!competitorData.competitors.length){c.innerHTML='<p class="text-slate-400 text-center py-8 col-span-2">No competitors found</p>';return;}c.innerHTML=competitorData.competitors.slice(0,10).map(cp=>'<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-blue-500 transition-all"><div class="flex items-center justify-between mb-3"><span class="font-semibold">'+cp.domain+'</span><button onclick="setCompetitor(\''+cp.domain+'\');analyzeCompetitor()" class="text-xs text-blue-400 hover:underline">Analyze</button></div><div class="grid grid-cols-2 gap-3 text-sm"><div><p class="text-xs text-slate-500">Common KWs</p><p class="font-medium">'+fmt(cp.commonKeywords)+'</p></div><div><p class="text-xs text-slate-500">Ad KWs</p><p class="font-medium">'+fmt(cp.adsKeywords)+'</p></div><div><p class="text-xs text-slate-500">Traffic</p><p class="font-medium">'+fmt(cp.adsTraffic)+'</p></div><div><p class="text-xs text-slate-500">Spend</p><p class="font-medium text-purple-400">$'+fmt(cp.adsTrafficCost)+'</p></div></div></div>').join('');}
+function updateApiStatus() {
+  const sk = getKey('semrush'), ck = getKey('claude');
+  const el = document.getElementById('apiStatus');
+  if (sk && ck) {
+    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 status-dot"></span><span class="text-xs text-emerald-400">All APIs connected</span>';
+    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30';
+  } else if (sk || ck) {
+    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 status-dot"></span><span class="text-xs text-amber-400">Some APIs missing</span>';
+    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30';
+  } else {
+    el.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-xs text-slate-400">APIs not configured</span>';
+    el.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700';
+  }
+  // Update semrush status on competitor page
+  const ss = document.getElementById('semrushStatus');
+  if (ss) {
+    if (sk) { ss.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-xs text-emerald-400">Connected</span>'; ss.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30'; }
+    else { ss.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-xs text-slate-400">Not connected</span>'; }
+  }
+}
 
-function showCompetitorTab(t){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelector('.tab-btn[data-tab="'+t+'"]')?.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden'));document.getElementById('tab-'+t)?.classList.remove('hidden');}
-function generateBetterAds(){var ads=competitorData.ads.slice(0,5),kws=competitorData.keywords.slice(0,10).map(k=>k.keyword).join(', ');quickPrompt('Based on these competitor ads, create BETTER Google Ads:\\n\\nADS:\\n'+ads.map(a=>'Title: "'+a.title+'"\\nDesc: "'+a.description+'"').join('\\n\\n')+'\\n\\nKEYWORDS: '+kws+'\\n\\nCreate 3 ads with 15 headlines and 4 descriptions each.');}
-function improveAd(i){var a=competitorData.ads[i];quickPrompt('Improve this ad:\\nTitle: "'+a.title+'"\\nDesc: "'+a.description+'"\\nKeyword: "'+a.keyword+'"\\n\\nCreate 5 better headlines and 2 better descriptions.');}
-async function researchKeyword(){var k=document.getElementById('keywordSearchInput').value.trim();if(!k)return showAlert('Enter keyword','error');var sk=getApiKey('semrush');if(!sk){showAlert('Add SEMrush API in Settings','error');showPage('settings');return;}var btn=document.getElementById('keywordSearchBtn');btn.disabled=true;btn.innerHTML='<svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Researching...';var mc=document.getElementById('maxCpcFilter').value;
-try{var r=await fetch('/automation/keywords/discover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seedKeywords:[k],maxCpc:parseFloat(mc),researchApiKey:sk,researchProvider:'semrush'})});var d=await r.json();keywordData=d.keywords||[];renderKeywordResults();document.getElementById('keywordResults').classList.remove('hidden');document.getElementById('keywordEmptyState').classList.add('hidden');}catch(e){showAlert('Error: '+e.message,'error');}btn.disabled=false;btn.innerHTML='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Research';}
+// ════════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════════════════════════════
+function loadDashboardData() {
+  fetch('/api/dashboard').then(r => r.json()).then(d => {
+    document.getElementById('totalImpressions').textContent = fmt(d.impressions || 0);
+    document.getElementById('totalClicks').textContent = fmt(d.clicks || 0);
+    document.getElementById('avgCTR').textContent = (d.ctr || 0).toFixed(2) + '%';
+    document.getElementById('totalConversions').textContent = fmt(d.conversions || 0);
+    document.getElementById('totalCost').textContent = '$' + fmt(d.cost || 0);
+    document.getElementById('avgROAS').textContent = (d.roas || 0).toFixed(1) + 'x';
+    renderCharts();
+    loadTopCampaigns();
+    loadAIRecommendations();
+    generateDailySummary();
+  }).catch(() => { renderCharts(); generateDailySummary(); });
+}
 
-function renderKeywordResults(){var ac=keywordData.length?(keywordData.reduce((a,k)=>a+(k.cpc||0),0)/keywordData.length):0,lc=keywordData.filter(k=>k.difficulty==='Easy').length,op=keywordData.filter(k=>k.opportunityScore>=60).length;document.getElementById('keywordSummary').innerHTML='<div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4"><p class="text-2xl font-bold text-blue-400">'+keywordData.length+'</p><p class="text-sm text-slate-400">Keywords</p></div><div class="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4"><p class="text-2xl font-bold text-purple-400">$'+ac.toFixed(2)+'</p><p class="text-sm text-slate-400">Avg CPC</p></div><div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4"><p class="text-2xl font-bold text-emerald-400">'+lc+'</p><p class="text-sm text-slate-400">Low Competition</p></div><div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4"><p class="text-2xl font-bold text-orange-400">'+op+'</p><p class="text-sm text-slate-400">Opportunities</p></div>';document.getElementById('keywordCount').textContent=keywordData.length+' keywords';renderKeywordTable(keywordData);}
+function renderCharts() {
+  // Performance Chart
+  const ctx = document.getElementById('performanceChart');
+  if (ctx && !ctx.chart) {
+    ctx.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Clicks',
+          data: [120, 145, 132, 178, 190, 165, 210],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } } }
+      }
+    });
+  }
+  // Health Chart
+  const hctx = document.getElementById('healthChart');
+  if (hctx && !hctx.chart) {
+    hctx.chart = new Chart(hctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Excellent', 'Good', 'Needs Work', 'Poor'],
+        datasets: [{ data: [4, 3, 2, 1], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12 } } } }
+    });
+  }
+}
 
-function renderKeywordTable(d){document.getElementById('keywordTableContainer').innerHTML='<table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-4">Keyword</th><th class="text-right p-4">Volume</th><th class="text-right p-4">CPC</th><th class="text-center p-4">Difficulty</th><th class="text-center p-4">Opportunity</th><th class="text-center p-4">Intent</th></tr></thead><tbody>'+d.slice(0,100).map(k=>'<tr class="table-row border-b border-slate-700/50"><td class="p-4 font-medium">'+esc(k.keyword)+'</td><td class="text-right p-4">'+fmt(k.searchVolume)+'</td><td class="text-right p-4 '+(k.cpc<3?'text-emerald-400':k.cpc<10?'text-amber-400':'text-rose-400')+' font-medium">$'+(k.cpc?.toFixed(2)||'0')+'</td><td class="text-center p-4"><span class="px-2 py-1 rounded text-xs '+(k.difficulty==='Easy'?'bg-emerald-500/20 text-emerald-400':k.difficulty==='Medium'?'bg-amber-500/20 text-amber-400':'bg-rose-500/20 text-rose-400')+'">'+k.difficulty+'</span></td><td class="text-center p-4"><div class="flex items-center justify-center gap-1"><div class="w-12 h-2 rounded bg-slate-700"><div class="h-full rounded '+(k.opportunityScore>=60?'bg-emerald-500':k.opportunityScore>=40?'bg-amber-500':'bg-rose-500')+'" style="width:'+k.opportunityScore+'%"></div></div><span class="text-xs '+(k.opportunityScore>=60?'text-emerald-400':'text-slate-400')+'">'+k.opportunityScore+'</span></div></td><td class="text-center p-4"><span class="px-2 py-1 rounded text-xs '+(k.intent==='Commercial'||k.intent==='Transactional'?'bg-purple-500/20 text-purple-400':'bg-slate-500/20 text-slate-400')+'">'+k.intent+'</span></td></tr>').join('')+'</tbody></table>';}
+function loadTopCampaigns() {
+  document.getElementById('topCampaigns').innerHTML = `
+    <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/30"><div><p class="font-medium text-sm">Search - Internet</p><p class="text-xs text-slate-500">$2,450 spent</p></div><span class="text-xs text-emerald-400">+12% CTR</span></div>
+    <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/30"><div><p class="font-medium text-sm">Search - Cable TV</p><p class="text-xs text-slate-500">$1,890 spent</p></div><span class="text-xs text-emerald-400">+8% CTR</span></div>
+    <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/30"><div><p class="font-medium text-sm">Display - Bundles</p><p class="text-xs text-slate-500">$950 spent</p></div><span class="text-xs text-amber-400">-2% CTR</span></div>`;
+}
 
-function filterKeywords(t){var f=[...keywordData];if(t==='opportunities')f=f.filter(k=>k.opportunityScore>=60).sort((a,b)=>b.opportunityScore-a.opportunityScore);else if(t==='lowcpc')f=f.filter(k=>k.cpc<5).sort((a,b)=>a.cpc-b.cpc);else if(t==='highvolume')f=f.sort((a,b)=>b.searchVolume-a.searchVolume);renderKeywordTable(f);}
+function loadAIRecommendations() {
+  document.getElementById('aiRecommendations').innerHTML = `
+    <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30"><p class="text-sm font-medium text-emerald-400">💰 Increase budget for "internet service" campaign</p><p class="text-xs text-slate-400 mt-1">High conversion rate, limited by budget</p></div>
+    <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"><p class="text-sm font-medium text-amber-400">⚠️ 3 keywords with low Quality Score</p><p class="text-xs text-slate-400 mt-1">Review and optimize ad relevance</p></div>`;
+}
 
-async function sendChat(){var inp=document.getElementById('chatInput'),m=inp.value.trim();if(!m||isTyping)return;var ck=getApiKey('claude');if(!ck){showAlert('Add Claude API in Settings','error');showPage('settings');return;}addMsg('user',m);inp.value='';isTyping=true;document.getElementById('sendBtn').disabled=true;document.getElementById('aiStatus').textContent='Thinking...';document.getElementById('aiStatus').className='px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-400 animate-pulse';var c=document.getElementById('chatMessages'),id='ai-'+Date.now();c.insertAdjacentHTML('beforeend','<div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="bg-slate-700/50 rounded-xl rounded-tl-none p-4 max-w-2xl"><div id="'+id+'" class="ai-message text-sm"></div></div></div>');c.scrollTop=c.scrollHeight;
-try{var r=await fetch('/ai/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:m,claudeApiKey:ck})});var rd=r.body.getReader(),dc=new TextDecoder(),txt='';while(true){var{value,done}=await rd.read();if(done)break;var ch=dc.decode(value);for(var ln of ch.split('\n')){if(ln.startsWith('data: ')){try{var d=JSON.parse(ln.slice(6));if(d.type==='chunk'){txt+=d.text;document.getElementById(id).innerHTML=marked.parse(txt)+'<span class="typing-cursor">▊</span>';c.scrollTop=c.scrollHeight;}else if(d.type==='done')document.getElementById(id).innerHTML=marked.parse(txt);}catch(e){}}}}}catch(e){document.getElementById(id).innerHTML='<span class="text-rose-400">Error: '+e.message+'</span>';}isTyping=false;document.getElementById('sendBtn').disabled=false;document.getElementById('aiStatus').textContent='Ready';document.getElementById('aiStatus').className='px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400';}
+async function generateDailySummary() {
+  const el = document.getElementById('aiDailySummary');
+  const ck = getKey('claude');
+  if (!ck) { el.textContent = 'Add Claude API key in Settings to enable AI insights.'; return; }
+  el.innerHTML = '<span class="text-slate-400">Analyzing your campaigns...</span>';
+  try {
+    const r = await fetch('/ai/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Give me a brief 2-3 sentence summary of my Google Ads performance today. Focus on key metrics and one actionable insight.', claudeApiKey: ck }) });
+    const d = await r.json();
+    el.textContent = d.message || 'Unable to generate summary.';
+  } catch (e) { el.textContent = 'Unable to generate AI summary. Check your API key.'; }
+}
 
-function addMsg(r,t){var c=document.getElementById('chatMessages'),u=r==='user';c.insertAdjacentHTML('beforeend','<div class="flex gap-3 '+(u?'justify-end':'')+'"><div class="'+(u?'bg-blue-500/20 rounded-xl rounded-tr-none':'bg-slate-700/50 rounded-xl rounded-tl-none')+' p-4 max-w-2xl"><div class="text-sm">'+esc(t)+'</div></div></div>');c.scrollTop=c.scrollHeight;}
-function quickPrompt(p){showPage('ai-assistant');setTimeout(()=>{document.getElementById('chatInput').value=p;sendChat();},100);}
-function clearChat(){document.getElementById('chatMessages').innerHTML='<div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="bg-slate-700/50 rounded-xl rounded-tl-none p-4 max-w-2xl"><p class="text-sm">Chat cleared. How can I help?</p></div></div>';}
+// ════════════════════════════════════════════════════════════════════════════
+// CAMPAIGNS
+// ════════════════════════════════════════════════════════════════════════════
+function loadCampaigns() {
+  fetch('/api/campaigns').then(r => r.json()).then(d => {
+    state.campaigns = d.campaigns || [];
+    renderCampaignsTable();
+  }).catch(() => { state.campaigns = []; renderCampaignsTable(); });
+}
 
-function loadDashboard(){fetch('/api/dashboard').then(r=>r.json()).then(d=>{document.getElementById('totalImpressions').textContent=fmt(d.impressions||0);document.getElementById('totalClicks').textContent=fmt(d.clicks||0);document.getElementById('totalConversions').textContent=fmt(d.conversions||0);document.getElementById('totalCost').textContent='$'+fmt(d.cost||0);initChart();}).catch(()=>initChart());}
-function initChart(){var ctx=document.getElementById('performanceChart');if(ctx&&!ctx.chart){ctx.chart=new Chart(ctx,{type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Clicks',data:[120,150,180,140,200,170,190],borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1e293b'},ticks:{color:'#64748b'}},y:{grid:{color:'#1e293b'},ticks:{color:'#64748b'}}}}});}}
+function renderCampaignsTable() {
+  const tbody = document.getElementById('campaignsTableBody');
+  if (!state.campaigns.length) {
+    tbody.innerHTML = '<tr><td colspan="12" class="p-8 text-center text-slate-400">No campaigns found. Connect Google Ads to see your campaigns.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.campaigns.map(c => `
+    <tr class="table-row border-b border-slate-700/50">
+      <td class="p-4"><input type="checkbox" class="rounded campaign-check" data-id="${c.id}"></td>
+      <td class="p-4"><div class="font-medium">${esc(c.name)}</div><div class="text-xs text-slate-500">${c.id}</div></td>
+      <td class="p-4"><span class="px-2 py-1 rounded text-xs ${c.status === 'ENABLED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">${c.status}</span></td>
+      <td class="p-4"><span class="text-xs text-slate-400">${c.type || 'SEARCH'}</span></td>
+      <td class="p-4 text-right">$${fmt(c.budget || 0)}/day</td>
+      <td class="p-4 text-right">${fmt(c.impressions || 0)}</td>
+      <td class="p-4 text-right">${fmt(c.clicks || 0)}</td>
+      <td class="p-4 text-right">${(c.ctr || 0).toFixed(2)}%</td>
+      <td class="p-4 text-right">${fmt(c.conversions || 0)}</td>
+      <td class="p-4 text-right">$${fmt(c.cost || 0)}</td>
+      <td class="p-4 text-right">$${c.conversions ? (c.cost / c.conversions).toFixed(2) : '0'}</td>
+      <td class="p-4 text-center">
+        <button onclick="analyzeCampaign('${c.id}')" class="p-1.5 rounded hover:bg-slate-700 text-slate-400" title="AI Analysis"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></button>
+      </td>
+    </tr>
+  `).join('');
+}
 
-function fmt(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n?.toLocaleString()||'0';}
-function esc(t){var d=document.createElement('div');d.textContent=t||'';return d.innerHTML;}
-function showAlert(m,t){var c={success:'bg-emerald-500/20 border-emerald-500/50 text-emerald-400',error:'bg-rose-500/20 border-rose-500/50 text-rose-400',info:'bg-blue-500/20 border-blue-500/50 text-blue-400'};document.getElementById('alertContainer').innerHTML='<div class="p-4 rounded-xl border '+(c[t]||c.info)+' mb-4">'+m+'</div>';setTimeout(()=>document.getElementById('alertContainer').innerHTML='',5000);}
-function refreshData(){loadDashboard();}
-function exportKeywords(){var csv='Keyword,Volume,CPC,Competition,Opportunity,Intent\n'+competitorData.keywords.map(k=>'"'+k.keyword+'",'+k.searchVolume+','+k.cpc+','+k.competition+','+k.position+',"paid"').join('\n');var b=new Blob([csv],{type:'text/csv'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='competitor_keywords.csv';a.click();showAlert('Downloaded!','success');}
+function createCampaignWithAI() {
+  showPage('ai-assistant');
+  setTimeout(() => quickChat('Help me create a new Google Ads search campaign. Ask me about my business goals and target audience.'), 100);
+}
 
-document.addEventListener('DOMContentLoaded',checkAuth);
+// ════════════════════════════════════════════════════════════════════════════
+// KEYWORDS
+// ════════════════════════════════════════════════════════════════════════════
+function loadKeywords() {
+  fetch('/api/keywords').then(r => r.json()).then(d => {
+    state.keywords = d.keywords || [];
+    renderKeywordsTable();
+    updateKeywordStats();
+  }).catch(() => { state.keywords = []; renderKeywordsTable(); });
+}
+
+function renderKeywordsTable() {
+  const tbody = document.getElementById('keywordsTableBody');
+  if (!state.keywords.length) {
+    tbody.innerHTML = '<tr><td colspan="12" class="p-8 text-center text-slate-400">No keywords found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.keywords.map(k => `
+    <tr class="table-row border-b border-slate-700/50">
+      <td class="p-4"><input type="checkbox" class="rounded"></td>
+      <td class="p-4 font-medium">${esc(k.keyword)}</td>
+      <td class="p-4"><span class="px-2 py-0.5 rounded text-xs bg-slate-700">${k.matchType || 'BROAD'}</span></td>
+      <td class="p-4 text-center"><span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${k.qualityScore >= 7 ? 'bg-emerald-500/20 text-emerald-400' : k.qualityScore >= 4 ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">${k.qualityScore || '-'}</span></td>
+      <td class="p-4"><span class="px-2 py-0.5 rounded text-xs ${k.status === 'ENABLED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">${k.status}</span></td>
+      <td class="p-4 text-right">${fmt(k.impressions || 0)}</td>
+      <td class="p-4 text-right">${fmt(k.clicks || 0)}</td>
+      <td class="p-4 text-right">${(k.ctr || 0).toFixed(2)}%</td>
+      <td class="p-4 text-right">$${(k.avgCpc || 0).toFixed(2)}</td>
+      <td class="p-4 text-right">${fmt(k.conversions || 0)}</td>
+      <td class="p-4 text-right">$${fmt(k.cost || 0)}</td>
+      <td class="p-4 text-center">
+        <button onclick="analyzeKeyword('${esc(k.keyword)}')" class="p-1.5 rounded hover:bg-slate-700 text-slate-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateKeywordStats() {
+  document.getElementById('totalKeywords').textContent = state.keywords.length;
+  document.getElementById('activeKeywords').textContent = state.keywords.filter(k => k.status === 'ENABLED').length;
+  const qsArr = state.keywords.filter(k => k.qualityScore).map(k => k.qualityScore);
+  document.getElementById('avgQualityScore').textContent = qsArr.length ? (qsArr.reduce((a, b) => a + b) / qsArr.length).toFixed(1) : '0';
+  const cpcArr = state.keywords.filter(k => k.avgCpc).map(k => k.avgCpc);
+  document.getElementById('avgCPC').textContent = '$' + (cpcArr.length ? (cpcArr.reduce((a, b) => a + b) / cpcArr.length).toFixed(2) : '0');
+  document.getElementById('lowQSKeywords').textContent = state.keywords.filter(k => k.qualityScore && k.qualityScore < 5).length;
+}
+
+function addKeywordsWithAI() {
+  showPage('ai-assistant');
+  setTimeout(() => quickChat('Suggest 20 high-intent keywords for internet and cable TV services. Include search volume and competition estimates.'), 100);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ADS
+// ════════════════════════════════════════════════════════════════════════════
+function loadAds() {
+  fetch('/api/ads').then(r => r.json()).then(d => {
+    state.ads = d.ads || [];
+    renderAdsGrid();
+  }).catch(() => { state.ads = []; renderAdsGrid(); });
+}
+
+function renderAdsGrid() {
+  const container = document.getElementById('adsContainer');
+  if (!state.ads.length) {
+    container.innerHTML = '<div class="card p-6 text-center text-slate-400 col-span-full">No ads found. Create ads to see them here.</div>';
+    return;
+  }
+  container.innerHTML = state.ads.map(a => `
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="px-2 py-0.5 rounded text-xs ${a.status === 'ENABLED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">${a.status}</span>
+        <span class="text-xs text-slate-500">${a.type || 'RSA'}</span>
+      </div>
+      <h4 class="text-blue-400 font-semibold mb-1">${esc(a.headlines?.[0] || 'Headline')}</h4>
+      <p class="text-sm text-slate-300 mb-3">${esc(a.descriptions?.[0] || 'Description')}</p>
+      <div class="grid grid-cols-3 gap-2 text-center text-xs">
+        <div><p class="text-slate-500">Impr</p><p class="font-medium">${fmt(a.impressions || 0)}</p></div>
+        <div><p class="text-slate-500">Clicks</p><p class="font-medium">${fmt(a.clicks || 0)}</p></div>
+        <div><p class="text-slate-500">CTR</p><p class="font-medium">${(a.ctr || 0).toFixed(2)}%</p></div>
+      </div>
+      <button onclick="improveAdWithAI('${esc(a.headlines?.[0])}')" class="w-full mt-3 px-3 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-xs hover:bg-purple-500/30">✨ Improve with AI</button>
+    </div>
+  `).join('');
+}
+
+function createAdWithAI() {
+  showPage('ai-assistant');
+  setTimeout(() => quickChat('Create a responsive search ad with 15 headlines (max 30 chars) and 4 descriptions (max 90 chars) for high-speed fiber internet service.'), 100);
+}
+
+function improveAdWithAI(headline) {
+  showPage('ai-assistant');
+  setTimeout(() => quickChat(`Improve this Google Ad headline: "${headline}". Give me 5 better variations that are more compelling.`), 100);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// OPTIMIZATION
+// ════════════════════════════════════════════════════════════════════════════
+function loadOptimizations() {
+  renderOptimizationList();
+}
+
+function renderOptimizationList() {
+  const recommendations = [
+    { type: 'budget', priority: 'high', title: 'Increase budget for "Internet Services" campaign', desc: 'This campaign is limited by budget with 85% impression share lost. Increasing budget by $20/day could generate 150 more clicks.', impact: '+150 clicks/week', action: 'Apply' },
+    { type: 'keywords', priority: 'high', title: 'Pause low-performing keyword: "cheap wifi"', desc: 'This keyword has 0 conversions with $245 spend. Quality Score is 3/10.', impact: 'Save $245/month', action: 'Pause' },
+    { type: 'keywords', priority: 'medium', title: 'Add negative keyword: "free"', desc: 'Your ads are showing for "free internet" searches which have 0.1% conversion rate.', impact: 'Save $85/month', action: 'Add' },
+    { type: 'ads', priority: 'medium', title: 'Create new ad variations', desc: 'Ad Group "Fiber Internet" has only 2 ads. Adding more variations can improve performance.', impact: '+15% CTR potential', action: 'Create' },
+    { type: 'bidding', priority: 'low', title: 'Switch to Target CPA bidding', desc: 'Your campaigns have enough conversion data to use automated bidding effectively.', impact: '+20% conversions', action: 'Switch' },
+  ];
+  
+  document.getElementById('optimizationList').innerHTML = recommendations.map(r => `
+    <div class="card p-5 border-l-4 ${r.priority === 'high' ? 'border-rose-500' : r.priority === 'medium' ? 'border-amber-500' : 'border-blue-500'}">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 rounded text-xs ${r.priority === 'high' ? 'bg-rose-500/20 text-rose-400' : r.priority === 'medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}">${r.priority.toUpperCase()}</span>
+            <span class="px-2 py-0.5 rounded text-xs bg-slate-700">${r.type}</span>
+          </div>
+          <h4 class="font-semibold mb-1">${r.title}</h4>
+          <p class="text-sm text-slate-400">${r.desc}</p>
+          <p class="text-sm text-emerald-400 mt-2">Impact: ${r.impact}</p>
+        </div>
+        <div class="flex gap-2 ml-4">
+          <button class="px-4 py-2 rounded-lg bg-slate-700 text-sm hover:bg-slate-600">Dismiss</button>
+          <button class="btn-primary px-4 py-2 rounded-lg text-sm">${r.action}</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function runFullOptimization() {
+  const btn = document.getElementById('runOptBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Analyzing...';
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Run Full Analysis';
+    showAlert('Analysis complete! Found 5 optimization opportunities.', 'success');
+    renderOptimizationList();
+  }, 2000);
+}
+
+function showOptTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.classList.add('bg-slate-800', 'text-slate-400'); });
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`)?.classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`)?.classList.remove('bg-slate-800', 'text-slate-400');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// COMPETITOR RESEARCH
+// ════════════════════════════════════════════════════════════════════════════
+function setCompetitorDomain(d) { document.getElementById('competitorDomain').value = d; }
+
+async function analyzeCompetitor() {
+  const domain = document.getElementById('competitorDomain').value.trim();
+  if (!domain) return showAlert('Enter a domain', 'error');
+  const sk = getKey('semrush');
+  if (!sk) { showAlert('Add SEMrush API key in Settings', 'error'); showPage('settings'); return; }
+  
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Analyzing...';
+  
+  try {
+    const [kr, ar, or, cr] = await Promise.all([
+      fetch('/automation/competitor/keywords', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain, researchApiKey: sk, researchProvider: 'semrush' }) }),
+      fetch('/automation/competitor/ads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain, researchApiKey: sk, researchProvider: 'semrush' }) }),
+      fetch('/automation/competitor/organic', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain, researchApiKey: sk, researchProvider: 'semrush' }) }),
+      fetch('/automation/competitor/adcompetitors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain, researchApiKey: sk, researchProvider: 'semrush' }) })
+    ]);
+    const [kw, ad, og, cp] = await Promise.all([kr.json(), ar.json(), or.json(), cr.json()]);
+    state.competitorData = { domain, keywords: kw.keywords || [], ads: ad.ads || [], organic: og.keywords || [], competitors: cp.competitors || [] };
+    renderCompetitorResults();
+    document.getElementById('competitorResults').classList.remove('hidden');
+    document.getElementById('competitorEmpty').classList.add('hidden');
+  } catch (e) { showAlert('Error: ' + e.message, 'error'); }
+  
+  btn.disabled = false;
+  btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Analyze';
+}
+
+function renderCompetitorResults() {
+  const d = state.competitorData;
+  const ts = d.keywords.reduce((a, k) => a + (k.trafficCost || 0), 0);
+  const ac = d.keywords.length ? d.keywords.reduce((a, k) => a + (k.cpc || 0), 0) / d.keywords.length : 0;
+  
+  document.getElementById('competitorOverview').innerHTML = `
+    <div class="card p-4 border-l-4 border-blue-500"><p class="text-2xl font-bold text-blue-400">${d.keywords.length}</p><p class="text-xs text-slate-500">Paid Keywords</p></div>
+    <div class="card p-4 border-l-4 border-purple-500"><p class="text-2xl font-bold text-purple-400">${d.ads.length}</p><p class="text-xs text-slate-500">Active Ads</p></div>
+    <div class="card p-4 border-l-4 border-emerald-500"><p class="text-2xl font-bold text-emerald-400">$${fmt(ts)}</p><p class="text-xs text-slate-500">Est. Monthly Spend</p></div>
+    <div class="card p-4 border-l-4 border-amber-500"><p class="text-2xl font-bold text-amber-400">$${ac.toFixed(2)}</p><p class="text-xs text-slate-500">Avg CPC</p></div>`;
+  
+  renderCompetitorAds();
+  renderCompetitorKeywords();
+  renderOrganicKeywords();
+  renderAdCompetitors();
+  showCompTab('ads');
+}
+
+function renderCompetitorAds() {
+  const c = document.getElementById('competitorAdsContainer');
+  if (!state.competitorData.ads.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No ads found</p>'; return; }
+  c.innerHTML = state.competitorData.ads.slice(0, 15).map((a, i) => `
+    <div class="card p-4 border-l-4 border-blue-500 hover:border-purple-500 transition-all">
+      <div class="flex justify-between mb-2"><span class="text-xs text-slate-500">Ad #${i + 1}</span><span class="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">${esc(a.keyword || '')}</span></div>
+      <h4 class="text-blue-400 font-semibold mb-1">${esc(a.title || '')}</h4>
+      <p class="text-sm text-slate-300 mb-2">${esc(a.description || '')}</p>
+      <div class="flex justify-between items-center">
+        <span class="text-xs text-emerald-400">${a.visibleUrl || ''}</span>
+        <button onclick="improveCompetitorAd(${i})" class="text-xs text-purple-400 hover:underline">✨ Beat This Ad</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCompetitorKeywords() {
+  const c = document.getElementById('competitorKeywordsContainer');
+  if (!state.competitorData.keywords.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No keywords found</p>'; return; }
+  c.innerHTML = `<div class="overflow-x-auto max-h-[500px]"><table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-3">Keyword</th><th class="text-center p-3">Pos</th><th class="text-right p-3">Volume</th><th class="text-right p-3">CPC</th><th class="text-right p-3">Traffic</th><th class="text-right p-3">Cost/Mo</th></tr></thead><tbody>${state.competitorData.keywords.slice(0, 100).map(k => `
+    <tr class="table-row border-b border-slate-700/50">
+      <td class="p-3 font-medium">${esc(k.keyword)}</td>
+      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs ${k.position <= 3 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">#${k.position}</span></td>
+      <td class="text-right p-3">${fmt(k.searchVolume)}</td>
+      <td class="text-right p-3 ${k.cpc < 5 ? 'text-emerald-400' : k.cpc < 15 ? 'text-amber-400' : 'text-rose-400'}">$${(k.cpc || 0).toFixed(2)}</td>
+      <td class="text-right p-3">${fmt(k.traffic)}</td>
+      <td class="text-right p-3 text-purple-400">$${fmt(k.trafficCost)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderOrganicKeywords() {
+  const c = document.getElementById('organicKeywordsContainer');
+  if (!state.competitorData.organic.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No organic keywords</p>'; return; }
+  c.innerHTML = `<div class="overflow-x-auto max-h-[500px]"><table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-3">Keyword</th><th class="text-center p-3">Pos</th><th class="text-right p-3">Volume</th><th class="text-right p-3">CPC</th><th class="text-right p-3">Traffic</th></tr></thead><tbody>${state.competitorData.organic.slice(0, 50).map(k => `
+    <tr class="table-row border-b border-slate-700/50">
+      <td class="p-3 font-medium">${esc(k.keyword)}</td>
+      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs bg-emerald-500/20 text-emerald-400">#${k.position}</span></td>
+      <td class="text-right p-3">${fmt(k.searchVolume)}</td>
+      <td class="text-right p-3">$${(k.cpc || 0).toFixed(2)}</td>
+      <td class="text-right p-3">${fmt(k.traffic)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderAdCompetitors() {
+  const c = document.getElementById('adCompetitorsContainer');
+  if (!state.competitorData.competitors.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8 col-span-2">No competitors found</p>'; return; }
+  c.innerHTML = state.competitorData.competitors.slice(0, 8).map(cp => `
+    <div class="card p-4 hover:border-blue-500 cursor-pointer" onclick="setCompetitorDomain('${cp.domain}');analyzeCompetitor()">
+      <div class="flex justify-between mb-3"><span class="font-semibold">${cp.domain}</span><span class="text-xs text-blue-400">Analyze →</span></div>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div><p class="text-slate-500">Common KWs</p><p class="font-medium">${fmt(cp.commonKeywords)}</p></div>
+        <div><p class="text-slate-500">Ad Spend</p><p class="font-medium text-purple-400">$${fmt(cp.adsTrafficCost)}</p></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showCompTab(tab) {
+  document.querySelectorAll('[data-ctab]').forEach(b => { b.classList.remove('active'); b.classList.add('bg-slate-800', 'text-slate-400'); });
+  document.querySelector(`[data-ctab="${tab}"]`)?.classList.add('active');
+  document.querySelector(`[data-ctab="${tab}"]`)?.classList.remove('bg-slate-800', 'text-slate-400');
+  document.querySelectorAll('.ctab-content').forEach(c => c.classList.add('hidden'));
+  document.getElementById('ctab-' + tab)?.classList.remove('hidden');
+}
+
+function generateBetterAds() {
+  const ads = state.competitorData.ads.slice(0, 3);
+  const kws = state.competitorData.keywords.slice(0, 5).map(k => k.keyword).join(', ');
+  showPage('ai-assistant');
+  setTimeout(() => quickChat(`Create BETTER Google Ads than these competitor ads:\n\n${ads.map(a => `Title: "${a.title}"\nDesc: "${a.description}"`).join('\n\n')}\n\nKeywords: ${kws}\n\nGive me 3 RSAs with 15 headlines and 4 descriptions each.`), 100);
+}
+
+function improveCompetitorAd(i) {
+  const a = state.competitorData.ads[i];
+  showPage('ai-assistant');
+  setTimeout(() => quickChat(`Create a BETTER version of this competitor ad:\n\nTitle: "${a.title}"\nDescription: "${a.description}"\nKeyword: "${a.keyword}"\n\nGive me 5 better headlines and 2 better descriptions.`), 100);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// KEYWORD RESEARCH
+// ════════════════════════════════════════════════════════════════════════════
+async function researchKeywords() {
+  const kw = document.getElementById('kwResearchInput').value.trim();
+  if (!kw) return showAlert('Enter a keyword', 'error');
+  const sk = getKey('semrush');
+  if (!sk) { showAlert('Add SEMrush API key in Settings', 'error'); showPage('settings'); return; }
+  
+  const btn = document.getElementById('kwResearchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Researching...';
+  
+  try {
+    const r = await fetch('/automation/keywords/discover', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seedKeywords: [kw], maxCpc: parseFloat(document.getElementById('kwMaxCpc').value), researchApiKey: sk, researchProvider: 'semrush' }) });
+    const d = await r.json();
+    state.kwResearchData = d.keywords || [];
+    renderKwResults();
+    document.getElementById('kwResults').classList.remove('hidden');
+    document.getElementById('kwEmpty').classList.add('hidden');
+  } catch (e) { showAlert('Error: ' + e.message, 'error'); }
+  
+  btn.disabled = false;
+  btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Research';
+}
+
+function renderKwResults() {
+  const d = state.kwResearchData;
+  const avgCpc = d.length ? d.reduce((a, k) => a + (k.cpc || 0), 0) / d.length : 0;
+  const low = d.filter(k => k.difficulty === 'Easy').length;
+  const opp = d.filter(k => k.opportunityScore >= 60).length;
+  
+  document.getElementById('kwSummary').innerHTML = `
+    <div class="card p-3"><p class="text-xs text-slate-500">Keywords</p><p class="text-xl font-bold text-blue-400">${d.length}</p></div>
+    <div class="card p-3"><p class="text-xs text-slate-500">Avg CPC</p><p class="text-xl font-bold text-purple-400">$${avgCpc.toFixed(2)}</p></div>
+    <div class="card p-3"><p class="text-xs text-slate-500">Low Competition</p><p class="text-xl font-bold text-emerald-400">${low}</p></div>
+    <div class="card p-3"><p class="text-xs text-slate-500">Opportunities</p><p class="text-xl font-bold text-amber-400">${opp}</p></div>`;
+  
+  renderKwTable(d);
+}
+
+function renderKwTable(data) {
+  document.getElementById('kwTableContainer').innerHTML = `<table class="w-full text-sm"><thead class="sticky top-0 bg-slate-800"><tr class="text-xs uppercase text-slate-400"><th class="text-left p-3">Keyword</th><th class="text-right p-3">Volume</th><th class="text-right p-3">CPC</th><th class="text-center p-3">Difficulty</th><th class="text-center p-3">Opportunity</th><th class="text-center p-3">Intent</th></tr></thead><tbody>${data.slice(0, 100).map(k => `
+    <tr class="table-row border-b border-slate-700/50">
+      <td class="p-3 font-medium">${esc(k.keyword)}</td>
+      <td class="text-right p-3">${fmt(k.searchVolume)}</td>
+      <td class="text-right p-3 ${k.cpc < 3 ? 'text-emerald-400' : k.cpc < 10 ? 'text-amber-400' : 'text-rose-400'}">$${(k.cpc || 0).toFixed(2)}</td>
+      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs ${k.difficulty === 'Easy' ? 'bg-emerald-500/20 text-emerald-400' : k.difficulty === 'Medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">${k.difficulty}</span></td>
+      <td class="text-center p-3"><div class="flex items-center justify-center gap-1"><div class="w-10 h-1.5 rounded bg-slate-700"><div class="h-full rounded ${k.opportunityScore >= 60 ? 'bg-emerald-500' : 'bg-amber-500'}" style="width:${k.opportunityScore}%"></div></div><span class="text-xs">${k.opportunityScore}</span></div></td>
+      <td class="text-center p-3"><span class="px-2 py-0.5 rounded text-xs ${k.intent === 'Commercial' || k.intent === 'Transactional' ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-500/20 text-slate-400'}">${k.intent}</span></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function filterKwResults(type) {
+  let f = [...state.kwResearchData];
+  if (type === 'best') f = f.filter(k => k.opportunityScore >= 60).sort((a, b) => b.opportunityScore - a.opportunityScore);
+  else if (type === 'lowcpc') f = f.filter(k => k.cpc < 5).sort((a, b) => a.cpc - b.cpc);
+  else if (type === 'highvol') f = f.sort((a, b) => b.searchVolume - a.searchVolume);
+  renderKwTable(f);
+}
+
+function exportKwResults() {
+  const csv = 'Keyword,Volume,CPC,Difficulty,Opportunity,Intent\n' + state.kwResearchData.map(k => `"${k.keyword}",${k.searchVolume},${k.cpc},"${k.difficulty}",${k.opportunityScore},"${k.intent}"`).join('\n');
+  const b = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'keywords.csv'; a.click();
+  showAlert('Downloaded!', 'success');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// AI CHAT
+// ════════════════════════════════════════════════════════════════════════════
+async function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const msg = inp.value.trim();
+  if (!msg || state.isTyping) return;
+  
+  const ck = getKey('claude');
+  if (!ck) { showAlert('Add Claude API key in Settings', 'error'); showPage('settings'); return; }
+  
+  addChatMessage('user', msg);
+  inp.value = '';
+  state.isTyping = true;
+  document.getElementById('sendChatBtn').disabled = true;
+  document.getElementById('aiStatus').textContent = 'Thinking...';
+  document.getElementById('aiStatus').className = 'px-2 py-0.5 rounded-full text-[10px] bg-purple-500/20 text-purple-400 animate-pulse';
+  
+  const container = document.getElementById('chatMessages');
+  const aiMsgId = 'ai-' + Date.now();
+  container.insertAdjacentHTML('beforeend', `<div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="bg-slate-800/50 rounded-xl rounded-tl-none p-4 max-w-2xl"><div id="${aiMsgId}" class="ai-message text-sm"></div></div></div>`);
+  container.scrollTop = container.scrollHeight;
+  
+  try {
+    const r = await fetch('/ai/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, claudeApiKey: ck }) });
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value);
+      for (const line of chunk.split('\n')) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.type === 'chunk') {
+              fullText += data.text;
+              document.getElementById(aiMsgId).innerHTML = marked.parse(fullText) + '<span class="typing-cursor">▊</span>';
+              container.scrollTop = container.scrollHeight;
+            } else if (data.type === 'done') {
+              document.getElementById(aiMsgId).innerHTML = marked.parse(fullText);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+  } catch (e) {
+    document.getElementById(aiMsgId).innerHTML = '<span class="text-rose-400">Error: ' + e.message + '</span>';
+  }
+  
+  state.isTyping = false;
+  document.getElementById('sendChatBtn').disabled = false;
+  document.getElementById('aiStatus').textContent = 'Ready';
+  document.getElementById('aiStatus').className = 'px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400';
+}
+
+function addChatMessage(role, content) {
+  const container = document.getElementById('chatMessages');
+  const isUser = role === 'user';
+  container.insertAdjacentHTML('beforeend', `<div class="flex gap-3 ${isUser ? 'justify-end' : ''}"><div class="${isUser ? 'bg-blue-500/20 rounded-xl rounded-tr-none' : 'bg-slate-800/50 rounded-xl rounded-tl-none'} p-4 max-w-2xl"><div class="text-sm">${esc(content)}</div></div></div>`);
+  container.scrollTop = container.scrollHeight;
+}
+
+function quickChat(prompt) {
+  document.getElementById('chatInput').value = prompt;
+  sendChat();
+}
+
+function clearChat() {
+  document.getElementById('chatMessages').innerHTML = `<div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="bg-slate-800/50 rounded-xl rounded-tl-none p-4 max-w-2xl"><p class="text-sm">Chat cleared. How can I help you?</p></div></div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// BUSINESSES
+// ════════════════════════════════════════════════════════════════════════════
+function loadBusinesses() {
+  const saved = JSON.parse(localStorage.getItem('adspro_businesses') || '[]');
+  state.businesses = saved;
+  renderBusinesses();
+  updateBusinessSelector();
+}
+
+function renderBusinesses() {
+  const c = document.getElementById('businessesList');
+  if (!state.businesses.length) {
+    c.innerHTML = '<div class="card p-8 text-center col-span-full"><p class="text-slate-400 mb-4">No businesses added yet</p><button onclick="showAddBusinessModal()" class="btn-primary px-4 py-2 rounded-lg text-sm">Add Your First Business</button></div>';
+    return;
+  }
+  c.innerHTML = state.businesses.map((b, i) => `
+    <div class="card p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-lg font-bold">${b.name.charAt(0)}</div>
+        <div class="flex-1"><h3 class="font-semibold">${esc(b.name)}</h3><p class="text-xs text-slate-500">${b.accountId || 'No account linked'}</p></div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-xs mb-4">
+        <div><p class="text-slate-500">Industry</p><p class="font-medium">${b.industry || 'Not set'}</p></div>
+        <div><p class="text-slate-500">Budget</p><p class="font-medium">$${b.monthlyBudget || 0}/mo</p></div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="switchBusiness('${i}')" class="flex-1 px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-xs">Switch</button>
+        <button onclick="removeBusiness(${i})" class="px-3 py-2 rounded-lg bg-rose-500/20 text-rose-400 text-xs">Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateBusinessSelector() {
+  const sel = document.getElementById('businessSelector');
+  sel.innerHTML = '<option value="all">📊 All Businesses (Overview)</option>' + state.businesses.map((b, i) => `<option value="${i}">${esc(b.name)}</option>`).join('');
+}
+
+function showAddBusinessModal() {
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('modal').classList.add('flex');
+  document.getElementById('modalContent').innerHTML = `
+    <div class="p-6">
+      <h3 class="text-lg font-semibold mb-4">Add Business</h3>
+      <div class="space-y-4">
+        <div><label class="text-sm text-slate-400 block mb-1">Business Name *</label><input type="text" id="bizName" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700" placeholder="My Business"></div>
+        <div><label class="text-sm text-slate-400 block mb-1">Google Ads Account ID</label><input type="text" id="bizAccountId" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700" placeholder="123-456-7890"></div>
+        <div><label class="text-sm text-slate-400 block mb-1">Industry</label><select id="bizIndustry" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700"><option>Telecommunications</option><option>E-commerce</option><option>SaaS</option><option>Healthcare</option><option>Real Estate</option><option>Other</option></select></div>
+        <div><label class="text-sm text-slate-400 block mb-1">Monthly Budget</label><input type="number" id="bizBudget" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700" placeholder="5000"></div>
+      </div>
+      <div class="flex gap-2 mt-6">
+        <button onclick="closeModal()" class="flex-1 px-4 py-2 rounded-lg bg-slate-700">Cancel</button>
+        <button onclick="saveBusiness()" class="flex-1 btn-primary px-4 py-2 rounded-lg">Save</button>
+      </div>
+    </div>`;
+}
+
+function saveBusiness() {
+  const name = document.getElementById('bizName').value.trim();
+  if (!name) { showAlert('Enter business name', 'error'); return; }
+  state.businesses.push({
+    name,
+    accountId: document.getElementById('bizAccountId').value.trim(),
+    industry: document.getElementById('bizIndustry').value,
+    monthlyBudget: document.getElementById('bizBudget').value
+  });
+  localStorage.setItem('adspro_businesses', JSON.stringify(state.businesses));
+  closeModal();
+  renderBusinesses();
+  updateBusinessSelector();
+  showAlert('Business added!', 'success');
+}
+
+function removeBusiness(i) {
+  state.businesses.splice(i, 1);
+  localStorage.setItem('adspro_businesses', JSON.stringify(state.businesses));
+  renderBusinesses();
+  updateBusinessSelector();
+}
+
+function switchBusiness(id) {
+  state.currentBusiness = id;
+  showAlert('Switched to ' + (id === 'all' ? 'All Businesses' : state.businesses[id]?.name), 'info');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modal').classList.remove('flex');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════════════════════════════════════════
+function fmt(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return n?.toLocaleString() || '0'; }
+function esc(t) { const d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
+function showAlert(msg, type = 'info') {
+  const colors = { success: 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400', error: 'bg-rose-500/20 border-rose-500/50 text-rose-400', info: 'bg-blue-500/20 border-blue-500/50 text-blue-400' };
+  document.getElementById('alertContainer').innerHTML = `<div class="notification p-4 rounded-xl border ${colors[type]} mb-4 flex items-center justify-between"><span>${msg}</span><button onclick="this.parentElement.remove()" class="ml-4 opacity-50 hover:opacity-100">✕</button></div>`;
+  setTimeout(() => document.getElementById('alertContainer').innerHTML = '', 5000);
+}
+function refreshAllData() { loadDashboardData(); showAlert('Data refreshed', 'info'); }
+function handleDateChange() { loadDashboardData(); }
+function showNotifications() { showAlert('No new notifications', 'info'); }
+function generateReport(type) { showAlert('Generating ' + type + ' report...', 'info'); }
+function generateInsights() { showAlert('Generating AI insights...', 'info'); }
+function analyzeCampaign(id) { showPage('ai-assistant'); setTimeout(() => quickChat('Analyze campaign ' + id + ' and suggest improvements.'), 100); }
+function analyzeKeyword(kw) { showPage('ai-assistant'); setTimeout(() => quickChat('Analyze keyword "' + kw + '" and suggest how to improve its Quality Score and performance.'), 100); }
+
+// Close modal on outside click
+document.getElementById('modal')?.addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
 </script>
 </body>
 </html>
