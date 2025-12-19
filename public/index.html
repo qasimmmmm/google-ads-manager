@@ -506,6 +506,35 @@
           <div class="mb-6">
             <p class="text-sm mt-1" style="color:#5f6368">Analyze competitors' Google Ads strategies</p>
           </div>
+          
+          <!-- Method Selector -->
+          <div class="card p-4 mb-4">
+            <p class="text-sm font-medium mb-3">Choose Research Method:</p>
+            <div class="flex gap-3">
+              <button onclick="switchCompMethod('transparency')" data-method="transparency" 
+                      class="flex-1 p-3 rounded-lg border text-left active" 
+                      style="border-color:#1a73e8;color:#1a73e8;background:#e8f0fe">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="material-icons-outlined">visibility</span>
+                  <span class="font-medium">Google Ads Transparency</span>
+                  <span class="badge badge-green text-xs ml-auto">FREE*</span>
+                </div>
+                <p class="text-xs" style="color:#5f6368">See actual ad creatives from Transparency Center</p>
+              </button>
+              <button onclick="switchCompMethod('semrush')" data-method="semrush" 
+                      class="flex-1 p-3 rounded-lg border text-left" 
+                      style="border-color:#dadce0;color:#5f6368;background:white">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="material-icons-outlined">analytics</span>
+                  <span class="font-medium">SEMrush API</span>
+                  <span class="badge badge-yellow text-xs ml-auto">PAID</span>
+                </div>
+                <p class="text-xs" style="color:#5f6368">Get keyword data, traffic, and spend estimates</p>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Search Box -->
           <div class="card p-6 mb-6">
             <div class="flex gap-4">
               <div class="flex-1 relative">
@@ -513,9 +542,26 @@
                 <input type="text" id="competitorDomain" placeholder="Enter competitor domain (e.g., example.com)" class="w-full pl-12 pr-4 py-3 border rounded-lg text-base" style="border-color:#dadce0">
               </div>
               <button onclick="analyzeCompetitor()" id="analyzeCompBtn" class="btn-primary px-6 py-3 flex items-center gap-2">
-                <span class="material-icons-outlined">search</span>Analyze
+                <span class="material-icons-outlined">search</span>Search Transparency Center
               </button>
             </div>
+            
+            <!-- API Key inputs (shown based on method) -->
+            <div id="scraperKeySection" class="mt-3">
+              <div class="flex items-center gap-2">
+                <input type="text" id="scraperApiKey" placeholder="ScraperAPI Key (optional - will use saved key)" 
+                       class="flex-1 px-3 py-2 text-sm border rounded" style="border-color:#dadce0">
+                <a href="https://www.scraperapi.com/signup" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">Get FREE key →</a>
+              </div>
+            </div>
+            <div id="semrushKeySection" class="mt-3 hidden">
+              <div class="flex items-center gap-2">
+                <input type="text" id="semrushApiKey" placeholder="SEMrush API Key" 
+                       class="flex-1 px-3 py-2 text-sm border rounded" style="border-color:#dadce0">
+                <a href="https://www.semrush.com/api-analytics/" target="_blank" class="text-xs hover:underline" style="color:#ff642d">Get SEMrush API →</a>
+              </div>
+            </div>
+            
             <div class="flex gap-4 mt-3">
               <span class="text-sm" style="color:#5f6368">Quick:</span>
               <button onclick="setCompDomain('spectrum.com')" class="text-sm hover:underline" style="color:#1a73e8">spectrum.com</button>
@@ -523,22 +569,29 @@
               <button onclick="setCompDomain('att.com')" class="text-sm hover:underline" style="color:#1a73e8">att.com</button>
             </div>
           </div>
+          
+          <!-- Results -->
           <div id="competitorResults" class="hidden">
-            <div id="compOverview" class="grid grid-cols-4 gap-4 mb-6"></div>
             <div class="card overflow-hidden">
-              <div class="flex border-b" style="border-color:#e8eaed">
-                <button onclick="showCompTab('ads')" class="tab-btn active" data-ctab="ads">Ad Copies</button>
-                <button onclick="showCompTab('keywords')" class="tab-btn" data-ctab="keywords">Paid Keywords</button>
-                <button onclick="showCompTab('organic')" class="tab-btn" data-ctab="organic">Organic</button>
-                <button onclick="showCompTab('competitors')" class="tab-btn" data-ctab="competitors">Their Competitors</button>
-              </div>
               <div id="compTabContent" class="p-4"></div>
             </div>
           </div>
+          
+          <!-- Empty State -->
           <div id="competitorEmpty" class="text-center py-16">
             <span class="material-icons-outlined text-6xl mb-4" style="color:#dadce0">search</span>
             <h3 class="font-medium mb-2" style="color:#202124">Enter a competitor domain</h3>
-            <p class="text-sm" style="color:#5f6368">Discover their keywords, ads, and spending</p>
+            <p class="text-sm mb-4" style="color:#5f6368">Choose a method above and enter a domain to analyze</p>
+            <div class="flex justify-center gap-4 text-sm">
+              <div class="p-3 rounded-lg" style="background:#e8f0fe">
+                <p class="font-medium" style="color:#1a73e8">Transparency Center</p>
+                <p class="text-xs" style="color:#5f6368">See actual ad creatives</p>
+              </div>
+              <div class="p-3 rounded-lg" style="background:#fff3e0">
+                <p class="font-medium" style="color:#ff642d">SEMrush</p>
+                <p class="text-xs" style="color:#5f6368">Keywords & traffic data</p>
+              </div>
+            </div>
           </div>
         </div>
 

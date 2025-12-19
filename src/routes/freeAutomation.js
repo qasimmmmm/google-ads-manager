@@ -178,25 +178,30 @@ router.post('/free/keywords/questions', async (req, res) => {
 
 
 /* ═══════════════════════════════════════════════════════════════════
-   COMPETITOR INTELLIGENCE (ScraperAPI - Transparency Center)
+   COMPETITOR INTELLIGENCE
+   Two methods: SEMrush API or Google Ads Transparency
    ═══════════════════════════════════════════════════════════════════ */
 
 /**
  * POST /automation/free/competitor/full
  * Get full competitor analysis
- * Requires ScraperAPI key
+ * method: 'semrush' or 'transparency' (default)
  */
 router.post('/free/competitor/full', async (req, res) => {
   try {
-    const { domain, scraperApiKey, country = 'us' } = req.body;
+    const { domain, method = 'transparency', scraperApiKey, semrushApiKey, country = 'us' } = req.body;
     
     if (!domain) {
       return res.status(400).json({ error: 'Domain is required' });
     }
     
-    console.log(`[Competitor] Analyzing: ${domain}`);
+    console.log(`[Competitor] Analyzing: ${domain} | Method: ${method}`);
     
-    const result = await googleAdsIntelligence.getCompetitorAds(domain, scraperApiKey, { country });
+    const result = await googleAdsIntelligence.getCompetitorAds(domain, scraperApiKey, { 
+      method,
+      semrushApiKey,
+      country 
+    });
     
     res.json(result);
   } catch (error) {

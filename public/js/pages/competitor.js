@@ -1,11 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Competitor Intelligence Module
-   Uses ScraperAPI (FREE 1000 credits/month) + Google Ads Transparency
-   Sign up: https://www.scraperapi.com/signup
+   Competitor Intelligence Module v2.0
+   
+   Two Methods:
+   1. SEMrush API - Paid, provides keyword data, ad history, traffic
+   2. Google Ads Transparency - Via ScraperAPI, shows actual ad creatives
    ═══════════════════════════════════════════════════════════════════ */
 
 const Competitor = {
   currentTab: 'ads',
+  currentMethod: 'transparency', // 'transparency' or 'semrush'
   
   // Set domain in input
   setDomain(domain) {
@@ -13,7 +16,39 @@ const Competitor = {
     if (input) input.value = domain;
   },
   
-  // Analyze competitor using ScraperAPI + Google Ads Transparency
+  // Switch method
+  switchMethod(method) {
+    this.currentMethod = method;
+    
+    // Update tab styles
+    document.querySelectorAll('[data-method]').forEach(btn => {
+      if (btn.dataset.method === method) {
+        btn.classList.add('active');
+        btn.style.borderColor = '#1a73e8';
+        btn.style.color = '#1a73e8';
+        btn.style.background = '#e8f0fe';
+      } else {
+        btn.classList.remove('active');
+        btn.style.borderColor = '#dadce0';
+        btn.style.color = '#5f6368';
+        btn.style.background = 'white';
+      }
+    });
+    
+    // Show/hide API key inputs
+    document.getElementById('semrushKeySection')?.classList.toggle('hidden', method !== 'semrush');
+    document.getElementById('scraperKeySection')?.classList.toggle('hidden', method !== 'transparency');
+    
+    // Update button text
+    const btn = document.getElementById('analyzeCompBtn');
+    if (btn) {
+      btn.innerHTML = method === 'semrush' 
+        ? '<span class="material-icons-outlined">analytics</span>Analyze with SEMrush'
+        : '<span class="material-icons-outlined">search</span>Search Transparency Center';
+    }
+  },
+  
+  // Main analyze function
   async analyze() {
     const domain = document.getElementById('competitorDomain')?.value.trim();
     if (!domain) {
@@ -21,8 +56,24 @@ const Competitor = {
       return;
     }
     
-    // Get ScraperAPI key from storage
-    const scraperApiKey = Storage.getKey('scraperapi');
+    if (this.currentMethod === 'semrush') {
+      await this.analyzeWithSemrush(domain);
+    } else {
+      await this.analyzeWithTransparency(domain);
+    }
+  },
+  
+  // Method 1: SEMrush API
+  async analyzeWithSemrush(domain) {
+    const semrushApiKey = document.getElementById('semrushApiKey')?.value.trim() || Storage.getKey('semrush');
+    
+    if (!semrushApiKey) {
+      this.showSemrushSetup();
+      return;
+    }
+    
+    // Save key for future use
+    Storage.setKey('semrush', semrushApiKey);
     
     const btn = document.getElementById('analyzeCompBtn');
     if (btn) {
@@ -31,423 +82,439 @@ const Competitor = {
     }
     
     try {
-      // Use FREE endpoint with ScraperAPI
-      const response = await API.post('/automation/free/competitor/full', { 
+      const response = await API.post('/automation/free/competitor/full', {
         domain,
-        scraperApiKey,
-        region: 'US'
+        method: 'semrush',
+        semrushApiKey,
+        country: 'us'
       });
       
-      // Handle no API key case
-      if (response.error === 'NO_API_KEY' || !response.success && response.setupInstructions) {
-        this.showApiKeySetup(response);
-        return;
-      }
-      
       if (!response.success) {
-        showAlert(response.message || 'No ads found for this domain', 'warning');
-        document.getElementById('competitorResults')?.classList.add('hidden');
-        document.getElementById('competitorEmpty')?.classList.remove('hidden');
-        
-        // Show manual search link
-        if (response.manualSearchUrl) {
-          document.getElementById('competitorEmpty').innerHTML = `
-            <div class="text-center py-8">
-              <span class="material-icons-outlined text-4xl mb-2" style="color:#5f6368">search_off</span>
-              <p class="font-medium mb-2">${response.message || 'No ads found'}</p>
-              <p class="text-sm mb-4" style="color:#5f6368">${response.suggestion || ''}</p>
-              <a href="${response.manualSearchUrl}" target="_blank" class="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-outlined">open_in_new</span>
-                Search Manually on Google
-              </a>
-            </div>
-          `;
+        if (response.error === 'NO_SEMRUSH_KEY') {
+          this.showSemrushSetup();
+        } else {
+          showAlert(response.message || 'SEMrush API error', 'error');
         }
         return;
       }
       
-      // Store data
+      // Store and render
       AppState.competitorData = {
         domain: response.domain,
-        brandName: response.brandName,
-        ads: response.ads || [],
+        method: 'semrush',
         summary: response.summary || {},
-        alternativeLibraries: response.alternativeLibraries || [],
-        keywords: [],
-        organic: [],
-        competitors: []
+        ads: response.ads || []
       };
       
-      this.renderResults();
+      this.renderSemrushResults(response);
       
       document.getElementById('competitorResults')?.classList.remove('hidden');
       document.getElementById('competitorEmpty')?.classList.add('hidden');
       
-      const totalAds = response.ads?.length || 0;
-      const creditMsg = response.creditsUsed ? ` (${response.creditsUsed} credits)` : '';
-      
-      if (totalAds > 0) {
-        showAlert(`Found ${totalAds} ads for ${domain}!${creditMsg}`, 'success');
-      } else {
-        showAlert(`No Google Ads found. Check alternative ad libraries below.${creditMsg}`, 'warning');
-      }
+      showAlert(`SEMrush: Found ${response.ads?.length || 0} ad keywords for ${domain}`, 'success');
       
     } catch (error) {
-      showAlert('Error analyzing competitor: ' + error.message, 'error');
+      showAlert('Error: ' + error.message, 'error');
     }
     
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '<span class="material-icons-outlined">search</span>Analyze';
+      btn.innerHTML = '<span class="material-icons-outlined">analytics</span>Analyze with SEMrush';
     }
   },
   
-  // Show API key setup instructions
-  showApiKeySetup(response) {
-    const setup = response.setupInstructions;
+  // Method 2: Google Ads Transparency
+  async analyzeWithTransparency(domain) {
+    const scraperApiKey = document.getElementById('scraperApiKey')?.value.trim() || Storage.getKey('scraperapi');
     
+    if (!scraperApiKey) {
+      this.showScraperSetup();
+      return;
+    }
+    
+    // Save key
+    Storage.setKey('scraperapi', scraperApiKey);
+    
+    const btn = document.getElementById('analyzeCompBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-icons-outlined animate-spin">sync</span>Searching...';
+    }
+    
+    try {
+      const response = await API.post('/automation/free/competitor/full', {
+        domain,
+        method: 'transparency',
+        scraperApiKey,
+        country: 'us'
+      });
+      
+      if (!response.success && response.error === 'NO_API_KEY') {
+        this.showScraperSetup();
+        return;
+      }
+      
+      // Store and render
+      AppState.competitorData = {
+        domain: response.domain,
+        method: 'transparency',
+        advertiser: response.advertiser,
+        summary: response.summary || {},
+        ads: response.ads || [],
+        manualUrl: response.manualUrl
+      };
+      
+      this.renderTransparencyResults(response);
+      
+      document.getElementById('competitorResults')?.classList.remove('hidden');
+      document.getElementById('competitorEmpty')?.classList.add('hidden');
+      
+      const credits = response.creditsUsed ? ` (${response.creditsUsed} credits)` : '';
+      if (response.ads?.length > 0) {
+        showAlert(`Found ${response.ads.length} ads from Transparency Center${credits}`, 'success');
+      } else {
+        showAlert(`No ads found. Try checking manually.${credits}`, 'warning');
+      }
+      
+    } catch (error) {
+      showAlert('Error: ' + error.message, 'error');
+    }
+    
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-icons-outlined">search</span>Search Transparency Center';
+    }
+  },
+  
+  // Render SEMrush results
+  renderSemrushResults(data) {
+    const container = document.getElementById('compTabContent');
+    if (!container) return;
+    
+    const summary = data.summary || {};
+    const ads = data.ads || [];
+    
+    container.innerHTML = `
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Paid Keywords</p>
+          <p class="text-2xl font-bold" style="color:#1a73e8">${summary.paidKeywords || '0'}</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Paid Traffic</p>
+          <p class="text-2xl font-bold" style="color:#34a853">${summary.paidTraffic || '0'}</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Ads Budget</p>
+          <p class="text-2xl font-bold" style="color:#ea4335">$${summary.adsBudget || '0'}</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Organic Keywords</p>
+          <p class="text-2xl font-bold" style="color:#5f6368">${summary.organicKeywords || '0'}</p>
+        </div>
+      </div>
+      
+      <!-- Source badge -->
+      <div class="mb-4 p-3 rounded-lg" style="background:#fef7e0;border:1px solid #fbbc04">
+        <p class="text-sm" style="color:#b06000">
+          <span class="material-icons-outlined text-lg align-middle">analytics</span>
+          Data from <strong>SEMrush API</strong>
+        </p>
+      </div>
+      
+      <!-- Ad Keywords Table -->
+      ${ads.length > 0 ? `
+        <h4 class="font-medium mb-3">Top Ad Keywords</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead style="background:#f8f9fa">
+              <tr class="text-xs uppercase" style="color:#5f6368">
+                <th class="p-3 text-left">Keyword</th>
+                <th class="p-3 text-right">Position</th>
+                <th class="p-3 text-right">Volume</th>
+                <th class="p-3 text-right">CPC</th>
+                <th class="p-3 text-right">Traffic</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ads.map(ad => `
+                <tr class="border-b" style="border-color:#e8eaed">
+                  <td class="p-3 font-medium">${esc(ad.keyword)}</td>
+                  <td class="p-3 text-right">${ad.position || '-'}</td>
+                  <td class="p-3 text-right">${ad.searchVolume || '-'}</td>
+                  <td class="p-3 text-right">$${ad.cpc || '-'}</td>
+                  <td class="p-3 text-right">${ad.traffic || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="p-6 text-center" style="color:#5f6368">
+          <span class="material-icons-outlined text-4xl mb-2">search_off</span>
+          <p>No ad keywords found for this domain</p>
+        </div>
+      `}
+    `;
+  },
+  
+  // Render Transparency Center results
+  renderTransparencyResults(data) {
+    const container = document.getElementById('compTabContent');
+    if (!container) return;
+    
+    const summary = data.summary || {};
+    const ads = data.ads || [];
+    const advertiser = data.advertiser;
+    
+    container.innerHTML = `
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Total Ads</p>
+          <p class="text-2xl font-bold" style="color:#1a73e8">${summary.totalAds || 0}</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Text Ads</p>
+          <p class="text-2xl font-bold" style="color:#4285f4">${summary.textAds || 0}</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Image/Display</p>
+          <p class="text-2xl font-bold" style="color:#fbbc04">${summary.imageAds || 0}</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs" style="color:#5f6368">Video Ads</p>
+          <p class="text-2xl font-bold" style="color:#ea4335">${summary.videoAds || 0}</p>
+        </div>
+      </div>
+      
+      <!-- Source badge -->
+      <div class="mb-4 p-3 rounded-lg" style="background:#e8f0fe;border:1px solid #1a73e8">
+        <p class="text-sm" style="color:#1a73e8">
+          <span class="material-icons-outlined text-lg align-middle">verified</span>
+          Data from <strong>Google Ads Transparency Center</strong>
+          ${advertiser ? ` • Advertiser ID: ${advertiser.id}` : ''}
+        </p>
+      </div>
+      
+      <!-- Ads Grid -->
+      ${ads.length > 0 ? `
+        <h4 class="font-medium mb-3">Ad Creatives</h4>
+        <div class="grid grid-cols-3 gap-4">
+          ${ads.slice(0, 15).map((ad, i) => `
+            <div class="card p-4">
+              <div class="flex justify-between mb-2">
+                <span class="badge badge-${ad.format === 'video' ? 'red' : ad.format === 'image' ? 'yellow' : 'blue'}">
+                  ${ad.format || 'text'}
+                </span>
+                <span class="text-xs" style="color:#5f6368">#${ad.position}</span>
+              </div>
+              ${ad.imageUrl ? `
+                <img src="${ad.imageUrl}" alt="Ad ${i+1}" class="w-full h-24 object-cover rounded mb-2" onerror="this.style.display='none'">
+              ` : `
+                <div class="w-full h-24 rounded mb-2 flex items-center justify-center" style="background:#f8f9fa">
+                  <span class="material-icons-outlined text-3xl" style="color:#dadce0">
+                    ${ad.format === 'video' ? 'videocam' : ad.format === 'image' ? 'image' : 'article'}
+                  </span>
+                </div>
+              `}
+              <a href="${ad.previewUrl}" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">
+                View Full Ad →
+              </a>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div class="p-6 text-center rounded-lg" style="background:#f8f9fa">
+          <span class="material-icons-outlined text-4xl mb-2" style="color:#5f6368">search_off</span>
+          <p class="font-medium mb-2">No ads found in Transparency Center</p>
+          <p class="text-sm mb-4" style="color:#5f6368">The company may not be running Google Ads, or try checking manually.</p>
+          <a href="${data.manualUrl || `https://adstransparency.google.com/?domain=${data.domain}`}" target="_blank" 
+             class="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2">
+            <span class="material-icons-outlined">open_in_new</span>
+            Check Manually
+          </a>
+        </div>
+      `}
+      
+      <!-- Manual Link -->
+      ${ads.length > 0 ? `
+        <div class="mt-6 p-3 rounded-lg text-center" style="background:#f8f9fa">
+          <a href="${advertiser?.transparencyUrl || data.manualUrl}" target="_blank" class="text-sm hover:underline" style="color:#1a73e8">
+            <span class="material-icons-outlined text-sm align-middle">open_in_new</span>
+            View all ads on Google Ads Transparency Center
+          </a>
+        </div>
+      ` : ''}
+    `;
+  },
+  
+  // Show SEMrush setup
+  showSemrushSetup() {
+    Modal.show(`
+      <div class="p-6 max-w-lg">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="material-icons-outlined text-3xl" style="color:#ff642d">analytics</span>
+          <h2 class="text-xl font-medium">Setup SEMrush API</h2>
+        </div>
+        
+        <p class="mb-4" style="color:#5f6368">
+          SEMrush provides detailed competitor ad data including keywords, traffic, and spend estimates.
+        </p>
+        
+        <div class="p-4 rounded-lg mb-4" style="background:#fff3e0;border:1px solid #ff9800">
+          <p class="font-medium" style="color:#e65100">
+            <span class="material-icons-outlined align-middle">info</span>
+            SEMrush API requires a paid subscription
+          </p>
+          <p class="text-sm mt-1" style="color:#bf360c">Plans start at $129.95/month</p>
+        </div>
+        
+        <div class="space-y-3 mb-6">
+          <div class="flex gap-3">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:#ff642d;color:white">1</span>
+            <a href="https://www.semrush.com/api-analytics/" target="_blank" class="font-medium hover:underline" style="color:#ff642d">
+              Get API access at SEMrush →
+            </a>
+          </div>
+          <div class="flex gap-3">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:#ff642d;color:white">2</span>
+            <p class="font-medium">Copy your API key</p>
+          </div>
+          <div class="flex gap-3">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:#ff642d;color:white">3</span>
+            <p class="font-medium">Paste below</p>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">SEMrush API Key</label>
+          <input type="text" id="semrushKeyInput" placeholder="Paste your API key..." 
+                 class="w-full p-3 border rounded-lg" style="border-color:#dadce0">
+        </div>
+        
+        <div class="flex gap-3">
+          <button onclick="Competitor.saveSemrushKey()" class="px-6 py-2 rounded-lg text-white flex-1" style="background:#ff642d">
+            Save & Analyze
+          </button>
+          <button onclick="Modal.hide()" class="px-4 py-2 border rounded-lg" style="border-color:#dadce0">Cancel</button>
+        </div>
+      </div>
+    `);
+    
+    document.getElementById('analyzeCompBtn').disabled = false;
+    document.getElementById('analyzeCompBtn').innerHTML = '<span class="material-icons-outlined">analytics</span>Analyze with SEMrush';
+  },
+  
+  // Show ScraperAPI setup
+  showScraperSetup() {
     Modal.show(`
       <div class="p-6 max-w-lg">
         <div class="flex items-center gap-3 mb-4">
           <span class="material-icons-outlined text-3xl" style="color:#1a73e8">key</span>
-          <h2 class="text-xl font-medium">Setup Required (FREE!)</h2>
+          <h2 class="text-xl font-medium">Setup ScraperAPI (FREE!)</h2>
         </div>
         
         <p class="mb-4" style="color:#5f6368">
-          To scrape competitor ads, you need a <strong>FREE</strong> ScraperAPI key.
-          It takes 30 seconds to set up!
+          ScraperAPI lets us access Google Ads Transparency Center to see competitor ad creatives.
         </p>
         
         <div class="p-4 rounded-lg mb-4" style="background:#e8f5e9;border:1px solid #4caf50">
-          <p class="font-medium mb-2" style="color:#2e7d32">
+          <p class="font-medium" style="color:#2e7d32">
             <span class="material-icons-outlined align-middle">celebration</span>
-            FREE: 1,000 scrapes per month!
+            FREE: 1,000 credits/month!
           </p>
-          <p class="text-sm" style="color:#1b5e20">No credit card required. Perfect for competitor research.</p>
+          <p class="text-sm mt-1" style="color:#1b5e20">No credit card required</p>
         </div>
         
         <div class="space-y-3 mb-6">
           <div class="flex gap-3">
             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:#1a73e8;color:white">1</span>
-            <div>
-              <a href="https://www.scraperapi.com/signup" target="_blank" class="font-medium hover:underline" style="color:#1a73e8">
-                Sign up at ScraperAPI.com →
-              </a>
-              <p class="text-xs" style="color:#5f6368">Free account, no credit card</p>
-            </div>
+            <a href="https://www.scraperapi.com/signup" target="_blank" class="font-medium hover:underline" style="color:#1a73e8">
+              Sign up at ScraperAPI.com →
+            </a>
           </div>
           <div class="flex gap-3">
             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:#1a73e8;color:white">2</span>
-            <div>
-              <p class="font-medium">Copy your API key from dashboard</p>
-              <p class="text-xs" style="color:#5f6368">It's shown right after signup</p>
-            </div>
+            <p class="font-medium">Copy your API key from dashboard</p>
           </div>
           <div class="flex gap-3">
             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:#1a73e8;color:white">3</span>
-            <div>
-              <p class="font-medium">Paste it below</p>
-            </div>
+            <p class="font-medium">Paste below</p>
           </div>
         </div>
         
         <div class="mb-4">
           <label class="block text-sm font-medium mb-1">ScraperAPI Key</label>
-          <input type="text" id="scraperApiKeyInput" placeholder="Paste your API key here..." 
+          <input type="text" id="scraperKeyInput" placeholder="Paste your API key..." 
                  class="w-full p-3 border rounded-lg" style="border-color:#dadce0">
         </div>
         
         <div class="flex gap-3">
-          <button onclick="Competitor.saveApiKey()" class="btn-primary px-6 py-2 flex-1">
-            Save & Analyze
-          </button>
-          <button onclick="Modal.hide()" class="px-4 py-2 border rounded-lg" style="border-color:#dadce0">
-            Cancel
-          </button>
+          <button onclick="Competitor.saveScraperKey()" class="btn-primary px-6 py-2 flex-1">Save & Analyze</button>
+          <button onclick="Modal.hide()" class="px-4 py-2 border rounded-lg" style="border-color:#dadce0">Cancel</button>
         </div>
-        
-        <p class="text-xs mt-4 text-center" style="color:#5f6368">
-          Or <a href="${response.manualSearchUrl}" target="_blank" class="hover:underline" style="color:#1a73e8">search manually</a> on Google Ads Transparency Center
-        </p>
       </div>
     `);
     
-    const btn = document.getElementById('analyzeCompBtn');
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = '<span class="material-icons-outlined">search</span>Analyze';
-    }
+    document.getElementById('analyzeCompBtn').disabled = false;
+    document.getElementById('analyzeCompBtn').innerHTML = '<span class="material-icons-outlined">search</span>Search Transparency Center';
   },
   
-  // Save API key and retry
-  saveApiKey() {
-    const key = document.getElementById('scraperApiKeyInput')?.value.trim();
+  // Save SEMrush key
+  saveSemrushKey() {
+    const key = document.getElementById('semrushKeyInput')?.value.trim();
     if (!key) {
       showAlert('Please enter an API key', 'error');
       return;
     }
-    
-    Storage.setKey('scraperapi', key);
+    Storage.setKey('semrush', key);
     Modal.hide();
-    showAlert('API key saved!', 'success');
-    
-    // Retry analysis
+    showAlert('SEMrush API key saved!', 'success');
     setTimeout(() => this.analyze(), 500);
   },
   
-  // Render results overview
-  renderResults() {
-    const data = AppState.competitorData;
-    const overview = document.getElementById('compOverview');
-    
-    if (!overview) return;
-    
-    const summary = data.summary || {};
-    
-    overview.innerHTML = `
-      <div class="card p-4" style="border-left:4px solid #1a73e8">
-        <p class="text-2xl font-medium" style="color:#1a73e8">${summary.totalAds || 0}</p>
-        <p class="text-xs" style="color:#5f6368">Total Ads Found</p>
-      </div>
-      <div class="card p-4" style="border-left:4px solid #34a853">
-        <p class="text-2xl font-medium" style="color:#34a853">${summary.textAds || 0}</p>
-        <p class="text-xs" style="color:#5f6368">Text Ads</p>
-      </div>
-      <div class="card p-4" style="border-left:4px solid #fbbc04">
-        <p class="text-2xl font-medium" style="color:#b06000">${summary.imageAds || 0}</p>
-        <p class="text-xs" style="color:#5f6368">Image Ads</p>
-      </div>
-      <div class="card p-4" style="border-left:4px solid #ea4335">
-        <p class="text-2xl font-medium" style="color:#ea4335">${summary.videoAds || 0}</p>
-        <p class="text-xs" style="color:#5f6368">Video Ads</p>
-      </div>
-    `;
-    
-    // Show link to full transparency center
-    if (data.advertiser?.transparencyUrl) {
-      overview.innerHTML += `
-        <div class="col-span-4 mt-2">
-          <a href="${data.advertiser.transparencyUrl}" target="_blank" 
-             class="text-sm flex items-center gap-1 hover:underline" style="color:#1a73e8">
-            <span class="material-icons-outlined text-lg">open_in_new</span>
-            View all ads on Google Ads Transparency Center
-          </a>
-        </div>
-      `;
+  // Save ScraperAPI key
+  saveScraperKey() {
+    const key = document.getElementById('scraperKeyInput')?.value.trim();
+    if (!key) {
+      showAlert('Please enter an API key', 'error');
+      return;
     }
-    
-    this.showTab('ads');
+    Storage.setKey('scraperapi', key);
+    Modal.hide();
+    showAlert('ScraperAPI key saved!', 'success');
+    setTimeout(() => this.analyze(), 500);
   },
   
-  // Show tab
-  showTab(tab) {
-    this.currentTab = tab;
-    
-    // Update tab buttons
-    document.querySelectorAll('[data-ctab]').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    document.querySelector(`[data-ctab="${tab}"]`)?.classList.add('active');
-    
-    // Render tab content
-    const content = document.getElementById('compTabContent');
-    if (!content) return;
-    
-    const data = AppState.competitorData;
-    
-    switch (tab) {
-      case 'ads':
-        content.innerHTML = this.renderAdsTab(data.ads);
-        break;
-      case 'keywords':
-        content.innerHTML = this.renderKeywordsTab(data.keywords);
-        break;
-      case 'organic':
-        content.innerHTML = this.renderOrganicTab(data.organic);
-        break;
-      case 'competitors':
-        content.innerHTML = this.renderCompetitorsTab(data.competitors);
-        break;
-    }
-  },
-  
-  // Render ads tab
-  renderAdsTab(ads) {
-    const data = AppState.competitorData;
-    const allAds = ads || [];
-    const altLibraries = data?.alternativeLibraries || [];
-    
-    let html = '';
-    
-    // Show ads found via Google Search
-    if (allAds.length > 0) {
-      html += `
-        <div class="mb-4 p-3 rounded-lg" style="background:#e6f4ea;border:1px solid #34a853">
-          <p class="text-sm" style="color:#137333">
-            <span class="material-icons-outlined text-lg align-middle">verified</span>
-            <strong>${allAds.length} ads found</strong> by searching "${data?.brandName || data?.domain}" on Google
-          </p>
-        </div>
-        
-        <div class="space-y-3 mb-6">
-          ${allAds.map((ad, i) => `
-            <div class="p-4 border rounded-lg" style="border-color:#dadce0">
-              <div class="flex justify-between mb-2">
-                <div class="flex items-center gap-2">
-                  <span class="badge badge-${ad.type === 'shopping' ? 'yellow' : ad.type === 'local' ? 'green' : 'blue'}">
-                    ${ad.type === 'shopping' ? '🛒 Shopping' : ad.type === 'local' ? '📍 Local' : '🔍 Search'} Ad
-                  </span>
-                  ${ad.foundVia ? `<span class="text-xs" style="color:#5f6368">via "${ad.foundVia}" search</span>` : ''}
-                </div>
-              </div>
-              <h4 class="font-medium mb-1" style="color:#1a0dab">${esc(ad.title)}</h4>
-              <p class="text-sm mb-1" style="color:#006621">${esc(ad.displayUrl)}</p>
-              ${ad.description ? `<p class="text-sm" style="color:#545454">${esc(ad.description)}</p>` : ''}
-              ${ad.price ? `<p class="font-medium mt-1">${esc(ad.price)}</p>` : ''}
-              ${ad.phone ? `<p class="text-sm mt-1" style="color:#34a853">📞 ${esc(ad.phone)}</p>` : ''}
-              <div class="mt-3 pt-3 border-t flex gap-2" style="border-color:#e8eaed">
-                ${ad.link ? `
-                  <a href="${ad.link}" target="_blank" class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#1a73e8">
-                    <span class="material-icons-outlined text-sm align-middle">open_in_new</span> Visit
-                  </a>
-                ` : ''}
-                <button onclick="Competitor.analyzeAd(${i})" class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#34a853">
-                  ✨ Get AI Tips
-                </button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    } else {
-      html += `
-        <div class="p-6 text-center mb-6 rounded-lg" style="background:#fff3e0">
-          <span class="material-icons-outlined text-3xl mb-2" style="color:#f57c00">search_off</span>
-          <p class="font-medium mb-1">No Google Ads Found</p>
-          <p class="text-sm" style="color:#5f6368">This company may not be running Google Ads, or they're using different brand terms</p>
-        </div>
-      `;
-    }
-    
-    // Alternative Ad Libraries
-    if (altLibraries.length > 0) {
-      html += `
-        <div class="p-4 rounded-lg" style="background:#f8f9fa;border:1px solid #e8eaed">
-          <h4 class="font-medium mb-3 flex items-center gap-2">
-            <span class="material-icons-outlined">library_books</span>
-            Check Other Ad Libraries
-          </h4>
-          <p class="text-sm mb-4" style="color:#5f6368">
-            These platforms have official ad transparency tools you can search manually:
-          </p>
-          <div class="grid grid-cols-2 gap-3">
-            ${altLibraries.map(lib => `
-              <a href="${lib.url}" target="_blank" class="p-3 border rounded-lg hover:bg-white transition-colors flex items-start gap-3" style="border-color:#dadce0">
-                <span class="material-icons-outlined" style="color:#1a73e8">open_in_new</span>
-                <div>
-                  <p class="font-medium text-sm">${esc(lib.name)}</p>
-                  <p class="text-xs" style="color:#5f6368">${esc(lib.description)}</p>
-                </div>
-              </a>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-    
-    return html;
-  },
-  
-  // Render keywords tab
-  renderKeywordsTab(keywords) {
-    return `
-      <div class="p-4 text-center" style="color:#5f6368">
-        <span class="material-icons-outlined text-4xl mb-2" style="color:#fbbc04">lock</span>
-        <p class="font-medium">Competitor keyword data requires a paid API</p>
-        <p class="text-sm mt-1">SEMrush or similar services provide this data</p>
-        <button onclick="showPage('keyword-planner')" class="btn-primary px-4 py-2 mt-4 text-sm">
-          Use FREE Keyword Planner Instead
-        </button>
-      </div>
-    `;
-  },
-  
-  // Render organic tab
-  renderOrganicTab(organic) {
-    return `
-      <div class="p-4 text-center" style="color:#5f6368">
-        <span class="material-icons-outlined text-4xl mb-2" style="color:#fbbc04">lock</span>
-        <p class="font-medium">Organic keyword data requires a paid API</p>
-        <p class="text-sm mt-1">Use Ahrefs, SEMrush, or Moz for organic data</p>
-      </div>
-    `;
-  },
-  
-  // Render competitors tab
-  renderCompetitorsTab(competitors) {
-    if (competitors && competitors.length > 0) {
-      return `
-        <p class="text-sm mb-4" style="color:#5f6368">Other advertisers found for this domain:</p>
-        <div class="grid grid-cols-2 gap-4">
-          ${competitors.map(c => `
-            <div class="p-4 border rounded-lg cursor-pointer hover:border-blue-500 transition-colors" 
-                 style="border-color:#dadce0"
-                 onclick="window.open('${c.transparencyUrl}', '_blank')">
-              <div class="flex justify-between mb-2">
-                <span class="font-medium">${c.name || c.advertiserId}</span>
-                <span class="text-xs" style="color:#1a73e8">View →</span>
-              </div>
-              <p class="text-xs" style="color:#5f6368">${c.advertiserId}</p>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-    
-    return `
-      <div class="p-4 text-center" style="color:#5f6368">
-        <span class="material-icons-outlined text-4xl mb-2" style="color:#1a73e8">tips_and_updates</span>
-        <p class="font-medium">Try searching for similar companies!</p>
-        <p class="text-sm mt-1">Enter competitor domains in the search box above</p>
-        <div class="flex flex-wrap gap-2 justify-center mt-4">
-          <button onclick="Competitor.setDomain('spectrum.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">spectrum.com</button>
-          <button onclick="Competitor.setDomain('xfinity.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">xfinity.com</button>
-          <button onclick="Competitor.setDomain('att.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">att.com</button>
-          <button onclick="Competitor.setDomain('verizon.com');Competitor.analyze()" class="badge badge-blue cursor-pointer">verizon.com</button>
-        </div>
-      </div>
-    `;
-  },
-  
-  // Analyze ad with AI
+  // Analyze ad (for AI tips)
   analyzeAd(index) {
-    const ad = AppState.competitorData.ads[index];
+    const data = AppState.competitorData;
+    const ad = data?.ads?.[index];
+    
     if (!ad) return;
     
     showPage('ai-assistant');
     setTimeout(() => {
-      AIChat.quickPrompt(`Analyze this competitor's ${ad.format} ad and give me tips to create a better one:
-
-Domain: ${AppState.competitorData.domain}
-Ad Format: ${ad.format}
-Ad Preview: ${ad.previewUrl}
-
-Please suggest:
-1. What makes this ad effective (or not)
-2. 5 better headline ideas
-3. 2 better description ideas
-4. Call-to-action improvements`);
+      if (typeof AIChat !== 'undefined') {
+        const prompt = ad.keyword 
+          ? `Analyze this competitor's ad strategy for keyword "${ad.keyword}". They're ranking position ${ad.position || 'unknown'} with CPC $${ad.cpc || 'unknown'}. Help me create better ads to outrank them.`
+          : `Help me create better Google Ads than this competitor. Their ad format is "${ad.format || 'text'}". Give me 5 headline ideas and 3 description ideas.`;
+        
+        AIChat.quickPrompt(prompt);
+      }
     }, 100);
+  },
+  
+  // Render results wrapper
+  renderResults() {
+    // Results are rendered by the specific method functions
   }
 };
 
 // Global functions
-function setCompDomain(domain) { Competitor.setDomain(domain); }
 function analyzeCompetitor() { Competitor.analyze(); }
-function showCompTab(tab) { Competitor.showTab(tab); }
+function switchCompMethod(method) { Competitor.switchMethod(method); }
 
-// Make available globally
 window.Competitor = Competitor;
-window.setCompDomain = setCompDomain;
-window.analyzeCompetitor = analyzeCompetitor;
-window.showCompTab = showCompTab;
