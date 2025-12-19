@@ -71,6 +71,7 @@ const Competitor = {
         domain: response.domain,
         advertiser: response.advertiser,
         ads: response.ads || [],
+        adsFromSearch: response.adsFromSearch || [],
         summary: response.summary || {},
         keywords: [],
         organic: [],
@@ -82,8 +83,9 @@ const Competitor = {
       document.getElementById('competitorResults')?.classList.remove('hidden');
       document.getElementById('competitorEmpty')?.classList.add('hidden');
       
+      const totalAds = (response.ads?.length || 0) + (response.adsFromSearch?.length || 0);
       const creditMsg = response.creditsUsed ? ` (${response.creditsUsed} credits used)` : '';
-      showAlert(`Found ${response.summary?.totalAds || 0} ads for ${domain}!${creditMsg}`, 'success');
+      showAlert(`Found ${totalAds} ads for ${domain}!${creditMsg}`, 'success');
       
     } catch (error) {
       showAlert('Error analyzing competitor: ' + error.message, 'error');
@@ -266,45 +268,109 @@ const Competitor = {
   
   // Render ads tab
   renderAdsTab(ads) {
-    if (!ads || !ads.length) {
-      return '<p class="text-center py-8" style="color:#5f6368">No ads found for this domain</p>';
+    const data = AppState.competitorData;
+    const tcAds = ads || [];
+    const searchAds = data?.adsFromSearch || [];
+    const totalAds = tcAds.length + searchAds.length;
+    
+    if (totalAds === 0) {
+      const manualUrl = `https://adstransparency.google.com/?domain=${data?.domain || ''}`;
+      return `
+        <div class="p-8 text-center">
+          <span class="material-icons-outlined text-4xl mb-2" style="color:#5f6368">search_off</span>
+          <p class="font-medium mb-2">No ads found for this domain</p>
+          <p class="text-sm mb-4" style="color:#5f6368">The company may not be running Google Ads, or their ads couldn't be retrieved</p>
+          <a href="${manualUrl}" target="_blank" class="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2">
+            <span class="material-icons-outlined">open_in_new</span>
+            Check Transparency Center Manually
+          </a>
+        </div>
+      `;
     }
     
-    return `
-      <div class="mb-4 p-3 rounded-lg" style="background:#e6f4ea;border:1px solid #34a853">
-        <p class="text-sm" style="color:#137333">
-          <span class="material-icons-outlined text-lg align-middle">celebration</span>
-          <strong>Showing ${ads.length} ads</strong> from Google Ads Transparency Center via ScraperAPI
-        </p>
-      </div>
-      ${ads.slice(0, 20).map((ad, i) => `
-        <div class="p-4 border rounded-lg mb-3 hover:border-blue-500 transition-colors" style="border-color:#dadce0">
-          <div class="flex justify-between mb-2">
-            <span class="text-xs" style="color:#5f6368">Ad #${ad.position || i + 1}</span>
-            <span class="badge badge-${ad.format === 'video' ? 'red' : ad.format === 'image' ? 'yellow' : 'blue'}">${ad.format || 'text'}</span>
-          </div>
-          ${ad.imageUrl ? `
-            <div class="mb-3">
-              <img src="${ad.imageUrl}" alt="Ad preview" class="max-w-full h-auto rounded border" style="max-height:150px"
-                   onerror="this.style.display='none'">
-            </div>
-          ` : ''}
-          ${ad.firstShown ? `
-            <p class="text-xs mb-2" style="color:#5f6368">
-              First shown: ${ad.firstShown} ${ad.lastShown ? `• Last shown: ${ad.lastShown}` : ''}
-            </p>
-          ` : ''}
-          <div class="flex justify-between items-center">
-            <a href="${ad.previewUrl}" target="_blank" class="text-sm hover:underline" style="color:#1a73e8">
-              <span class="material-icons-outlined text-lg align-middle">visibility</span> View Full Ad
-            </a>
-            <button onclick="Competitor.analyzeAd(${i})" class="text-sm hover:underline" style="color:#34a853">
-              ✨ Get AI Tips
-            </button>
-          </div>
+    let html = '';
+    
+    // Ads from Transparency Center
+    if (tcAds.length > 0) {
+      html += `
+        <div class="mb-4 p-3 rounded-lg" style="background:#e6f4ea;border:1px solid #34a853">
+          <p class="text-sm" style="color:#137333">
+            <span class="material-icons-outlined text-lg align-middle">verified</span>
+            <strong>${tcAds.length} ads</strong> from Google Ads Transparency Center
+          </p>
         </div>
-      `).join('')}
+        ${tcAds.slice(0, 20).map((ad, i) => `
+          <div class="p-4 border rounded-lg mb-3 hover:border-blue-500 transition-colors" style="border-color:#dadce0">
+            <div class="flex justify-between mb-2">
+              <span class="text-xs" style="color:#5f6368">Ad #${ad.position || i + 1}</span>
+              <span class="badge badge-${ad.format === 'video' ? 'red' : ad.format === 'image' ? 'yellow' : 'blue'}">${ad.format || 'text'}</span>
+            </div>
+            ${ad.imageUrl ? `
+              <div class="mb-3">
+                <img src="${ad.imageUrl}" alt="Ad preview" class="max-w-full h-auto rounded border" style="max-height:150px"
+                     onerror="this.style.display='none'">
+              </div>
+            ` : ''}
+            ${ad.title ? `<h4 class="font-medium mb-1" style="color:#1a0dab">${esc(ad.title)}</h4>` : ''}
+            ${ad.description ? `<p class="text-sm mb-2" style="color:#545454">${esc(ad.description)}</p>` : ''}
+            ${ad.firstShown ? `
+              <p class="text-xs mb-2" style="color:#5f6368">
+                First shown: ${ad.firstShown} ${ad.lastShown ? `• Last shown: ${ad.lastShown}` : ''}
+              </p>
+            ` : ''}
+            <div class="flex justify-between items-center">
+              <a href="${ad.previewUrl}" target="_blank" class="text-sm hover:underline" style="color:#1a73e8">
+                <span class="material-icons-outlined text-lg align-middle">visibility</span> View Full Ad
+              </a>
+              <button onclick="Competitor.analyzeAd(${i})" class="text-sm hover:underline" style="color:#34a853">
+                ✨ Get AI Tips
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+    
+    // Ads from Google Search
+    if (searchAds.length > 0) {
+      html += `
+        <div class="mb-4 p-3 rounded-lg" style="background:#e8f0fe;border:1px solid #1a73e8">
+          <p class="text-sm" style="color:#1a73e8">
+            <span class="material-icons-outlined text-lg align-middle">search</span>
+            <strong>${searchAds.length} ads</strong> found via Google Search for this brand
+          </p>
+        </div>
+        ${searchAds.map((ad, i) => `
+          <div class="p-4 border rounded-lg mb-3" style="border-color:#dadce0">
+            <div class="flex justify-between mb-2">
+              <span class="badge badge-blue">Search Ad</span>
+              <span class="badge badge-${ad.type === 'shopping' ? 'yellow' : 'grey'}">${ad.type || 'text'}</span>
+            </div>
+            <h4 class="font-medium mb-1" style="color:#1a0dab">${esc(ad.title)}</h4>
+            <p class="text-sm mb-1" style="color:#006621">${esc(ad.displayUrl)}</p>
+            ${ad.description ? `<p class="text-sm" style="color:#545454">${esc(ad.description)}</p>` : ''}
+            ${ad.link ? `
+              <a href="${ad.link}" target="_blank" class="text-sm hover:underline mt-2 inline-block" style="color:#1a73e8">
+                <span class="material-icons-outlined text-sm align-middle">open_in_new</span> Visit
+              </a>
+            ` : ''}
+          </div>
+        `).join('')}
+      `;
+    }
+    
+    // Link to Transparency Center
+    html += `
+      <div class="mt-4 p-3 rounded-lg text-center" style="background:#f8f9fa">
+        <a href="https://adstransparency.google.com/?domain=${data?.domain || ''}" target="_blank" 
+           class="text-sm hover:underline" style="color:#1a73e8">
+          <span class="material-icons-outlined text-sm align-middle">open_in_new</span>
+          View all ads on Google Ads Transparency Center
+        </a>
+      </div>
     `;
+    
+    return html;
   },
   
   // Render keywords tab
