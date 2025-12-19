@@ -19,7 +19,7 @@ const freeKeywordResearch = require('../services/freeKeywordResearch');
  */
 router.post('/free/competitor/search', async (req, res) => {
   try {
-    const { domain } = req.body;
+    const { domain, region = 'US' } = req.body;
     
     if (!domain) {
       return res.status(400).json({ error: 'Domain is required' });
@@ -27,8 +27,8 @@ router.post('/free/competitor/search', async (req, res) => {
     
     console.log(`[FREE] Searching competitor: ${domain}`);
     
-    // Search using Google Ads Transparency
-    const result = await googleAdsTransparency.searchByDomain(domain);
+    // Search using Google Ads Transparency Scraper
+    const result = await googleAdsTransparency.searchAdvertisers(domain, region);
     
     res.json({
       success: result.success,
@@ -50,13 +50,13 @@ router.post('/free/competitor/search', async (req, res) => {
  */
 router.post('/free/competitor/ads', async (req, res) => {
   try {
-    const { domain, advertiserId, region = 'anywhere', format = 'all', limit = 50 } = req.body;
+    const { domain, advertiserId, region = 'US', format = 'all', limit = 50 } = req.body;
     
     let advId = advertiserId;
     
     // If no advertiser ID, search for it first
     if (!advId && domain) {
-      const searchResult = await googleAdsTransparency.searchByDomain(domain);
+      const searchResult = await googleAdsTransparency.searchAdvertisers(domain, region);
       if (searchResult.advertisers && searchResult.advertisers.length > 0) {
         advId = searchResult.advertisers[0].advertiserId;
       }
@@ -66,23 +66,24 @@ router.post('/free/competitor/ads', async (req, res) => {
       return res.json({
         success: false,
         ads: [],
-        message: 'No advertiser found for this domain. They may not be running Google Ads.'
+        message: 'No advertiser found for this domain. They may not be running Google Ads.',
+        manualSearchUrl: `https://adstransparency.google.com/?domain=${domain}`
       });
     }
     
     console.log(`[FREE] Getting ads for advertiser: ${advId}`);
     
-    const result = await googleAdsTransparency.getAds(advId, { region, format, limit });
+    const result = await googleAdsTransparency.getCreatives(advId, { region, limit });
     
     // Transform to match expected format
-    const ads = result.ads.map((ad, index) => ({
+    const ads = (result.ads || []).map((ad, index) => ({
       id: ad.creativeId,
       title: `Ad #${index + 1}`,
       description: 'View full ad at Google Ads Transparency Center',
       format: ad.format,
       imageUrl: ad.imageUrl,
       previewUrl: ad.previewUrl,
-      url: ad.url
+      url: ad.previewUrl
     }));
     
     res.json({
@@ -107,7 +108,7 @@ router.post('/free/competitor/ads', async (req, res) => {
  */
 router.post('/free/competitor/full', async (req, res) => {
   try {
-    const { domain } = req.body;
+    const { domain, region = 'US' } = req.body;
     
     if (!domain) {
       return res.status(400).json({ error: 'Domain is required' });
@@ -115,54 +116,20 @@ router.post('/free/competitor/full', async (req, res) => {
     
     console.log(`[FREE] Full competitor analysis: ${domain}`);
     
-    // Step 1: Find advertiser
-    const searchResult = await googleAdsTransparency.searchByDomain(domain);
+    // Use the full analysis method
+    const result = await googleAdsTransparency.analyzeCompetitor(domain, region);
     
-    if (!searchResult.success || searchResult.advertisers.length === 0) {
+    if (!result.success) {
       return res.json({
         success: false,
         domain,
-        message: 'No Google Ads found for this domain. They may not be running paid ads.',
-        suggestion: 'Try searching for the company name instead of domain.'
+        message: result.message || 'No Google Ads found for this domain.',
+        suggestion: result.suggestion || 'Try searching for the company name instead.',
+        manualSearchUrl: result.manualSearchUrl || `https://adstransparency.google.com/?domain=${domain}`
       });
     }
     
-    const advertiser = searchResult.advertisers[0];
-    
-    // Step 2: Get their ads
-    const adsResult = await googleAdsTransparency.getAds(advertiser.advertiserId, { limit: 100 });
-    
-    // Categorize ads by format
-    const textAds = adsResult.ads.filter(a => a.format === 'text');
-    const imageAds = adsResult.ads.filter(a => a.format === 'image');
-    const videoAds = adsResult.ads.filter(a => a.format === 'video');
-    
-    res.json({
-      success: true,
-      domain,
-      advertiser: {
-        id: advertiser.advertiserId,
-        name: domain,
-        transparencyUrl: `https://adstransparency.google.com/advertiser/${advertiser.advertiserId}`
-      },
-      summary: {
-        totalAds: adsResult.ads.length,
-        textAds: textAds.length,
-        imageAds: imageAds.length,
-        videoAds: videoAds.length,
-        isActiveAdvertiser: adsResult.ads.length > 0
-      },
-      ads: adsResult.ads.slice(0, 50).map((ad, i) => ({
-        id: ad.creativeId,
-        position: i + 1,
-        format: ad.format,
-        imageUrl: ad.imageUrl,
-        previewUrl: ad.previewUrl,
-        viewUrl: ad.url
-      })),
-      source: 'Google Ads Transparency Center (FREE)',
-      note: '100% Free - No API key required!'
-    });
+    res.json(result);
   } catch (error) {
     console.error('Full analysis error:', error);
     res.status(500).json({ error: error.message });
@@ -294,37 +261,37 @@ router.post('/free/keywords/questions', async (req, res) => {
 
 /**
  * POST /automation/competitor/ads
- * Get competitor ads - uses FREE if no API key
+ * Get competitor ads - uses FREE scraper
  */
 router.post('/competitor/ads', async (req, res) => {
-  const { domain, researchApiKey } = req.body;
+  const { domain } = req.body;
   
-  // If no API key, use FREE service
-  if (!researchApiKey) {
-    console.log('[AUTO] No API key - using FREE Google Ads Transparency');
-    req.body.domain = domain;
-    return router.handle(req, res, () => {});
+  console.log('[AUTO] Using FREE Google Ads Transparency scraper');
+  
+  try {
+    const result = await googleAdsTransparency.analyzeCompetitor(domain, 'US');
+    let ads = [];
+    
+    if (result.success && result.ads) {
+      ads = result.ads.map((ad, i) => ({
+        title: `Ad #${i + 1}`,
+        description: 'View at Google Ads Transparency Center',
+        keyword: domain,
+        visibleUrl: domain,
+        format: ad.format,
+        imageUrl: ad.imageUrl,
+        url: ad.previewUrl
+      }));
+    }
+    
+    res.json({ 
+      ads, 
+      source: 'Google Ads Transparency (FREE)',
+      viewAllUrl: result.advertiser?.transparencyUrl
+    });
+  } catch (error) {
+    res.json({ ads: [], error: error.message });
   }
-  
-  // Original paid API logic would go here
-  // For now, redirect to free
-  const result = await googleAdsTransparency.searchByDomain(domain);
-  let ads = [];
-  
-  if (result.success && result.advertisers.length > 0) {
-    const adsResult = await googleAdsTransparency.getAds(result.advertisers[0].advertiserId);
-    ads = adsResult.ads.map((ad, i) => ({
-      title: `Ad #${i + 1}`,
-      description: 'View at Google Ads Transparency Center',
-      keyword: domain,
-      visibleUrl: domain,
-      format: ad.format,
-      imageUrl: ad.imageUrl,
-      url: ad.url
-    }));
-  }
-  
-  res.json({ ads, source: 'Google Ads Transparency (FREE)' });
 });
 
 /**

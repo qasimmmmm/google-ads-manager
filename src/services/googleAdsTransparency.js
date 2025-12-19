@@ -1,186 +1,274 @@
 /* ═══════════════════════════════════════════════════════════════════
-   FREE Google Ads Transparency Center Scraper
-   No API key required - scrapes directly from Google's public data
+   Google Ads Transparency Center Scraper
+   100% FREE - No API key required!
+   Reverse-engineered from Google's internal API
    ═══════════════════════════════════════════════════════════════════ */
 
-const fetch = require('node-fetch');
+const https = require('https');
 
-class GoogleAdsTransparency {
+class GoogleAdsTransparencyScraper {
   constructor() {
-    this.baseUrl = 'https://adstransparency.google.com';
-    this.headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': '*/*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Origin': 'https://adstransparency.google.com',
-      'Referer': 'https://adstransparency.google.com/'
-    };
+    this.baseUrl = 'adstransparency.google.com';
+    this.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
   }
 
-  // Search for advertiser by domain or company name
-  async searchAdvertiser(query) {
-    try {
-      // Clean the query - remove http/https and www
-      const cleanQuery = query.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
-      
-      const url = `${this.baseUrl}/anji/_/rpc/SearchService/SearchAdvertisers`;
-      
-      // Google's protobuf-like request format
-      const requestBody = JSON.stringify([[cleanQuery], null, null, null, 20]);
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          ...this.headers,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `f.req=${encodeURIComponent(requestBody)}`
+  /**
+   * Make HTTPS request with proper headers
+   */
+  makeRequest(options, postData = null) {
+    return new Promise((resolve, reject) => {
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            // Google returns )]}' prefix for security, remove it
+            const cleanData = data.replace(/^\)\]\}'\n?/, '');
+            resolve({ status: res.statusCode, data: cleanData });
+          } catch (e) {
+            resolve({ status: res.statusCode, data });
+          }
+        });
       });
 
-      const text = await response.text();
-      return this.parseAdvertiserSearch(text, cleanQuery);
+      req.on('error', reject);
+      req.setTimeout(30000, () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+
+      if (postData) {
+        req.write(postData);
+      }
+      req.end();
+    });
+  }
+
+  /**
+   * Search for advertisers by domain or text
+   * This hits Google's internal search endpoint
+   */
+  async searchAdvertisers(query, region = 'US') {
+    console.log(`[Scraper] Searching advertisers: ${query}`);
+    
+    // Clean query
+    const cleanQuery = query.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
+    
+    const requestBody = JSON.stringify({
+      '1': cleanQuery,
+      '2': this.getRegionCode(region),
+      '3': 30,  // Number of results
+      '7': 1
+    });
+
+    const options = {
+      hostname: this.baseUrl,
+      port: 443,
+      path: '/anji/_/rpc/SearchService/SearchAdvertisers?authuser=0',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': this.userAgent,
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Origin': 'https://adstransparency.google.com',
+        'Referer': 'https://adstransparency.google.com/',
+        'X-Same-Domain': '1',
+        'Content-Length': Buffer.byteLength(requestBody)
+      }
+    };
+
+    try {
+      const response = await this.makeRequest(options, requestBody);
+      return this.parseAdvertiserResponse(response.data, cleanQuery);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('[Scraper] Search error:', error.message);
       return { success: false, advertisers: [], error: error.message };
     }
   }
 
-  // Alternative: Direct URL-based search (more reliable)
-  async searchByDomain(domain) {
-    try {
-      const cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
-      
-      // Use the public search page and extract data
-      const searchUrl = `${this.baseUrl}/?domain=${encodeURIComponent(cleanDomain)}&region=anywhere`;
-      
-      const response = await fetch(searchUrl, {
-        headers: this.headers
-      });
+  /**
+   * Get creatives/ads for an advertiser
+   */
+  async getCreatives(advertiserId, options = {}) {
+    const {
+      region = 'US',
+      limit = 100,
+      format = null  // null = all, 1 = text, 2 = image, 3 = video
+    } = options;
 
-      const html = await response.text();
-      return this.parseSearchPage(html, cleanDomain);
+    console.log(`[Scraper] Getting ads for: ${advertiserId}`);
+
+    const requestBody = JSON.stringify({
+      '1': advertiserId,
+      '2': this.getRegionCode(region),
+      '3': limit,
+      '6': format
+    });
+
+    const reqOptions = {
+      hostname: this.baseUrl,
+      port: 443,
+      path: '/anji/_/rpc/SearchService/SearchCreatives?authuser=0',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': this.userAgent,
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Origin': 'https://adstransparency.google.com',
+        'Referer': `https://adstransparency.google.com/advertiser/${advertiserId}`,
+        'X-Same-Domain': '1',
+        'Content-Length': Buffer.byteLength(requestBody)
+      }
+    };
+
+    try {
+      const response = await this.makeRequest(reqOptions, requestBody);
+      return this.parseCreativesResponse(response.data, advertiserId);
+    } catch (error) {
+      console.error('[Scraper] Creatives error:', error.message);
+      return { success: false, ads: [], error: error.message };
+    }
+  }
+
+  /**
+   * Get detailed info for a specific creative
+   */
+  async getCreativeDetails(advertiserId, creativeId) {
+    const requestBody = JSON.stringify({
+      '1': advertiserId,
+      '2': creativeId
+    });
+
+    const options = {
+      hostname: this.baseUrl,
+      port: 443,
+      path: '/anji/_/rpc/SearchService/GetCreativeById?authuser=0',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': this.userAgent,
+        'Accept': '*/*',
+        'Origin': 'https://adstransparency.google.com',
+        'Referer': `https://adstransparency.google.com/advertiser/${advertiserId}/creative/${creativeId}`,
+        'X-Same-Domain': '1',
+        'Content-Length': Buffer.byteLength(requestBody)
+      }
+    };
+
+    try {
+      const response = await this.makeRequest(options, requestBody);
+      return this.parseCreativeDetails(response.data, advertiserId, creativeId);
     } catch (error) {
       return { success: false, error: error.message };
     }
   }
 
-  // Get all ads for an advertiser ID
-  async getAds(advertiserId, options = {}) {
-    const {
-      region = 'anywhere',
-      startDate = null,
-      endDate = null,
-      format = 'all', // text, image, video
-      platform = 'all', // SEARCH, YOUTUBE, MAPS, PLAY, SHOPPING
-      limit = 100
-    } = options;
-
-    try {
-      let url = `${this.baseUrl}/?advertiser_id=${advertiserId}&region=${region}`;
-      
-      if (startDate) url += `&start_date=${startDate}`;
-      if (endDate) url += `&end_date=${endDate}`;
-      if (format !== 'all') url += `&format=${format}`;
-      if (platform !== 'all') url += `&platform=${platform.toUpperCase()}`;
-
-      const response = await fetch(url, { headers: this.headers });
-      const html = await response.text();
-      
-      return this.parseAdsPage(html, advertiserId);
-    } catch (error) {
-      return { success: false, ads: [], error: error.message };
-    }
-  }
-
-  // Parse advertiser search results
-  parseAdvertiserSearch(text, query) {
+  /**
+   * Parse advertiser search response
+   */
+  parseAdvertiserResponse(data, query) {
     const advertisers = [];
     
     try {
-      // Try to find advertiser IDs in the response (format: AR followed by numbers)
-      const idMatches = text.match(/AR\d{17,}/g) || [];
+      // Extract advertiser IDs (format: AR followed by numbers)
+      const idMatches = data.match(/AR\d{17,}/g) || [];
       const uniqueIds = [...new Set(idMatches)];
       
-      // Try to find company names
-      const namePattern = /"([^"]+)"[^"]*AR\d{17,}/g;
-      let match;
-      
-      if (uniqueIds.length > 0) {
-        uniqueIds.slice(0, 10).forEach((id, index) => {
-          advertisers.push({
-            advertiserId: id,
-            name: query,
-            domain: query,
-            url: `${this.baseUrl}/advertiser/${id}`
-          });
+      // Try to extract names from the response
+      // Google's response has names near the IDs
+      uniqueIds.forEach((id, index) => {
+        // Try to find name associated with this ID
+        const namePattern = new RegExp(`"([^"]{2,50})"[^"]*${id}|${id}[^"]*"([^"]{2,50})"`, 'g');
+        const nameMatch = namePattern.exec(data);
+        
+        advertisers.push({
+          advertiserId: id,
+          name: nameMatch ? (nameMatch[1] || nameMatch[2] || query) : query,
+          position: index + 1,
+          transparencyUrl: `https://adstransparency.google.com/advertiser/${id}`,
+          verified: data.includes(`${id}`) && data.includes('verified')
         });
+      });
+
+      // If no IDs found, try alternate parsing
+      if (advertisers.length === 0) {
+        // Sometimes the response has a different format
+        const altPattern = /"AR(\d{17,})"/g;
+        let match;
+        while ((match = altPattern.exec(data)) !== null) {
+          const id = 'AR' + match[1];
+          if (!advertisers.find(a => a.advertiserId === id)) {
+            advertisers.push({
+              advertiserId: id,
+              name: query,
+              transparencyUrl: `https://adstransparency.google.com/advertiser/${id}`
+            });
+          }
+        }
       }
+
     } catch (e) {
-      console.error('Parse error:', e);
+      console.error('[Parser] Error:', e.message);
     }
 
     return {
       success: advertisers.length > 0,
       query,
+      count: advertisers.length,
       advertisers
     };
   }
 
-  // Parse the search page HTML
-  parseSearchPage(html, domain) {
-    const advertisers = [];
-    
-    try {
-      // Extract advertiser IDs from the page
-      const idMatches = html.match(/AR\d{17,}/g) || [];
-      const uniqueIds = [...new Set(idMatches)];
-      
-      // Extract company names (usually near the advertiser ID)
-      uniqueIds.slice(0, 10).forEach(id => {
-        advertisers.push({
-          advertiserId: id,
-          domain: domain,
-          url: `${this.baseUrl}/advertiser/${id}`
-        });
-      });
-    } catch (e) {
-      console.error('Parse error:', e);
-    }
-
-    return {
-      success: advertisers.length > 0,
-      domain,
-      advertisers
-    };
-  }
-
-  // Parse ads page HTML and extract ad data
-  parseAdsPage(html, advertiserId) {
+  /**
+   * Parse creatives/ads response
+   */
+  parseCreativesResponse(data, advertiserId) {
     const ads = [];
     
     try {
       // Extract creative IDs (format: CR followed by numbers)
-      const creativeIds = html.match(/CR\d{17,}/g) || [];
+      const creativeIds = data.match(/CR\d{17,}/g) || [];
       const uniqueCreatives = [...new Set(creativeIds)];
       
       // Extract image URLs from Google's CDN
-      const imageUrls = html.match(/https:\/\/tpc\.googlesyndication\.com\/archive\/simgad\/\d+/g) || [];
+      const imageUrls = data.match(/https:\/\/tpc\.googlesyndication\.com\/archive\/simgad\/\d+/g) || [];
       
-      // Extract ad text content
-      const textMatches = html.match(/<div[^>]*class="[^"]*creative-text[^"]*"[^>]*>([^<]+)</g) || [];
+      // Try to extract dates
+      const datePattern = /(\d{4}-\d{2}-\d{2})/g;
+      const dates = data.match(datePattern) || [];
       
-      uniqueCreatives.slice(0, 100).forEach((creativeId, index) => {
+      // Determine formats from the data
+      const hasVideo = data.toLowerCase().includes('video');
+      const hasImage = imageUrls.length > 0;
+      
+      uniqueCreatives.forEach((creativeId, index) => {
+        // Determine format for this ad
+        let format = 'text';
+        if (imageUrls[index]) format = 'image';
+        
+        // Check if this specific creative is video
+        const creativeSection = data.substring(
+          Math.max(0, data.indexOf(creativeId) - 100),
+          Math.min(data.length, data.indexOf(creativeId) + 500)
+        );
+        if (creativeSection.toLowerCase().includes('video')) format = 'video';
+        
         ads.push({
           creativeId,
           advertiserId,
-          format: imageUrls[index] ? 'image' : 'text',
+          position: index + 1,
+          format,
           imageUrl: imageUrls[index] || null,
-          previewUrl: `${this.baseUrl}/advertiser/${advertiserId}/creative/${creativeId}`,
-          url: `${this.baseUrl}/advertiser/${advertiserId}/creative/${creativeId}`
+          previewUrl: `https://adstransparency.google.com/advertiser/${advertiserId}/creative/${creativeId}`,
+          firstShown: dates[index * 2] || null,
+          lastShown: dates[index * 2 + 1] || null
         });
       });
+
     } catch (e) {
-      console.error('Parse ads error:', e);
+      console.error('[Parser] Creatives error:', e.message);
     }
 
     return {
@@ -191,49 +279,139 @@ class GoogleAdsTransparency {
     };
   }
 
-  // Get detailed info for a specific ad creative
-  async getAdDetails(advertiserId, creativeId) {
+  /**
+   * Parse single creative details
+   */
+  parseCreativeDetails(data, advertiserId, creativeId) {
     try {
-      const url = `${this.baseUrl}/advertiser/${advertiserId}/creative/${creativeId}`;
-      const response = await fetch(url, { headers: this.headers });
-      const html = await response.text();
+      const imageUrl = (data.match(/https:\/\/tpc\.googlesyndication\.com\/archive\/simgad\/\d+/) || [])[0];
+      const dates = data.match(/\d{4}-\d{2}-\d{2}/g) || [];
       
-      return this.parseAdDetails(html, advertiserId, creativeId);
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Parse individual ad details
-  parseAdDetails(html, advertiserId, creativeId) {
-    try {
-      // Extract dates
-      const firstShownMatch = html.match(/First shown[:\s]*([^<]+)/i);
-      const lastShownMatch = html.match(/Last shown[:\s]*([^<]+)/i);
-      
-      // Extract image
-      const imageMatch = html.match(/https:\/\/tpc\.googlesyndication\.com\/archive\/simgad\/\d+/);
-      
-      // Extract ad format
       let format = 'text';
-      if (html.includes('video')) format = 'video';
-      else if (imageMatch) format = 'image';
-
+      if (data.toLowerCase().includes('video')) format = 'video';
+      else if (imageUrl) format = 'image';
+      
       return {
         success: true,
-        advertiserId,
         creativeId,
+        advertiserId,
         format,
-        imageUrl: imageMatch ? imageMatch[0] : null,
-        firstShown: firstShownMatch ? firstShownMatch[1].trim() : null,
-        lastShown: lastShownMatch ? lastShownMatch[1].trim() : null,
-        url: `${this.baseUrl}/advertiser/${advertiserId}/creative/${creativeId}`
+        imageUrl,
+        firstShown: dates[0] || null,
+        lastShown: dates[1] || null,
+        previewUrl: `https://adstransparency.google.com/advertiser/${advertiserId}/creative/${creativeId}`
       };
     } catch (e) {
       return { success: false, error: e.message };
     }
   }
+
+  /**
+   * Get region code
+   */
+  getRegionCode(region) {
+    const codes = {
+      'US': 'US',
+      'UK': 'GB', 
+      'GB': 'GB',
+      'CA': 'CA',
+      'AU': 'AU',
+      'DE': 'DE',
+      'FR': 'FR',
+      'IN': 'IN',
+      'JP': 'JP',
+      'BR': 'BR',
+      'anywhere': '',
+      'all': ''
+    };
+    return codes[region?.toUpperCase()] || region || '';
+  }
+
+  /**
+   * Full competitor analysis - main entry point
+   */
+  async analyzeCompetitor(domain, region = 'US') {
+    console.log(`\n[Scraper] ═══════════════════════════════════════`);
+    console.log(`[Scraper] Analyzing competitor: ${domain}`);
+    console.log(`[Scraper] Region: ${region}`);
+    console.log(`[Scraper] ═══════════════════════════════════════\n`);
+
+    // Step 1: Search for advertiser
+    const searchResult = await this.searchAdvertisers(domain, region);
+    
+    if (!searchResult.success || searchResult.advertisers.length === 0) {
+      // Try alternate search with just domain name
+      const domainName = domain.split('.')[0];
+      const altSearch = await this.searchAdvertisers(domainName, region);
+      
+      if (!altSearch.success || altSearch.advertisers.length === 0) {
+        return {
+          success: false,
+          domain,
+          message: 'No advertisers found. They may not be running Google Ads.',
+          suggestion: 'Try searching for the company name instead of domain.',
+          manualSearchUrl: `https://adstransparency.google.com/?region=${region}&domain=${domain}`
+        };
+      }
+      searchResult.advertisers = altSearch.advertisers;
+    }
+
+    // Step 2: Get ads for the first advertiser found
+    const primaryAdvertiser = searchResult.advertisers[0];
+    const adsResult = await this.getCreatives(primaryAdvertiser.advertiserId, { region, limit: 100 });
+
+    // Categorize ads
+    const ads = adsResult.ads || [];
+    const textAds = ads.filter(a => a.format === 'text');
+    const imageAds = ads.filter(a => a.format === 'image');
+    const videoAds = ads.filter(a => a.format === 'video');
+
+    return {
+      success: true,
+      domain,
+      advertiser: {
+        id: primaryAdvertiser.advertiserId,
+        name: primaryAdvertiser.name || domain,
+        verified: primaryAdvertiser.verified || false,
+        transparencyUrl: primaryAdvertiser.transparencyUrl
+      },
+      summary: {
+        totalAds: ads.length,
+        textAds: textAds.length,
+        imageAds: imageAds.length,
+        videoAds: videoAds.length,
+        otherAdvertisers: searchResult.advertisers.length - 1
+      },
+      ads: ads.slice(0, 50).map((ad, i) => ({
+        id: ad.creativeId,
+        position: i + 1,
+        format: ad.format,
+        imageUrl: ad.imageUrl,
+        previewUrl: ad.previewUrl,
+        firstShown: ad.firstShown,
+        lastShown: ad.lastShown
+      })),
+      otherAdvertisers: searchResult.advertisers.slice(1, 5),
+      source: '100% FREE - Google Ads Transparency Center Scraper',
+      note: 'No API key required!'
+    };
+  }
+
+  /**
+   * Quick search - just get advertiser IDs
+   */
+  async quickSearch(query) {
+    const result = await this.searchAdvertisers(query);
+    return {
+      success: result.success,
+      query,
+      advertisers: result.advertisers.map(a => ({
+        id: a.advertiserId,
+        name: a.name,
+        url: a.transparencyUrl
+      }))
+    };
+  }
 }
 
-// Export singleton instance
-module.exports = new GoogleAdsTransparency();
+module.exports = new GoogleAdsTransparencyScraper();

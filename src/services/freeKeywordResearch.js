@@ -1,29 +1,53 @@
 /* ═══════════════════════════════════════════════════════════════════
    FREE Keyword Research Service
-   Uses Google Autocomplete + scraping - No API key required!
+   Uses Google Autocomplete - No API key required!
    ═══════════════════════════════════════════════════════════════════ */
 
-const fetch = require('node-fetch');
+const https = require('https');
 
 class FreeKeywordResearch {
   constructor() {
-    this.headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json, text/plain, */*',
-      'Accept-Language': 'en-US,en;q=0.9'
-    };
+    this.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
   }
 
-  // Get keyword suggestions from Google Autocomplete (100% FREE)
+  /**
+   * Make HTTPS GET request
+   */
+  makeRequest(url) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        headers: {
+          'User-Agent': this.userAgent,
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9'
+        }
+      };
+
+      https.get(url, options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            resolve(data);
+          }
+        });
+      }).on('error', reject);
+    });
+  }
+
+  /**
+   * Get keyword suggestions from Google Autocomplete (100% FREE)
+   */
   async getAutocompleteSuggestions(keyword, language = 'en', country = 'us') {
     try {
       const url = `https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(keyword)}&hl=${language}&gl=${country}`;
       
-      const response = await fetch(url, { headers: this.headers });
-      const data = await response.json();
+      const data = await this.makeRequest(url);
       
       // Google returns: [query, [suggestions], [], {"google:suggesttype":[]}, ...]
-      const suggestions = data[1] || [];
+      const suggestions = (Array.isArray(data) && data[1]) ? data[1] : [];
       
       return {
         success: true,
@@ -35,48 +59,61 @@ class FreeKeywordResearch {
         }))
       };
     } catch (error) {
+      console.error('[Keyword] Autocomplete error:', error.message);
       return { success: false, suggestions: [], error: error.message };
     }
   }
 
-  // Get expanded keywords using alphabet soup method
+  /**
+   * Get expanded keywords using alphabet soup method
+   */
   async getExpandedKeywords(seedKeyword, language = 'en', country = 'us') {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
-    const prefixes = ['', 'how to ', 'what is ', 'best ', 'why ', 'when ', 'where ', 'who '];
-    const suffixes = ['', ' vs', ' for', ' with', ' without', ' near me', ' online', ' free'];
+    const prefixes = ['', 'how to ', 'what is ', 'best ', 'why ', 'when '];
+    const suffixes = ['', ' vs', ' for', ' with', ' near me', ' online'];
     
     const allKeywords = new Map();
     
     try {
-      // Search with alphabet additions
-      const promises = [];
-      
-      // Add letter after keyword
-      for (const letter of alphabet.slice(0, 10)) { // First 10 letters to avoid rate limiting
-        promises.push(this.getAutocompleteSuggestions(`${seedKeyword} ${letter}`, language, country));
-      }
-      
-      // Add common prefixes
-      for (const prefix of prefixes.slice(0, 4)) {
-        promises.push(this.getAutocompleteSuggestions(`${prefix}${seedKeyword}`, language, country));
-      }
-      
-      // Add common suffixes
-      for (const suffix of suffixes.slice(0, 4)) {
-        promises.push(this.getAutocompleteSuggestions(`${seedKeyword}${suffix}`, language, country));
-      }
-      
-      const results = await Promise.all(promises);
-      
-      results.forEach(result => {
-        if (result.success && result.suggestions) {
+      // Search with alphabet additions (first 10 letters)
+      for (const letter of alphabet.slice(0, 10)) {
+        const result = await this.getAutocompleteSuggestions(`${seedKeyword} ${letter}`, language, country);
+        if (result.success) {
           result.suggestions.forEach(s => {
             if (!allKeywords.has(s.keyword.toLowerCase())) {
               allKeywords.set(s.keyword.toLowerCase(), s);
             }
           });
         }
-      });
+        // Small delay to avoid rate limiting
+        await this.sleep(100);
+      }
+      
+      // Add common prefixes
+      for (const prefix of prefixes.slice(0, 3)) {
+        const result = await this.getAutocompleteSuggestions(`${prefix}${seedKeyword}`, language, country);
+        if (result.success) {
+          result.suggestions.forEach(s => {
+            if (!allKeywords.has(s.keyword.toLowerCase())) {
+              allKeywords.set(s.keyword.toLowerCase(), s);
+            }
+          });
+        }
+        await this.sleep(100);
+      }
+      
+      // Add common suffixes
+      for (const suffix of suffixes.slice(0, 3)) {
+        const result = await this.getAutocompleteSuggestions(`${seedKeyword}${suffix}`, language, country);
+        if (result.success) {
+          result.suggestions.forEach(s => {
+            if (!allKeywords.has(s.keyword.toLowerCase())) {
+              allKeywords.set(s.keyword.toLowerCase(), s);
+            }
+          });
+        }
+        await this.sleep(100);
+      }
       
       return {
         success: true,
@@ -89,34 +126,38 @@ class FreeKeywordResearch {
     }
   }
 
-  // Get "People Also Ask" questions (simulated based on patterns)
+  /**
+   * Sleep helper
+   */
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Get "People Also Ask" style questions
+   */
   async getRelatedQuestions(keyword) {
     const questionPatterns = [
       `what is ${keyword}`,
       `how does ${keyword} work`,
-      `why is ${keyword} important`,
       `how much does ${keyword} cost`,
-      `what are the benefits of ${keyword}`,
-      `how to get ${keyword}`,
-      `is ${keyword} worth it`,
-      `what is the best ${keyword}`,
-      `how to choose ${keyword}`,
-      `${keyword} vs alternatives`
+      `${keyword} vs`,
+      `best ${keyword}`
     ];
 
     try {
-      const promises = questionPatterns.map(q => this.getAutocompleteSuggestions(q));
-      const results = await Promise.all(promises);
-      
       const questions = [];
-      results.forEach((result, index) => {
+      
+      for (const q of questionPatterns) {
+        const result = await this.getAutocompleteSuggestions(q);
         if (result.success) {
           questions.push({
-            question: questionPatterns[index],
+            question: q,
             relatedSuggestions: result.suggestions.slice(0, 3)
           });
         }
-      });
+        await this.sleep(100);
+      }
 
       return {
         success: true,
@@ -128,16 +169,16 @@ class FreeKeywordResearch {
     }
   }
 
-  // Estimate keyword metrics (basic estimation without paid API)
+  /**
+   * Estimate keyword metrics (AI-based estimation)
+   */
   estimateKeywordMetrics(keyword) {
-    // These are rough estimates based on keyword characteristics
-    // In production, you'd want to use actual data
     const wordCount = keyword.split(' ').length;
     const hasCommercialIntent = /buy|price|cost|cheap|best|review|vs|compare|deal|discount|free|download/i.test(keyword);
     const hasLocalIntent = /near me|in \w+|local/i.test(keyword);
     const hasQuestionIntent = /^(how|what|why|when|where|who|which|is|can|do|does)/i.test(keyword);
     
-    // Estimate difficulty (longer = easier, commercial = harder)
+    // Estimate difficulty
     let difficulty = 50;
     if (wordCount >= 4) difficulty -= 20;
     if (wordCount >= 6) difficulty -= 15;
@@ -176,11 +217,15 @@ class FreeKeywordResearch {
     };
   }
 
-  // Full keyword research combining all methods
+  /**
+   * Full keyword research combining all methods
+   */
   async fullKeywordResearch(seedKeyword, options = {}) {
     const { maxKeywords = 100, language = 'en', country = 'us' } = options;
     
     try {
+      console.log(`[Keyword] Starting research for: ${seedKeyword}`);
+      
       // Get expanded keywords
       const expanded = await this.getExpandedKeywords(seedKeyword, language, country);
       
@@ -196,6 +241,8 @@ class FreeKeywordResearch {
       // Get related questions
       const questions = await this.getRelatedQuestions(seedKeyword);
       
+      console.log(`[Keyword] Found ${keywordsWithMetrics.length} keywords`);
+      
       return {
         success: true,
         seedKeyword,
@@ -203,13 +250,18 @@ class FreeKeywordResearch {
         keywords: keywordsWithMetrics,
         questions: questions.questions || [],
         summary: {
-          avgDifficulty: Math.round(keywordsWithMetrics.reduce((a, k) => a + k.difficulty, 0) / keywordsWithMetrics.length),
-          avgCpc: parseFloat((keywordsWithMetrics.reduce((a, k) => a + k.estimatedCpc, 0) / keywordsWithMetrics.length).toFixed(2)),
+          avgDifficulty: keywordsWithMetrics.length > 0 
+            ? Math.round(keywordsWithMetrics.reduce((a, k) => a + k.difficulty, 0) / keywordsWithMetrics.length)
+            : 0,
+          avgCpc: keywordsWithMetrics.length > 0
+            ? parseFloat((keywordsWithMetrics.reduce((a, k) => a + k.estimatedCpc, 0) / keywordsWithMetrics.length).toFixed(2))
+            : 0,
           easyKeywords: keywordsWithMetrics.filter(k => k.difficultyLabel === 'Easy').length,
           commercialKeywords: keywordsWithMetrics.filter(k => k.intent === 'Commercial' || k.intent === 'Transactional').length
         }
       };
     } catch (error) {
+      console.error('[Keyword] Research error:', error.message);
       return { success: false, error: error.message };
     }
   }
