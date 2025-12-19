@@ -1,10 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Keyword Planner Module v3.0
+   Keyword Planner Module v3.0 - Advanced Scraper Edition
    
-   Shows ALL Ad Types:
-   - Search Ads (text ads at top/bottom)
-   - Shopping Ads (product listings with images/prices)
-   - Local/Call Ads (with phone numbers and call buttons)
+   Features:
+   - FREE Keyword Research (Google Autocomplete)
+   - Advanced Ad Scraper with Residential Proxy Support
+   - Browser fingerprint rotation
+   - Human-like behavior simulation
    ═══════════════════════════════════════════════════════════════════ */
 
 const KeywordPlanner = {
@@ -124,7 +125,7 @@ const KeywordPlanner = {
               <td class="p-3 text-center">
                 <button onclick="KeywordPlanner.searchCurrentAds('${esc(k.keyword)}')" 
                         class="text-xs px-2 py-1 rounded hover:bg-blue-50" style="color:#1a73e8">
-                  🔍 See All Ads
+                  🔍 See Ads
                 </button>
               </td>
             </tr>
@@ -139,12 +140,10 @@ const KeywordPlanner = {
     
     switch (type) {
       case 'best':
-        filtered = filtered.filter(k => (k.opportunityScore || 50) >= 60)
-          .sort((a, b) => (b.opportunityScore || 50) - (a.opportunityScore || 50));
+        filtered = filtered.filter(k => (k.opportunityScore || 50) >= 60).sort((a, b) => (b.opportunityScore || 50) - (a.opportunityScore || 50));
         break;
       case 'lowcpc':
-        filtered = filtered.filter(k => parseFloat(k.cpc || 0) < 5)
-          .sort((a, b) => parseFloat(a.cpc || 0) - parseFloat(b.cpc || 0));
+        filtered = filtered.filter(k => parseFloat(k.cpc || 0) < 5).sort((a, b) => parseFloat(a.cpc || 0) - parseFloat(b.cpc || 0));
         break;
       case 'highvol':
         filtered = filtered.sort((a, b) => (b.searchVolume || 0) - (a.searchVolume || 0));
@@ -167,8 +166,7 @@ const KeywordPlanner = {
   
   
   /* ═══════════════════════════════════════════════════════════════════
-     FEATURE 2: Current Ads on Keywords - ALL AD TYPES!
-     Shows: Search Ads, Shopping Ads, Call/Local Ads
+     FEATURE 2: Current Ads - Advanced Scraper with Residential Proxies
      ═══════════════════════════════════════════════════════════════════ */
   
   searchCurrentAds(keyword) {
@@ -184,47 +182,45 @@ const KeywordPlanner = {
       return;
     }
     
-    const scraperApiKey = Storage.getKey('scraperapi');
+    // Get proxy config from storage
+    const proxyConfig = this.getProxyConfig();
     
-    if (!scraperApiKey) {
-      this.showApiKeyModal();
+    if (!proxyConfig) {
+      this.showProxySetup();
       return;
     }
     
     const btn = document.getElementById('currentAdsBtn');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span class="material-icons-outlined animate-spin">sync</span>Searching All Ad Types...';
+      btn.innerHTML = '<span class="material-icons-outlined animate-spin">sync</span>Searching with ' + (proxyConfig.provider || 'Proxy') + '...';
     }
     
     try {
       const response = await API.post('/automation/free/keywords/current-ads', {
         keyword,
-        scraperApiKey,
+        proxyConfig,
         country: 'us'
       });
       
-      if (response.error === 'NO_API_KEY' || response.error === 'INVALID_API_KEY') {
-        this.showApiKeyModal();
+      if (response.error === 'CAPTCHA_DETECTED') {
+        showAlert('CAPTCHA detected! Try a different proxy session.', 'error');
         return;
       }
       
       if (!response.success) {
-        showAlert(response.message || 'Search failed', 'error');
+        showAlert(response.message || 'Search failed: ' + response.error, 'error');
         return;
       }
       
-      // Render ALL ad types
-      this.renderAllAdsResults(response);
+      // Render results
+      this.renderAdsResults(response);
       
       const total = response.totalAds || 0;
-      const search = response.searchAdsCount || 0;
-      const shopping = response.shoppingAdsCount || 0;
-      const local = response.localAdsCount || 0;
-      
-      showAlert(`Found ${total} ads: ${search} Search, ${shopping} Shopping, ${local} Local/Call`, 'success');
+      showAlert(`Found ${total} ads! (${response.searchAdsCount} search, ${response.shoppingAdsCount} shopping, ${response.localAdsCount} local)`, 'success');
       
     } catch (error) {
+      console.error('Search error:', error);
       showAlert('Error: ' + error.message, 'error');
     }
     
@@ -234,8 +230,24 @@ const KeywordPlanner = {
     }
   },
   
-  // Render ALL ad types with tabs
-  renderAllAdsResults(data) {
+  // Get proxy config from storage
+  getProxyConfig() {
+    const saved = localStorage.getItem('proxyConfig');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch(e) {}
+    }
+    return null;
+  },
+  
+  // Save proxy config
+  saveProxyConfig(config) {
+    localStorage.setItem('proxyConfig', JSON.stringify(config));
+  },
+  
+  // Render ALL ad types
+  renderAdsResults(data) {
     const container = document.getElementById('currentAdsResults');
     if (!container) return;
     
@@ -246,7 +258,7 @@ const KeywordPlanner = {
     const localAds = data.localAds || [];
     
     container.innerHTML = `
-      <!-- Summary Cards - ALL AD TYPES -->
+      <!-- Summary Cards -->
       <div class="grid grid-cols-5 gap-3 mb-6">
         <div class="card p-4" style="border-left:4px solid #1a73e8">
           <p class="text-2xl font-bold" style="color:#1a73e8">${data.totalAds || 0}</p>
@@ -262,22 +274,23 @@ const KeywordPlanner = {
         </div>
         <div class="card p-4" style="border-left:4px solid #34a853">
           <p class="text-2xl font-bold" style="color:#34a853">${localAds.length}</p>
-          <p class="text-xs" style="color:#5f6368">📍 Local/Call Ads</p>
+          <p class="text-xs" style="color:#5f6368">📍 Local Ads</p>
         </div>
-        <div class="card p-4" style="border-left:4px solid #ea4335">
-          <p class="text-2xl font-bold" style="color:#ea4335">${data.organicCount || 0}</p>
-          <p class="text-xs" style="color:#5f6368">Organic Results</p>
+        <div class="card p-4" style="border-left:4px solid #5f6368">
+          <p class="text-2xl font-bold" style="color:#5f6368">${data.organicCount || 0}</p>
+          <p class="text-xs" style="color:#5f6368">Organic</p>
         </div>
       </div>
       
-      <!-- Info Banner -->
-      <div class="p-3 rounded-lg mb-4" style="background:#e8f0fe;border:1px solid #1a73e8">
-        <p class="text-sm" style="color:#1a73e8">
-          <span class="material-icons-outlined text-lg align-middle">info</span>
-          <strong>LIVE Ads</strong> for "<strong>${esc(data.keyword)}</strong>" in the US
-          <span class="text-xs ml-2">${new Date(data.timestamp).toLocaleString()}</span>
-        </p>
-      </div>
+      <!-- Fingerprint Info -->
+      ${data.fingerprint ? `
+        <div class="p-3 rounded-lg mb-4" style="background:#e8f0fe;border:1px solid #1a73e8">
+          <p class="text-sm" style="color:#1a73e8">
+            <span class="material-icons-outlined text-lg align-middle">fingerprint</span>
+            <strong>Session:</strong> ${data.fingerprint.city} • ${data.fingerprint.viewport}
+          </p>
+        </div>
+      ` : ''}
       
       <!-- Tab Navigation -->
       <div class="flex border-b mb-4" style="border-color:#e8eaed">
@@ -291,7 +304,7 @@ const KeywordPlanner = {
           🛒 Shopping (${shoppingAds.length})
         </button>
         <button onclick="KeywordPlanner.showAdTab('local')" id="tab-local" class="px-4 py-2 font-medium text-sm border-b-2" style="border-color:transparent;color:#5f6368">
-          📍 Local/Call (${localAds.length})
+          📍 Local (${localAds.length})
         </button>
       </div>
       
@@ -323,35 +336,27 @@ const KeywordPlanner = {
         </a>
         <button onclick="KeywordPlanner.exportAds()" class="btn-secondary px-4 py-2 text-sm inline-flex items-center gap-2">
           <span class="material-icons-outlined">download</span>
-          Export All Ads
+          Export Ads
         </button>
       </div>
     `;
     
-    // Store data for tab switching and export
+    // Store for tab switching and export
     AppState.currentAdsData = data;
   },
   
-  // Tab switching
   showAdTab(tab) {
     const data = AppState.currentAdsData;
     if (!data) return;
     
-    // Update tab styles
     ['all', 'search', 'shopping', 'local'].forEach(t => {
       const tabBtn = document.getElementById(`tab-${t}`);
       if (tabBtn) {
-        if (t === tab) {
-          tabBtn.style.borderColor = '#1a73e8';
-          tabBtn.style.color = '#1a73e8';
-        } else {
-          tabBtn.style.borderColor = 'transparent';
-          tabBtn.style.color = '#5f6368';
-        }
+        tabBtn.style.borderColor = t === tab ? '#1a73e8' : 'transparent';
+        tabBtn.style.color = t === tab ? '#1a73e8' : '#5f6368';
       }
     });
     
-    // Render tab content
     const content = document.getElementById('adTabContent');
     if (!content) return;
     
@@ -370,7 +375,6 @@ const KeywordPlanner = {
     }
   },
   
-  // Render ALL ads tab
   renderAllAdsTab(data) {
     const searchAds = data.searchAds || [];
     const shoppingAds = data.shoppingAds || [];
@@ -381,358 +385,203 @@ const KeywordPlanner = {
         <div class="p-8 text-center card">
           <span class="material-icons-outlined text-4xl mb-2" style="color:#5f6368">search_off</span>
           <p class="font-medium">No ads found for this keyword</p>
-          <p class="text-sm mt-1" style="color:#5f6368">Try a different keyword or check Google manually</p>
+          <p class="text-sm mt-1" style="color:#5f6368">Try a different keyword or check proxy settings</p>
         </div>
       `;
     }
     
     let html = '';
     
-    // Search Ads Section
     if (searchAds.length > 0) {
-      html += `
-        <div class="mb-6">
-          <h4 class="font-medium mb-3 flex items-center gap-2">
-            <span style="color:#4285f4">🔍</span> Search Ads (${searchAds.length})
-          </h4>
-          <div class="space-y-3">
-            ${searchAds.slice(0, 5).map(ad => this.renderSearchAdCard(ad)).join('')}
-          </div>
-        </div>
-      `;
+      html += `<div class="mb-6"><h4 class="font-medium mb-3">🔍 Search Ads (${searchAds.length})</h4><div class="space-y-3">${searchAds.slice(0, 5).map(ad => this.renderSearchAdCard(ad)).join('')}</div></div>`;
     }
     
-    // Shopping Ads Section
     if (shoppingAds.length > 0) {
-      html += `
-        <div class="mb-6">
-          <h4 class="font-medium mb-3 flex items-center gap-2">
-            <span style="color:#fbbc04">🛒</span> Shopping Ads (${shoppingAds.length})
-          </h4>
-          <div class="grid grid-cols-4 gap-3">
-            ${shoppingAds.slice(0, 8).map(ad => this.renderShoppingAdCard(ad)).join('')}
-          </div>
-        </div>
-      `;
+      html += `<div class="mb-6"><h4 class="font-medium mb-3">🛒 Shopping Ads (${shoppingAds.length})</h4><div class="grid grid-cols-4 gap-3">${shoppingAds.slice(0, 8).map(ad => this.renderShoppingAdCard(ad)).join('')}</div></div>`;
     }
     
-    // Local/Call Ads Section
     if (localAds.length > 0) {
-      html += `
-        <div class="mb-6">
-          <h4 class="font-medium mb-3 flex items-center gap-2">
-            <span style="color:#34a853">📍</span> Local & Call Ads (${localAds.length})
-          </h4>
-          <div class="space-y-3">
-            ${localAds.slice(0, 5).map(ad => this.renderLocalAdCard(ad)).join('')}
-          </div>
-        </div>
-      `;
+      html += `<div class="mb-6"><h4 class="font-medium mb-3">📍 Local Results (${localAds.length})</h4><div class="space-y-3">${localAds.slice(0, 5).map(ad => this.renderLocalAdCard(ad)).join('')}</div></div>`;
     }
     
     return html;
   },
   
-  // Render Search Ads tab
   renderSearchAdsTab(ads) {
-    if (ads.length === 0) {
-      return '<div class="p-6 text-center text-gray-500">No search ads found for this keyword</div>';
-    }
-    
+    if (!ads.length) return '<div class="p-6 text-center text-gray-500">No search ads found</div>';
     return `<div class="space-y-3">${ads.map(ad => this.renderSearchAdCard(ad)).join('')}</div>`;
   },
   
-  // Render Shopping Ads tab
   renderShoppingAdsTab(ads) {
-    if (ads.length === 0) {
-      return '<div class="p-6 text-center text-gray-500">No shopping ads found for this keyword</div>';
-    }
-    
+    if (!ads.length) return '<div class="p-6 text-center text-gray-500">No shopping ads found</div>';
     return `<div class="grid grid-cols-4 gap-3">${ads.map(ad => this.renderShoppingAdCard(ad)).join('')}</div>`;
   },
   
-  // Render Local Ads tab
   renderLocalAdsTab(ads) {
-    if (ads.length === 0) {
-      return '<div class="p-6 text-center text-gray-500">No local/call ads found for this keyword</div>';
-    }
-    
+    if (!ads.length) return '<div class="p-6 text-center text-gray-500">No local ads found</div>';
     return `<div class="space-y-3">${ads.map(ad => this.renderLocalAdCard(ad)).join('')}</div>`;
   },
   
-  // Single Search Ad Card
   renderSearchAdCard(ad) {
     return `
       <div class="card p-4">
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
-            <span class="badge ${ad.placement === 'top' ? 'badge-blue' : 'badge-grey'}">
-              ${ad.placement === 'top' ? 'Top' : 'Bottom'} #${ad.position}
-            </span>
-            <span class="badge badge-yellow">Search Ad</span>
-            ${ad.hasCallExtension ? '<span class="badge badge-green">📞 Call</span>' : ''}
-          </div>
-          ${ad.link ? `
-            <a href="${ad.link}" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">
-              <span class="material-icons-outlined text-sm">open_in_new</span>
-            </a>
-          ` : ''}
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge ${ad.placement === 'top' ? 'badge-blue' : 'badge-grey'}">${ad.placement === 'top' ? 'Top' : 'Bottom'} #${ad.position}</span>
+          ${ad.hasCallExtension ? '<span class="badge badge-green">📞 Call</span>' : ''}
         </div>
-        
         <h4 class="font-medium text-lg mb-1" style="color:#1a0dab">${esc(ad.title)}</h4>
         <p class="text-sm mb-2" style="color:#006621">${esc(ad.displayUrl)}</p>
         ${ad.description ? `<p class="text-sm" style="color:#545454">${esc(ad.description)}</p>` : ''}
         ${ad.phone ? `<p class="text-sm mt-2 font-medium" style="color:#34a853">📞 ${esc(ad.phone)}</p>` : ''}
-        
-        ${ad.sitelinks && ad.sitelinks.length > 0 ? `
-          <div class="mt-2 pt-2 border-t flex flex-wrap gap-2" style="border-color:#e8eaed">
-            ${ad.sitelinks.slice(0, 4).map(s => `
-              <a href="${s.link || '#'}" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">${esc(s.title)}</a>
-            `).join(' · ')}
-          </div>
-        ` : ''}
-        
+        ${ad.sitelinks?.length ? `<div class="mt-2 pt-2 border-t flex flex-wrap gap-2" style="border-color:#e8eaed">${ad.sitelinks.slice(0, 4).map(s => `<span class="text-xs" style="color:#1a73e8">${esc(s.title)}</span>`).join(' · ')}</div>` : ''}
         <div class="mt-3 pt-3 border-t flex gap-2" style="border-color:#e8eaed">
-          <button onclick="KeywordPlanner.analyzeCompetitor('${esc(ad.displayUrl)}')" 
-                  class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#1a73e8">
-            🔍 Analyze
-          </button>
-          <button onclick="KeywordPlanner.getAdTips('${esc(ad.title)}', '${esc(ad.description || '')}')"
-                  class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#34a853">
-            ✨ Beat This Ad
-          </button>
+          <button onclick="KeywordPlanner.analyzeCompetitor('${esc(ad.displayUrl)}')" class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#1a73e8">🔍 Analyze</button>
+          <button onclick="KeywordPlanner.getAdTips('${esc(ad.title)}', '${esc(ad.description || '')}')" class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#34a853">✨ Beat This</button>
         </div>
       </div>
     `;
   },
   
-  // Single Shopping Ad Card
   renderShoppingAdCard(ad) {
     return `
       <div class="card p-3 hover:shadow-md transition-shadow">
-        ${ad.image ? `
-          <div class="h-32 mb-2 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
-            <img src="${ad.image}" alt="${esc(ad.title)}" class="max-h-full max-w-full object-contain" onerror="this.style.display='none'">
-          </div>
-        ` : `
-          <div class="h-32 mb-2 rounded bg-gray-100 flex items-center justify-center">
-            <span class="material-icons-outlined text-3xl" style="color:#dadce0">shopping_bag</span>
-          </div>
-        `}
-        
-        <span class="badge badge-yellow text-xs mb-1">🛒 Shopping</span>
-        
-        <h5 class="font-medium text-sm mb-1 line-clamp-2" style="color:#202124">${esc(ad.title)}</h5>
-        
-        <p class="font-bold mb-1" style="color:#202124">${esc(ad.price) || 'Price N/A'}</p>
-        ${ad.originalPrice ? `<p class="text-xs line-through" style="color:#5f6368">${esc(ad.originalPrice)}</p>` : ''}
-        
+        ${ad.image ? `<div class="h-24 mb-2 rounded overflow-hidden bg-gray-100 flex items-center justify-center"><img src="${ad.image}" alt="${esc(ad.title)}" class="max-h-full max-w-full object-contain" onerror="this.parentElement.innerHTML='<span class=\\'material-icons-outlined text-3xl\\' style=\\'color:#dadce0\\'>shopping_bag</span>'"></div>` : ''}
+        <h5 class="font-medium text-sm mb-1 line-clamp-2">${esc(ad.title)}</h5>
+        <p class="font-bold mb-1">${esc(ad.price) || 'Price N/A'}</p>
         <p class="text-xs" style="color:#5f6368">${esc(ad.displayUrl)}</p>
-        
-        ${ad.rating ? `
-          <div class="flex items-center gap-1 mt-1">
-            <span class="text-xs" style="color:#fbbc04">★</span>
-            <span class="text-xs">${ad.rating}</span>
-            ${ad.reviews ? `<span class="text-xs" style="color:#5f6368">(${ad.reviews})</span>` : ''}
-          </div>
-        ` : ''}
-        
-        ${ad.shipping ? `<p class="text-xs mt-1" style="color:#34a853">${esc(ad.shipping)}</p>` : ''}
-        
-        ${ad.link ? `
-          <a href="${ad.link}" target="_blank" class="block mt-2 text-xs text-center py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#1a73e8">
-            View Product
-          </a>
-        ` : ''}
+        ${ad.rating ? `<div class="flex items-center gap-1 mt-1"><span class="text-xs" style="color:#fbbc04">★</span><span class="text-xs">${ad.rating}</span></div>` : ''}
       </div>
     `;
   },
   
-  // Single Local/Call Ad Card
   renderLocalAdCard(ad) {
     return `
       <div class="card p-4 ${ad.isSponsored ? 'border-l-4' : ''}" style="${ad.isSponsored ? 'border-left-color:#34a853' : ''}">
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
-            <span class="badge badge-green">📍 Local</span>
-            ${ad.isSponsored ? '<span class="badge badge-blue">Sponsored</span>' : ''}
-            ${ad.hasCallButton ? '<span class="badge badge-yellow">📞 Call Button</span>' : ''}
-          </div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge badge-green">📍 Local</span>
+          ${ad.isSponsored ? '<span class="badge badge-blue">Sponsored</span>' : ''}
+          ${ad.hasCallButton ? '<span class="badge badge-yellow">📞 Call</span>' : ''}
         </div>
-        
-        <h4 class="font-medium text-lg mb-1" style="color:#202124">${esc(ad.title)}</h4>
-        
+        <h4 class="font-medium text-lg mb-1">${esc(ad.title)}</h4>
         ${ad.address ? `<p class="text-sm mb-1" style="color:#5f6368">📍 ${esc(ad.address)}</p>` : ''}
-        
-        ${ad.phone ? `
-          <p class="text-sm font-medium mb-1" style="color:#34a853">
-            <a href="tel:${ad.phone}" class="hover:underline">📞 ${esc(ad.phone)}</a>
-          </p>
-        ` : ''}
-        
-        ${ad.rating ? `
-          <div class="flex items-center gap-1 mb-1">
-            <span style="color:#fbbc04">★</span>
-            <span class="text-sm font-medium">${ad.rating}</span>
-            ${ad.reviews ? `<span class="text-sm" style="color:#5f6368">(${ad.reviews} reviews)</span>` : ''}
-          </div>
-        ` : ''}
-        
-        ${ad.hours ? `<p class="text-xs" style="color:#5f6368">🕐 ${esc(ad.hours)}</p>` : ''}
-        ${ad.category ? `<p class="text-xs" style="color:#5f6368">${esc(ad.category)}</p>` : ''}
-        
-        <div class="mt-3 pt-3 border-t flex gap-2" style="border-color:#e8eaed">
-          ${ad.link ? `
-            <a href="${ad.link}" target="_blank" class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#1a73e8">
-              🌐 Website
-            </a>
-          ` : ''}
-          ${ad.phone ? `
-            <a href="tel:${ad.phone}" class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#34a853">
-              📞 Call Now
-            </a>
-          ` : ''}
-          ${ad.directions ? `
-            <a href="${ad.directions}" target="_blank" class="text-xs px-2 py-1 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#4285f4">
-              🗺️ Directions
-            </a>
-          ` : ''}
-        </div>
+        ${ad.phone ? `<p class="text-sm font-medium" style="color:#34a853">📞 ${esc(ad.phone)}</p>` : ''}
+        ${ad.rating ? `<div class="flex items-center gap-1"><span style="color:#fbbc04">★</span><span class="text-sm">${ad.rating}</span>${ad.reviews ? `<span class="text-sm" style="color:#5f6368">(${ad.reviews})</span>` : ''}</div>` : ''}
       </div>
     `;
   },
   
-  // Analyze competitor
   analyzeCompetitor(domain) {
     if (typeof Competitor !== 'undefined') {
       showPage('competitor');
-      setTimeout(() => {
-        Competitor.setDomain(domain);
-        Competitor.analyze();
-      }, 100);
+      setTimeout(() => Competitor.setDomain(domain), 100);
     }
   },
   
-  // Get AI tips
   getAdTips(title, description) {
     showPage('ai-assistant');
     setTimeout(() => {
       if (typeof AIChat !== 'undefined') {
-        AIChat.quickPrompt(`Help me create a BETTER ad than this competitor:
-
-Competitor Ad Title: "${title}"
-Competitor Description: "${description}"
-
-Please provide:
-1. 5 better headline ideas (max 30 chars each)
-2. 3 better description ideas (max 90 chars each)
-3. Unique selling points to highlight
-4. Strong call-to-action suggestions`);
+        AIChat.quickPrompt(`Create BETTER ads than this competitor:\n\nCompetitor Title: "${title}"\nDescription: "${description}"\n\nGive me:\n1. 5 better headlines (max 30 chars)\n2. 3 better descriptions (max 90 chars)\n3. Unique selling points to highlight`);
       }
     }, 100);
   },
   
-  // Export all ads
   exportAds() {
     const data = AppState.currentAdsData;
-    if (!data) {
-      showAlert('No ads to export', 'warning');
-      return;
-    }
+    if (!data) return;
     
     const rows = [];
+    (data.searchAds || []).forEach(ad => rows.push({ Type: 'Search', Position: ad.position, Title: ad.title, URL: ad.displayUrl, Description: ad.description || '', Phone: ad.phone || '' }));
+    (data.shoppingAds || []).forEach(ad => rows.push({ Type: 'Shopping', Position: ad.position, Title: ad.title, URL: ad.displayUrl, Description: ad.price || '', Phone: '' }));
+    (data.localAds || []).forEach(ad => rows.push({ Type: 'Local', Position: ad.position, Title: ad.title, URL: ad.address || '', Description: '', Phone: ad.phone || '' }));
     
-    // Add search ads
-    (data.searchAds || []).forEach(ad => {
-      rows.push({
-        Type: 'Search Ad',
-        Position: ad.position,
-        Placement: ad.placement,
-        Title: ad.title,
-        DisplayUrl: ad.displayUrl,
-        Description: ad.description || '',
-        Phone: ad.phone || '',
-        HasCall: ad.hasCallExtension ? 'Yes' : 'No'
-      });
-    });
-    
-    // Add shopping ads
-    (data.shoppingAds || []).forEach(ad => {
-      rows.push({
-        Type: 'Shopping Ad',
-        Position: ad.position,
-        Placement: 'shopping',
-        Title: ad.title,
-        DisplayUrl: ad.displayUrl,
-        Description: ad.price || '',
-        Phone: '',
-        HasCall: 'No'
-      });
-    });
-    
-    // Add local ads
-    (data.localAds || []).forEach(ad => {
-      rows.push({
-        Type: 'Local/Call Ad',
-        Position: ad.position,
-        Placement: 'local_pack',
-        Title: ad.title,
-        DisplayUrl: ad.displayUrl || ad.address || '',
-        Description: ad.category || '',
-        Phone: ad.phone || '',
-        HasCall: ad.hasCallButton ? 'Yes' : 'No'
-      });
-    });
-    
-    exportToCSV(rows, `all-ads-${data.keyword.replace(/\s+/g, '-')}.csv`);
+    exportToCSV(rows, `ads-${data.keyword.replace(/\s+/g, '-')}.csv`);
   },
   
-  // Show API key modal
-  showApiKeyModal() {
+  /* ═══════════════════════════════════════════════════════════════════
+     PROXY SETUP MODAL
+     ═══════════════════════════════════════════════════════════════════ */
+  
+  showProxySetup() {
+    const savedConfig = this.getProxyConfig();
+    
     Modal.show(`
-      <div class="p-6 max-w-lg">
+      <div class="p-6" style="max-width:600px">
         <div class="flex items-center gap-3 mb-4">
-          <span class="material-icons-outlined text-3xl" style="color:#1a73e8">key</span>
-          <h2 class="text-xl font-medium">Setup ScraperAPI (FREE!)</h2>
+          <span class="material-icons-outlined text-3xl" style="color:#1a73e8">router</span>
+          <h2 class="text-xl font-medium">Setup Residential Proxy</h2>
         </div>
         
-        <p class="mb-4" style="color:#5f6368">To see current Google ads, you need a FREE ScraperAPI key.</p>
+        <p class="mb-4" style="color:#5f6368">
+          Configure your residential proxy to scrape Google Ads with a real IP address.
+        </p>
         
-        <div class="p-4 rounded-lg mb-4" style="background:#e8f5e9;border:1px solid #4caf50">
-          <p class="font-medium" style="color:#2e7d32">
-            <span class="material-icons-outlined align-middle">celebration</span>
-            FREE: 1,000 searches per month!
+        <div class="p-4 rounded-lg mb-4" style="background:#e8f0fe;border:1px solid #1a73e8">
+          <p class="font-medium mb-2" style="color:#1a73e8">
+            <span class="material-icons-outlined align-middle">info</span>
+            Why Residential Proxies?
           </p>
-          <p class="text-sm mt-1" style="color:#1b5e20">No credit card required</p>
+          <p class="text-sm" style="color:#1a73e8">Google blocks datacenter IPs. Residential proxies use real home internet IPs that Google trusts.</p>
         </div>
         
-        <div class="space-y-3 mb-6">
-          <div class="flex gap-3 items-start">
-            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:#1a73e8;color:white">1</span>
-            <a href="https://www.scraperapi.com/signup" target="_blank" class="font-medium hover:underline" style="color:#1a73e8">
-              Sign up at ScraperAPI.com →
-            </a>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Provider</label>
+            <select id="proxyProvider" class="w-full p-2 border rounded-lg" style="border-color:#dadce0">
+              <option value="brightdata" ${savedConfig?.provider === 'brightdata' ? 'selected' : ''}>Bright Data (Luminati)</option>
+              <option value="oxylabs" ${savedConfig?.provider === 'oxylabs' ? 'selected' : ''}>Oxylabs</option>
+              <option value="smartproxy" ${savedConfig?.provider === 'smartproxy' ? 'selected' : ''}>SmartProxy</option>
+              <option value="iproyal" ${savedConfig?.provider === 'iproyal' ? 'selected' : ''}>IPRoyal</option>
+              <option value="custom" ${savedConfig?.provider === 'custom' ? 'selected' : ''}>Custom HTTP Proxy</option>
+            </select>
           </div>
-          <div class="flex gap-3 items-start">
-            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:#1a73e8;color:white">2</span>
-            <p class="font-medium">Copy your API key from dashboard</p>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Host</label>
+              <input type="text" id="proxyHost" placeholder="proxy.example.com" value="${savedConfig?.host || ''}"
+                     class="w-full p-2 border rounded-lg" style="border-color:#dadce0">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Port</label>
+              <input type="text" id="proxyPort" placeholder="22225" value="${savedConfig?.port || ''}"
+                     class="w-full p-2 border rounded-lg" style="border-color:#dadce0">
+            </div>
           </div>
-          <div class="flex gap-3 items-start">
-            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:#1a73e8;color:white">3</span>
-            <p class="font-medium">Paste it below</p>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Username</label>
+              <input type="text" id="proxyUsername" placeholder="username" value="${savedConfig?.username || ''}"
+                     class="w-full p-2 border rounded-lg" style="border-color:#dadce0">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Password</label>
+              <input type="password" id="proxyPassword" placeholder="password" value="${savedConfig?.password || ''}"
+                     class="w-full p-2 border rounded-lg" style="border-color:#dadce0">
+            </div>
           </div>
         </div>
         
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-1">ScraperAPI Key</label>
-          <input type="text" id="scraperKeyInput" placeholder="Paste your API key..." 
-                 class="w-full p-3 border rounded-lg" style="border-color:#dadce0">
+        <div class="mt-6 p-3 rounded-lg" style="background:#f8f9fa">
+          <p class="text-xs font-medium mb-2">Recommended Providers:</p>
+          <div class="flex flex-wrap gap-2">
+            <a href="https://brightdata.com" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">Bright Data →</a>
+            <a href="https://oxylabs.io" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">Oxylabs →</a>
+            <a href="https://smartproxy.com" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">SmartProxy →</a>
+            <a href="https://iproyal.com" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">IPRoyal →</a>
+          </div>
         </div>
         
-        <div class="flex gap-3">
-          <button onclick="KeywordPlanner.saveApiKey()" class="btn-primary px-6 py-2 flex-1">Save & Search</button>
+        <div class="flex gap-3 mt-6">
+          <button onclick="KeywordPlanner.testProxy()" class="px-4 py-2 border rounded-lg hover:bg-gray-50" style="border-color:#dadce0">
+            <span class="material-icons-outlined text-sm align-middle">speed</span> Test Connection
+          </button>
+          <button onclick="KeywordPlanner.saveProxy()" class="btn-primary px-6 py-2 flex-1">Save & Search</button>
           <button onclick="Modal.hide()" class="px-4 py-2 border rounded-lg" style="border-color:#dadce0">Cancel</button>
         </div>
+        
+        <div id="proxyTestResult" class="mt-4"></div>
       </div>
     `);
     
@@ -743,16 +592,58 @@ Please provide:
     }
   },
   
-  saveApiKey() {
-    const key = document.getElementById('scraperKeyInput')?.value.trim();
-    if (!key) {
-      showAlert('Please enter an API key', 'error');
+  async testProxy() {
+    const config = this.getProxyFormData();
+    const resultDiv = document.getElementById('proxyTestResult');
+    
+    if (!config.host || !config.port) {
+      resultDiv.innerHTML = '<div class="p-3 rounded-lg" style="background:#fce8e6;color:#c5221f">Please fill in host and port</div>';
       return;
     }
     
-    Storage.setKey('scraperapi', key);
+    resultDiv.innerHTML = '<div class="p-3 rounded-lg" style="background:#e8f0fe;color:#1a73e8"><span class="material-icons-outlined animate-spin align-middle">sync</span> Testing proxy...</div>';
+    
+    try {
+      const response = await API.post('/automation/free/test-proxy', { proxyConfig: config });
+      
+      if (response.success) {
+        resultDiv.innerHTML = `
+          <div class="p-3 rounded-lg" style="background:#e6f4ea;color:#137333">
+            <p class="font-medium">✅ Proxy Working!</p>
+            <p class="text-sm">IP: ${response.ip}</p>
+            <p class="text-sm">Location: ${response.location?.city}, ${response.location?.country}</p>
+            <p class="text-sm">ISP: ${response.location?.isp}</p>
+          </div>
+        `;
+      } else {
+        resultDiv.innerHTML = `<div class="p-3 rounded-lg" style="background:#fce8e6;color:#c5221f">❌ ${response.error || 'Connection failed'}</div>`;
+      }
+    } catch (error) {
+      resultDiv.innerHTML = `<div class="p-3 rounded-lg" style="background:#fce8e6;color:#c5221f">❌ ${error.message}</div>`;
+    }
+  },
+  
+  getProxyFormData() {
+    return {
+      provider: document.getElementById('proxyProvider')?.value || 'custom',
+      host: document.getElementById('proxyHost')?.value.trim(),
+      port: document.getElementById('proxyPort')?.value.trim(),
+      username: document.getElementById('proxyUsername')?.value.trim(),
+      password: document.getElementById('proxyPassword')?.value.trim()
+    };
+  },
+  
+  saveProxy() {
+    const config = this.getProxyFormData();
+    
+    if (!config.host || !config.port) {
+      showAlert('Please fill in proxy host and port', 'error');
+      return;
+    }
+    
+    this.saveProxyConfig(config);
     Modal.hide();
-    showAlert('API key saved!', 'success');
+    showAlert('Proxy saved!', 'success');
     
     setTimeout(() => this.searchAds(), 500);
   }
