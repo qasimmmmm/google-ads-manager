@@ -14,26 +14,26 @@ const freeKeywordResearch = require('../services/freeKeywordResearch');
 
 
 /* ═══════════════════════════════════════════════════════════════════
-   CURRENT ADS ON KEYWORDS (Advanced Scraper with Residential Proxies)
+   CURRENT ADS ON KEYWORDS (NEW! - ScraperAPI Structured SERP)
+   Search Google to see LIVE ads for any keyword
    ═══════════════════════════════════════════════════════════════════ */
 
 /**
  * POST /automation/free/keywords/current-ads
  * Search Google and get LIVE ads for a keyword
- * Uses Advanced Scraper with browser emulation + residential proxies
+ * Uses ScraperAPI Structured Google SERP API
  */
 router.post('/free/keywords/current-ads', async (req, res) => {
   try {
-    const { keyword, proxyConfig, country = 'us' } = req.body;
+    const { keyword, scraperApiKey, country = 'us' } = req.body;
     
     if (!keyword) {
       return res.status(400).json({ error: 'Keyword is required' });
     }
     
     console.log(`[Current Ads] Searching: "${keyword}"`);
-    console.log(`[Current Ads] Proxy Provider: ${proxyConfig?.provider || 'None'}`);
     
-    const result = await googleAdsIntelligence.searchKeywordAds(keyword, proxyConfig, { country });
+    const result = await googleAdsIntelligence.searchKeywordAds(keyword, scraperApiKey, { country });
     
     res.json(result);
   } catch (error) {
@@ -48,7 +48,7 @@ router.post('/free/keywords/current-ads', async (req, res) => {
  */
 router.post('/free/keywords/current-ads-batch', async (req, res) => {
   try {
-    const { keywords, proxyConfig, country = 'us' } = req.body;
+    const { keywords, scraperApiKey, country = 'us' } = req.body;
     
     if (!keywords || !keywords.length) {
       return res.status(400).json({ error: 'Keywords array is required' });
@@ -56,34 +56,11 @@ router.post('/free/keywords/current-ads-batch', async (req, res) => {
     
     console.log(`[Current Ads Batch] Searching ${keywords.length} keywords`);
     
-    const result = await googleAdsIntelligence.searchMultipleKeywords(keywords, proxyConfig, { country });
+    const result = await googleAdsIntelligence.searchMultipleKeywords(keywords, scraperApiKey, { country });
     
     res.json(result);
   } catch (error) {
     console.error('Current Ads Batch error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * POST /automation/free/test-proxy
- * Test proxy connection
- */
-router.post('/free/test-proxy', async (req, res) => {
-  try {
-    const { proxyConfig } = req.body;
-    
-    if (!proxyConfig || !proxyConfig.host) {
-      return res.status(400).json({ error: 'Proxy configuration required' });
-    }
-    
-    console.log(`[Test Proxy] Testing ${proxyConfig.provider || 'custom'} proxy...`);
-    
-    const result = await googleAdsIntelligence.testProxy(proxyConfig);
-    
-    res.json(result);
-  } catch (error) {
-    console.error('Test Proxy error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
