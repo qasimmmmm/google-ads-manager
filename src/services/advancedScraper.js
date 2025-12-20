@@ -1,411 +1,496 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   ADVANCED GOOGLE ADS SCRAPER v1.0
-   World-Class Browser Emulation + Residential Proxy Support
+   ADVANCED GOOGLE ADS SCRAPER v2.0 - VERCEL COMPATIBLE
    
-   FEATURES:
-   ✓ Full browser emulation with Puppeteer + Stealth
-   ✓ Residential proxy rotation (Bright Data, Oxylabs, SmartProxy, etc.)
-   ✓ Browser fingerprint randomization
-   ✓ Human-like behavior simulation
-   ✓ Anti-detection measures
-   ✓ All ad types: Search, Shopping, Local, Call
-   ✓ Serverless compatible (@sparticuz/chromium)
+   Uses HTTP requests through residential proxies (no Puppeteer needed!)
+   Works on Vercel serverless functions!
    
    SUPPORTED PROXY PROVIDERS:
    - Bright Data (formerly Luminati)
-   - Oxylabs
+   - Oxylabs  
    - SmartProxy
    - IPRoyal
-   - Proxy-Seller
-   - Custom HTTP/SOCKS5 proxies
-   
+   - Custom HTTP proxies
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-
-// Apply stealth plugin to avoid detection
-puppeteer.use(StealthPlugin());
-
-// Detect if running in serverless environment
-const isServerless = process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL || process.env.NETLIFY;
+const http = require('http');
+const https = require('https');
+const tls = require('tls');
 
 class AdvancedGoogleAdsScraper {
   
   constructor() {
-    // Browser fingerprints database - randomized each request
-    this.fingerprints = {
-      viewports: [
-        { width: 1920, height: 1080 },
-        { width: 1366, height: 768 },
-        { width: 1536, height: 864 },
-        { width: 1440, height: 900 },
-        { width: 1280, height: 720 },
-        { width: 2560, height: 1440 },
-        { width: 1680, height: 1050 }
-      ],
-      
-      userAgents: [
-        // Chrome Windows
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        // Chrome Mac
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-        // Edge
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
-        // Firefox
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0'
-      ],
-      
-      languages: ['en-US,en;q=0.9', 'en-US,en;q=0.9,es;q=0.8', 'en-GB,en;q=0.9,en-US;q=0.8'],
-      platforms: ['Win32', 'MacIntel', 'Linux x86_64'],
-      webglVendors: ['Intel Inc.', 'NVIDIA Corporation', 'AMD', 'Google Inc. (NVIDIA)'],
-      webglRenderers: ['Intel Iris OpenGL Engine', 'ANGLE (NVIDIA GeForce GTX 1080)', 'ANGLE (AMD Radeon RX 580)']
-    };
-    
-    // US cities for geolocation
-    this.usLocations = [
-      { city: 'New York', lat: 40.7128, lng: -74.0060, timezone: 'America/New_York' },
-      { city: 'Los Angeles', lat: 34.0522, lng: -118.2437, timezone: 'America/Los_Angeles' },
-      { city: 'Chicago', lat: 41.8781, lng: -87.6298, timezone: 'America/Chicago' },
-      { city: 'Houston', lat: 29.7604, lng: -95.3698, timezone: 'America/Chicago' },
-      { city: 'Phoenix', lat: 33.4484, lng: -112.0740, timezone: 'America/Phoenix' },
-      { city: 'Dallas', lat: 32.7767, lng: -96.7970, timezone: 'America/Chicago' },
-      { city: 'San Francisco', lat: 37.7749, lng: -122.4194, timezone: 'America/Los_Angeles' },
-      { city: 'Seattle', lat: 47.6062, lng: -122.3321, timezone: 'America/Los_Angeles' },
-      { city: 'Miami', lat: 25.7617, lng: -80.1918, timezone: 'America/New_York' },
-      { city: 'Atlanta', lat: 33.7490, lng: -84.3880, timezone: 'America/New_York' }
+    this.userAgents = [
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     ];
   }
 
-  random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-  generateFingerprint() {
-    const viewport = this.random(this.fingerprints.viewports);
-    const location = this.random(this.usLocations);
-    return {
-      viewport,
-      userAgent: this.random(this.fingerprints.userAgents),
-      language: this.random(this.fingerprints.languages),
-      platform: this.random(this.fingerprints.platforms),
-      webglVendor: this.random(this.fingerprints.webglVendors),
-      webglRenderer: this.random(this.fingerprints.webglRenderers),
-      location,
-      deviceMemory: this.random([4, 8, 16, 32]),
-      hardwareConcurrency: this.random([4, 6, 8, 12, 16])
-    };
+  random(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  formatProxyUrl(proxyConfig) {
-    const { provider, username, password, host, port, country = 'us', session } = proxyConfig;
-    const sessionId = session || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  /**
+   * Format proxy credentials for different providers
+   */
+  formatProxy(config) {
+    const { provider, username, password, host, port, country = 'us' } = config;
+    const session = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+    
+    let proxyUser = username;
+    let proxyPass = password;
     
     switch (provider?.toLowerCase()) {
       case 'brightdata':
       case 'luminati':
-        return { server: `http://${host}:${port}`, username: `${username}-country-${country}-session-${sessionId}`, password };
+        proxyUser = `${username}-country-${country}-session-${session}`;
+        break;
       case 'oxylabs':
-        return { server: `http://${host}:${port}`, username: `${username}-cc-${country}-sessid-${sessionId}`, password };
+        proxyUser = `${username}-cc-${country}-sessid-${session}`;
+        break;
       case 'smartproxy':
-        return { server: `http://${host}:${port}`, username: `${username}-country-${country}-session-${sessionId}`, password };
+        proxyUser = `${username}-country-${country}-session-${session}`;
+        break;
       case 'iproyal':
-        return { server: `http://${host}:${port}`, username, password: `${password}_country-${country}_session-${sessionId}` };
-      default:
-        return username && password ? { server: `http://${host}:${port}`, username, password } : { server: `http://${host}:${port}` };
+        proxyPass = `${password}_country-${country}_session-${session}`;
+        break;
     }
+    
+    return { host, port: parseInt(port), username: proxyUser, password: proxyPass };
   }
 
-  async humanDelay(min = 500, max = 2000) {
-    await new Promise(r => setTimeout(r, Math.floor(Math.random() * (max - min) + min)));
-  }
-
-  async humanMouseMove(page) {
-    const { width, height } = page.viewport();
-    for (let i = 0; i < 3; i++) {
-      await page.mouse.move(Math.floor(Math.random() * width), Math.floor(Math.random() * height), { steps: Math.floor(Math.random() * 10) + 5 });
-      await this.humanDelay(100, 300);
-    }
-  }
-
-  async humanScroll(page) {
-    await page.evaluate(async () => {
-      await new Promise((resolve) => {
-        let totalHeight = 0;
-        const distance = Math.floor(Math.random() * 100) + 50;
-        const maxScroll = Math.floor(Math.random() * 1500) + 500;
-        const timer = setInterval(() => {
-          window.scrollBy(0, distance);
-          totalHeight += distance;
-          if (totalHeight >= maxScroll) { clearInterval(timer); resolve(); }
-        }, Math.floor(Math.random() * 100) + 50);
+  /**
+   * Make HTTPS request through HTTP proxy using CONNECT tunnel
+   */
+  makeProxyRequest(url, proxyConfig, timeout = 25000) {
+    return new Promise((resolve, reject) => {
+      const proxy = this.formatProxy(proxyConfig);
+      const targetUrl = new URL(url);
+      const userAgent = this.random(this.userAgents);
+      
+      const auth = Buffer.from(`${proxy.username}:${proxy.password}`).toString('base64');
+      
+      console.log(`[Proxy] ${proxy.host}:${proxy.port} -> ${targetUrl.hostname}`);
+      
+      const connectOptions = {
+        host: proxy.host,
+        port: proxy.port,
+        method: 'CONNECT',
+        path: `${targetUrl.hostname}:443`,
+        headers: {
+          'Proxy-Authorization': `Basic ${auth}`,
+          'Host': `${targetUrl.hostname}:443`
+        },
+        timeout
+      };
+      
+      const proxyReq = http.request(connectOptions);
+      
+      proxyReq.on('connect', (res, socket) => {
+        if (res.statusCode !== 200) {
+          socket.destroy();
+          reject(new Error(`Proxy CONNECT failed: ${res.statusCode}`));
+          return;
+        }
+        
+        // Create TLS connection through the proxy tunnel
+        const tlsSocket = tls.connect({
+          socket: socket,
+          servername: targetUrl.hostname,
+          rejectUnauthorized: false
+        }, () => {
+          // Send HTTP request through TLS
+          const request = [
+            `GET ${targetUrl.pathname}${targetUrl.search} HTTP/1.1`,
+            `Host: ${targetUrl.hostname}`,
+            `User-Agent: ${userAgent}`,
+            `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8`,
+            `Accept-Language: en-US,en;q=0.9`,
+            `Accept-Encoding: identity`,
+            `Connection: close`,
+            `Upgrade-Insecure-Requests: 1`,
+            `Sec-Fetch-Dest: document`,
+            `Sec-Fetch-Mode: navigate`,
+            `Sec-Fetch-Site: none`,
+            `Sec-Fetch-User: ?1`,
+            `Cache-Control: max-age=0`,
+            '',
+            ''
+          ].join('\r\n');
+          
+          tlsSocket.write(request);
+          
+          let rawData = '';
+          
+          tlsSocket.on('data', (chunk) => {
+            rawData += chunk.toString('utf8');
+          });
+          
+          tlsSocket.on('end', () => {
+            // Parse HTTP response
+            const headerEnd = rawData.indexOf('\r\n\r\n');
+            if (headerEnd === -1) {
+              resolve({ status: 200, data: rawData });
+              return;
+            }
+            
+            const headers = rawData.substring(0, headerEnd);
+            let body = rawData.substring(headerEnd + 4);
+            
+            // Get status code
+            const statusMatch = headers.match(/HTTP\/[\d.]+ (\d+)/);
+            const status = statusMatch ? parseInt(statusMatch[1]) : 200;
+            
+            // Handle chunked encoding
+            if (headers.toLowerCase().includes('transfer-encoding: chunked')) {
+              body = this.decodeChunked(body);
+            }
+            
+            resolve({ status, data: body });
+          });
+          
+          tlsSocket.on('error', (err) => {
+            reject(err);
+          });
+        });
+        
+        tlsSocket.on('error', (err) => {
+          socket.destroy();
+          reject(err);
+        });
       });
+      
+      proxyReq.on('error', (err) => {
+        reject(err);
+      });
+      
+      proxyReq.on('timeout', () => {
+        proxyReq.destroy();
+        reject(new Error('Proxy connection timeout'));
+      });
+      
+      proxyReq.end();
     });
   }
 
   /**
-   * Get browser executable path
+   * Decode chunked transfer encoding
    */
-  async getExecutablePath() {
-    if (isServerless) {
-      try {
-        const chromium = require('@sparticuz/chromium');
-        return await chromium.executablePath();
-      } catch (e) {
-        console.log('[Browser] @sparticuz/chromium not available, using puppeteer default');
-      }
+  decodeChunked(data) {
+    let result = '';
+    let pos = 0;
+    
+    while (pos < data.length) {
+      const lineEnd = data.indexOf('\r\n', pos);
+      if (lineEnd === -1) break;
+      
+      const sizeHex = data.substring(pos, lineEnd).trim();
+      const size = parseInt(sizeHex, 16);
+      
+      if (isNaN(size) || size === 0) break;
+      
+      const chunkStart = lineEnd + 2;
+      result += data.substring(chunkStart, chunkStart + size);
+      pos = chunkStart + size + 2;
     }
     
-    const { executablePath } = require('puppeteer');
-    return executablePath();
+    return result || data;
   }
 
   /**
-   * MAIN SCRAPING FUNCTION
+   * MAIN: Search Google for keyword ads
    */
   async searchKeywordAds(keyword, proxyConfig, options = {}) {
-    const { country = 'us', debug = false } = options;
+    const { country = 'us' } = options;
     
-    console.log(`\n${'═'.repeat(70)}`);
-    console.log(`[ADVANCED SCRAPER] Keyword: "${keyword}" | Proxy: ${proxyConfig?.provider || 'None'}`);
-    console.log(`${'═'.repeat(70)}`);
+    console.log(`\n${'═'.repeat(60)}`);
+    console.log(`[SCRAPER] Keyword: "${keyword}" | Provider: ${proxyConfig?.provider || 'None'}`);
+    console.log(`${'═'.repeat(60)}`);
 
     if (!proxyConfig || !proxyConfig.host) {
-      return { success: false, error: 'NO_PROXY', message: 'Residential proxy configuration required' };
+      return { 
+        success: false, 
+        error: 'NO_PROXY', 
+        message: 'Residential proxy required. Configure in Keyword Planner.',
+        setupRequired: true
+      };
     }
 
-    const fingerprint = this.generateFingerprint();
-    console.log(`[Fingerprint] ${fingerprint.location.city} | ${fingerprint.viewport.width}x${fingerprint.viewport.height}`);
-
-    let browser = null;
+    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&hl=en&gl=${country}&num=20`;
     
     try {
-      const execPath = await this.getExecutablePath();
+      const response = await this.makeProxyRequest(googleUrl, proxyConfig);
       
-      const launchOptions = {
-        headless: 'new',
-        executablePath: execPath,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--disable-gpu',
-          '--window-size=1920,1080',
-          '--disable-blink-features=AutomationControlled',
-          `--lang=${fingerprint.language.split(',')[0]}`
-        ],
-        ignoreHTTPSErrors: true
-      };
-
-      // Add proxy
-      const proxy = this.formatProxyUrl(proxyConfig);
-      launchOptions.args.push(`--proxy-server=${proxy.server}`);
-      console.log(`[Proxy] ${proxy.server}`);
-
-      browser = await puppeteer.launch(launchOptions);
-      const page = await browser.newPage();
-
-      // Authenticate proxy
-      if (proxy.username && proxy.password) {
-        await page.authenticate({ username: proxy.username, password: proxy.password });
+      console.log(`[Response] Status: ${response.status}, Size: ${response.data.length}`);
+      
+      if (response.status === 403 || response.status === 429) {
+        return { success: false, error: 'BLOCKED', message: 'IP blocked by Google. Click search again for new IP.' };
+      }
+      
+      if (response.status !== 200) {
+        return { success: false, error: `HTTP_${response.status}`, message: `Google returned ${response.status}` };
       }
 
-      await page.setViewport(fingerprint.viewport);
-      await page.setUserAgent(fingerprint.userAgent);
-      await page.setExtraHTTPHeaders({
-        'Accept-Language': fingerprint.language,
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none'
-      });
-
-      // Anti-detection overrides
-      await page.evaluateOnNewDocument((fp) => {
-        Object.defineProperty(navigator, 'platform', { get: () => fp.platform });
-        Object.defineProperty(navigator, 'languages', { get: () => fp.language.split(',') });
-        Object.defineProperty(navigator, 'webdriver', { get: () => false });
-        Object.defineProperty(navigator, 'deviceMemory', { get: () => fp.deviceMemory });
-        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => fp.hardwareConcurrency });
-      }, fingerprint);
-
-      await page.setGeolocation({ latitude: fingerprint.location.lat, longitude: fingerprint.location.lng, accuracy: 100 });
-      await page.emulateTimezone(fingerprint.location.timezone);
-
-      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&hl=en&gl=${country}&num=20`;
-      console.log(`[Navigation] Loading Google...`);
+      const html = response.data;
       
-      await page.goto(googleUrl, { waitUntil: 'networkidle2', timeout: 60000 });
-      await this.humanDelay(1000, 2000);
-
-      // CAPTCHA check
-      const hasCaptcha = await page.evaluate(() => {
-        return document.body.innerText.includes('unusual traffic') || document.body.innerText.includes('CAPTCHA');
-      });
-
-      if (hasCaptcha) {
-        await browser.close();
-        return { success: false, error: 'CAPTCHA_DETECTED', message: 'CAPTCHA detected. Try different proxy session.' };
+      // Check for CAPTCHA
+      if (html.toLowerCase().includes('unusual traffic') || html.includes('captcha')) {
+        return { success: false, error: 'CAPTCHA', message: 'CAPTCHA detected. Click search again for new IP.' };
       }
-
-      await this.humanMouseMove(page);
-      await this.humanScroll(page);
-      await this.humanDelay(500, 1000);
 
       // Extract ads
-      console.log('[Extraction] Extracting ads...');
-      const adsData = await page.evaluate(() => {
-        const result = { searchAds: [], shoppingAds: [], localAds: [], organicCount: 0, relatedSearches: [] };
-        const clean = (text) => (text || '').trim().replace(/\s+/g, ' ');
-
-        // SEARCH ADS
-        document.querySelectorAll('div').forEach((div, index) => {
-          const text = div.innerText || '';
-          const hasAd = text.startsWith('Sponsored') || text.startsWith('Ad ·');
-          const hasAdLink = div.querySelector('a[href*="googleadservices"]') || div.querySelector('a[href*="aclk"]');
-          
-          if (hasAd && hasAdLink) {
-            const titleEl = div.querySelector('h3') || div.querySelector('[role="heading"]');
-            const title = clean(titleEl?.innerText);
-            
-            const linkEl = div.querySelector('a[href*="googleadservices"]') || div.querySelector('a[href*="aclk"]');
-            const link = linkEl?.href || '';
-            
-            const displayUrlEl = div.querySelector('cite') || div.querySelector('[data-dtld]');
-            let displayUrl = clean(displayUrlEl?.innerText);
-            if (!displayUrl && link) try { displayUrl = new URL(link).hostname; } catch(e) {}
-            
-            const descEl = div.querySelector('.MUxGbd') || div.querySelector('[role="text"]');
-            const description = clean(descEl?.innerText);
-            
-            const phoneMatch = div.innerText.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-            
-            if (title || displayUrl) {
-              result.searchAds.push({
-                position: result.searchAds.length + 1,
-                type: 'search',
-                placement: result.searchAds.length < 4 ? 'top' : 'bottom',
-                title: title || `Ad ${index + 1}`,
-                displayUrl: displayUrl || '',
-                description: description || '',
-                link,
-                phone: phoneMatch ? phoneMatch[0] : null,
-                hasCallExtension: !!phoneMatch
-              });
-            }
-          }
-        });
-
-        // SHOPPING ADS
-        document.querySelectorAll('.sh-dgr__grid-result, .mnr-c, .pla-unit').forEach((el, index) => {
-          const title = clean(el.querySelector('h3, h4, .pymv4e')?.innerText);
-          const price = clean(el.querySelector('.a8Pemb, .e10twf')?.innerText);
-          const merchant = clean(el.querySelector('.aULzUe, .LbUacb')?.innerText);
-          const image = el.querySelector('img')?.src || '';
-          const link = el.querySelector('a')?.href || '';
-          
-          if (title && (price || merchant)) {
-            result.shoppingAds.push({ position: index + 1, type: 'shopping', placement: 'shopping', title, displayUrl: merchant, price, link, image });
-          }
-        });
-
-        // LOCAL ADS
-        document.querySelectorAll('.VkpGBb, [data-local-attribute]').forEach((el, index) => {
-          const title = clean(el.querySelector('[role="heading"], .dbg0pd')?.innerText);
-          const address = clean(el.querySelector('.LrzXr')?.innerText);
-          const phoneMatch = el.innerText.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-          const ratingMatch = el.innerText.match(/(\d+\.?\d*)\s*star/i);
-          const isSponsored = el.innerText.toLowerCase().includes('sponsored');
-          
-          if (title) {
-            result.localAds.push({
-              position: index + 1, type: 'local', placement: 'local_pack', isSponsored, title, address,
-              phone: phoneMatch ? phoneMatch[0] : '', rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
-              hasCallButton: !!phoneMatch
-            });
-          }
-        });
-
-        result.organicCount = document.querySelectorAll('.g:not([data-text-ad])').length;
-        document.querySelectorAll('.k8XOCe, .s75CSd').forEach(el => {
-          const query = clean(el.innerText);
-          if (query && query.length > 2 && query.length < 100) result.relatedSearches.push(query);
-        });
-        
-        return result;
-      });
-
-      await browser.close();
-
-      const allAds = [...adsData.searchAds, ...adsData.shoppingAds, ...adsData.localAds.filter(a => a.isSponsored)];
-      console.log(`[Results] Search: ${adsData.searchAds.length}, Shopping: ${adsData.shoppingAds.length}, Local: ${adsData.localAds.length}`);
+      const ads = this.extractAds(html);
+      
+      console.log(`[Results] Search: ${ads.searchAds.length}, Shopping: ${ads.shoppingAds.length}, Local: ${ads.localAds.length}`);
 
       return {
         success: true,
         keyword,
         country,
-        fingerprint: { city: fingerprint.location.city, viewport: `${fingerprint.viewport.width}x${fingerprint.viewport.height}`, userAgent: fingerprint.userAgent.substring(0, 50) + '...' },
-        totalAds: allAds.length,
-        searchAdsCount: adsData.searchAds.length,
-        shoppingAdsCount: adsData.shoppingAds.length,
-        localAdsCount: adsData.localAds.length,
-        searchAds: adsData.searchAds,
-        shoppingAds: adsData.shoppingAds,
-        localAds: adsData.localAds,
-        allAds,
-        organicCount: adsData.organicCount,
-        relatedSearches: adsData.relatedSearches.slice(0, 10),
+        totalAds: ads.allAds.length,
+        searchAdsCount: ads.searchAds.length,
+        shoppingAdsCount: ads.shoppingAds.length,
+        localAdsCount: ads.localAds.length,
+        searchAds: ads.searchAds,
+        shoppingAds: ads.shoppingAds,
+        localAds: ads.localAds,
+        allAds: ads.allAds,
+        organicCount: ads.organicCount,
+        relatedSearches: ads.relatedSearches,
         timestamp: new Date().toISOString(),
-        source: 'Advanced Scraper (Residential Proxy)',
-        searchUrl: `https://www.google.com/search?q=${encodeURIComponent(keyword)}`
+        proxyProvider: proxyConfig.provider,
+        source: 'Google SERP (Residential Proxy)',
+        searchUrl: googleUrl
       };
 
     } catch (error) {
-      console.error('[SCRAPER ERROR]', error.message);
-      if (browser) try { await browser.close(); } catch(e) {}
-      return { success: false, error: error.message, keyword };
+      console.error('[Scraper Error]', error.message);
+      return { 
+        success: false, 
+        error: error.message,
+        message: `Request failed: ${error.message}. Check proxy settings.`
+      };
     }
   }
 
+  /**
+   * Extract ads from HTML
+   */
+  extractAds(html) {
+    const searchAds = [];
+    const shoppingAds = [];
+    const localAds = [];
+    const allAds = [];
+    const relatedSearches = [];
+    
+    const clean = (text) => {
+      if (!text) return '';
+      return text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').replace(/\s+/g, ' ').trim();
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // SEARCH ADS
+    // ═══════════════════════════════════════════════════════════
+    
+    // Split by "Sponsored" to find ad sections
+    const sections = html.split(/Sponsored|Sponsorisé/i);
+    
+    sections.slice(1, 10).forEach((section, idx) => {
+      const chunk = section.substring(0, 4000);
+      
+      // Must have ad link
+      if (!chunk.includes('googleadservices') && !chunk.includes('/aclk?')) {
+        return;
+      }
+      
+      // Title
+      let title = '';
+      const titleMatch = chunk.match(/<h3[^>]*>([^<]+)<\/h3>/i) ||
+                        chunk.match(/role="heading"[^>]*>([^<]+)</i);
+      if (titleMatch) title = clean(titleMatch[1]);
+      
+      // Display URL
+      let displayUrl = '';
+      const urlMatch = chunk.match(/(?:^|[^a-z])([a-z0-9][-a-z0-9]*\.(?:com|org|net|io|co|gov|edu)[a-z.]*)/i);
+      if (urlMatch) displayUrl = urlMatch[1].toLowerCase();
+      
+      // Description
+      let description = '';
+      const descMatch = chunk.match(/<span[^>]*>([^<]{40,200})<\/span>/i);
+      if (descMatch) description = clean(descMatch[1]);
+      
+      // Link
+      let link = '';
+      const linkMatch = chunk.match(/href="([^"]*(?:googleadservices|aclk)[^"]*)"/i);
+      if (linkMatch) link = linkMatch[1];
+      
+      // Phone
+      const phoneMatch = chunk.match(/(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/);
+      
+      if (title && title.length > 3) {
+        const ad = {
+          position: searchAds.length + 1,
+          type: 'search',
+          placement: searchAds.length < 4 ? 'top' : 'bottom',
+          title,
+          displayUrl,
+          description,
+          link,
+          phone: phoneMatch ? phoneMatch[1] : null,
+          hasCallExtension: !!phoneMatch
+        };
+        searchAds.push(ad);
+        allAds.push(ad);
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    // SHOPPING ADS
+    // ═══════════════════════════════════════════════════════════
+    
+    // Look for shopping patterns
+    const shoppingMatch = html.match(/commercial-unit|pla-unit|shopping_result/gi);
+    if (shoppingMatch || html.includes('$') && html.includes('product')) {
+      // Find price patterns with context
+      const priceRegex = /\$[\d,]+(?:\.\d{2})?/g;
+      const prices = [...html.matchAll(priceRegex)];
+      
+      prices.slice(0, 12).forEach((match, idx) => {
+        const start = Math.max(0, match.index - 300);
+        const end = Math.min(html.length, match.index + 300);
+        const context = html.substring(start, end);
+        
+        // Find title near price
+        const titleMatch = context.match(/<(?:h3|h4|span)[^>]*>([^<]{10,80})<\/(?:h3|h4|span)>/i);
+        if (titleMatch && !titleMatch[1].includes('$')) {
+          // Avoid duplicates
+          const title = clean(titleMatch[1]);
+          if (!shoppingAds.find(a => a.title === title)) {
+            const merchantMatch = context.match(/(?:from|by|at)\s+([A-Za-z0-9\s&'-]+)/i);
+            const imgMatch = context.match(/src="(https:\/\/[^"]*(?:encrypted|shopping|product)[^"]*)"/i);
+            
+            const ad = {
+              position: shoppingAds.length + 1,
+              type: 'shopping',
+              placement: 'shopping',
+              title,
+              price: match[0],
+              displayUrl: merchantMatch ? clean(merchantMatch[1]) : '',
+              image: imgMatch ? imgMatch[1] : ''
+            };
+            shoppingAds.push(ad);
+            allAds.push(ad);
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // LOCAL ADS
+    // ═══════════════════════════════════════════════════════════
+    
+    if (html.includes('local') || html.includes('map')) {
+      // Find local business patterns
+      const localPattern = /(?:rating|stars?|reviews?)[^>]*>[\s\S]{0,500}?(?:address|location|\d{3}[-.\s]\d{3}[-.\s]\d{4})/gi;
+      const localMatches = html.match(localPattern) || [];
+      
+      localMatches.slice(0, 5).forEach((match, idx) => {
+        const titleMatch = match.match(/(?:heading|title)[^>]*>([^<]+)</i) ||
+                          match.match(/<(?:span|div)[^>]*>([A-Z][^<]{5,40})<\//i);
+        const phoneMatch = match.match(/(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/);
+        const ratingMatch = match.match(/(\d+\.?\d*)\s*(?:star|rating)/i);
+        const isSponsored = match.toLowerCase().includes('sponsored');
+        
+        if (titleMatch) {
+          const ad = {
+            position: localAds.length + 1,
+            type: 'local',
+            placement: 'local_pack',
+            isSponsored,
+            title: clean(titleMatch[1]),
+            phone: phoneMatch ? phoneMatch[1] : '',
+            rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
+            hasCallButton: !!phoneMatch
+          };
+          localAds.push(ad);
+          if (isSponsored) allAds.push(ad);
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // RELATED SEARCHES
+    // ═══════════════════════════════════════════════════════════
+    
+    const relatedRegex = /\/search\?[^"]*q=([^&"]+)/gi;
+    const relatedMatches = html.matchAll(relatedRegex);
+    for (const match of relatedMatches) {
+      try {
+        const query = decodeURIComponent(match[1]).replace(/\+/g, ' ');
+        if (query.length > 2 && query.length < 60 && !relatedSearches.includes(query)) {
+          relatedSearches.push(query);
+        }
+      } catch(e) {}
+      if (relatedSearches.length >= 10) break;
+    }
+
+    // Organic count estimate
+    const organicCount = (html.match(/class="g"/g) || []).length;
+
+    return { searchAds, shoppingAds, localAds, allAds, relatedSearches, organicCount };
+  }
+
+  /**
+   * Search multiple keywords
+   */
   async searchMultipleKeywords(keywords, proxyConfig, options = {}) {
     const results = [];
-    for (let i = 0; i < Math.min(keywords.length, 10); i++) {
-      const result = await this.searchKeywordAds(keywords[i], { ...proxyConfig, session: `kw_${i}_${Date.now()}` }, options);
+    const max = Math.min(keywords.length, 10);
+    
+    for (let i = 0; i < max; i++) {
+      const result = await this.searchKeywordAds(keywords[i], proxyConfig, options);
       results.push(result);
-      if (i < keywords.length - 1) await new Promise(r => setTimeout(r, Math.random() * 3000 + 2000));
+      
+      if (i < max - 1) {
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 2000));
+      }
     }
-    return { success: true, totalKeywords: results.length, totalAdsFound: results.reduce((s, r) => s + (r.totalAds || 0), 0), results };
+    
+    return {
+      success: true,
+      totalKeywords: results.length,
+      totalAdsFound: results.reduce((s, r) => s + (r.totalAds || 0), 0),
+      results
+    };
   }
 
+  /**
+   * Test proxy connection
+   */
   async testProxy(proxyConfig) {
-    console.log('[Proxy Test] Testing...');
+    console.log('[Test] Testing proxy...');
+    
+    if (!proxyConfig?.host) {
+      return { success: false, error: 'No proxy configured' };
+    }
+    
     try {
-      const execPath = await this.getExecutablePath();
-      const proxy = this.formatProxyUrl(proxyConfig);
+      // Test with httpbin
+      const response = await this.makeProxyRequest('https://httpbin.org/ip', proxyConfig);
       
-      const browser = await puppeteer.launch({
-        headless: 'new',
-        executablePath: execPath,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', `--proxy-server=${proxy.server}`]
-      });
+      if (response.status === 200) {
+        const ipMatch = response.data.match(/"origin":\s*"([^"]+)"/);
+        return {
+          success: true,
+          ip: ipMatch ? ipMatch[1] : 'Unknown',
+          message: 'Proxy working!',
+          provider: proxyConfig.provider
+        };
+      }
       
-      const page = await browser.newPage();
-      if (proxy.username) await page.authenticate({ username: proxy.username, password: proxy.password });
-      
-      await page.goto('https://api.ipify.org?format=json', { timeout: 30000 });
-      const ipContent = await page.content();
-      const ip = (ipContent.match(/(\d+\.\d+\.\d+\.\d+)/) || [])[1] || 'Unknown';
-      
-      await page.goto('https://ipapi.co/json/', { timeout: 30000 });
-      const geoContent = await page.evaluate(() => document.body.innerText);
-      let geo = {}; try { geo = JSON.parse(geoContent); } catch(e) {}
-      
-      await browser.close();
-      
-      return { success: true, ip, location: { city: geo.city || 'Unknown', country: geo.country_name || 'Unknown', isp: geo.org || 'Unknown' } };
+      return { success: false, error: `HTTP ${response.status}` };
     } catch (error) {
       return { success: false, error: error.message };
     }

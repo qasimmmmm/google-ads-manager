@@ -1,7 +1,7 @@
 {
   "name": "google-ads-manager",
-  "version": "1.0.0",
-  "description": "Professional Google Ads Management Tool with AI",
+  "version": "2.0.0",
+  "description": "World's Most Advanced Google Ads Tool - Residential Proxy Support",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
