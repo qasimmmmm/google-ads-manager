@@ -28,12 +28,6 @@ function showHelp() {
   window.open('https://support.google.com/google-ads', '_blank');
 }
 
-function setCompDomain(domain) {
-  const input = document.getElementById('competitorDomain');
-  if (input) input.value = domain;
-}
-
 // Make available globally
 window.showNotifications = showNotifications;
 window.showHelp = showHelp;
-window.setCompDomain = setCompDomain;

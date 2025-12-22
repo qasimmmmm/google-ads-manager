@@ -114,14 +114,12 @@ const API = {
 function checkApiStatus() {
   const semrush = Storage.getKey('semrush');
   const claude = Storage.getKey('claude');
-  const scraperapi = Storage.getKey('scraperapi');
   
   return {
     semrush: !!semrush,
     claude: !!claude,
-    scraperapi: !!scraperapi,
-    allConnected: !!claude && !!scraperapi,  // Only Claude and ScraperAPI are essential
-    anyConnected: !!semrush || !!claude || !!scraperapi
+    allConnected: !!semrush && !!claude,
+    anyConnected: !!semrush || !!claude
   };
 }
 
@@ -132,12 +130,12 @@ function updateApiStatusUI() {
   if (!el) return;
   
   if (status.allConnected) {
-    el.innerHTML = '<span class="status-dot status-active"></span><span class="text-sm" style="color:#34a853">APIs ready</span>';
+    el.innerHTML = '<span class="status-dot status-active"></span><span class="text-sm" style="color:#34a853">All APIs connected</span>';
     el.className = 'flex items-center gap-2 px-3 py-1.5 rounded border text-sm';
     el.style.borderColor = '#34a853';
     el.style.background = '#e6f4ea';
   } else if (status.anyConnected) {
-    el.innerHTML = '<span class="status-dot status-paused"></span><span class="text-sm" style="color:#b06000">Setup incomplete</span>';
+    el.innerHTML = '<span class="status-dot status-paused"></span><span class="text-sm" style="color:#b06000">Some APIs missing</span>';
     el.className = 'flex items-center gap-2 px-3 py-1.5 rounded border text-sm';
     el.style.borderColor = '#fbbc04';
     el.style.background = '#fef7e0';

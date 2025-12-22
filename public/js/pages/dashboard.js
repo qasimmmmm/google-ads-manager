@@ -9,7 +9,7 @@ const Dashboard = {
     this.loadTopCampaigns();
     this.loadRecommendations();
     this.renderChart();
-    this.showAIBriefButton(); // Show button instead of auto-generating
+    this.generateAIBrief();
   },
   
   // Load key metrics
@@ -129,84 +129,28 @@ const Dashboard = {
     });
   },
   
-  // Show AI Brief button (does NOT auto-start)
-  showAIBriefButton() {
-    const el = document.getElementById('aiDailyBrief');
-    if (!el) return;
-    
-    const claudeKey = Storage.getKey('claude');
-    if (!claudeKey) {
-      el.innerHTML = `
-        <p class="text-sm mb-2" style="color:#5f6368">Add Claude API key in Settings to enable AI insights.</p>
-        <button onclick="showPage('settings')" class="text-sm px-3 py-1.5 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#1a73e8">
-          Go to Settings
-        </button>
-      `;
-      return;
-    }
-    
-    // Show button to generate AI brief (not auto)
-    el.innerHTML = `
-      <p class="text-sm mb-3" style="color:#5f6368">Click to generate AI analysis of your campaigns:</p>
-      <button onclick="Dashboard.generateAIBrief()" id="generateAIBriefBtn" 
-              class="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2">
-        <span class="material-icons-outlined text-lg">auto_awesome</span>
-        Analyze & Give Suggestions
-      </button>
-    `;
-  },
-  
-  // Generate AI daily brief (called on button click)
+  // Generate AI daily brief
   async generateAIBrief() {
     const el = document.getElementById('aiDailyBrief');
-    const btn = document.getElementById('generateAIBriefBtn');
     if (!el) return;
     
     const claudeKey = Storage.getKey('claude');
     if (!claudeKey) {
-      showAlert('Please add Claude API key in Settings', 'error');
+      el.textContent = 'Add Claude API key in Settings to enable AI insights.';
       return;
     }
     
-    // Show loading state
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="material-icons-outlined animate-spin">sync</span> Analyzing...';
-    }
+    el.innerHTML = '<span style="color:#5f6368">Analyzing your campaigns...</span>';
     
     try {
       const data = await API.post('/ai/chat', {
-        message: `Analyze my Google Ads performance and give me:
-1. A brief summary of current performance (2-3 sentences)
-2. Top 3 actionable suggestions to improve results
-3. Any warnings or issues I should address
-
-Be specific and actionable.`,
+        message: 'Give me a brief 2-3 sentence summary of my Google Ads performance. Focus on key metrics and one actionable insight.',
         claudeApiKey: claudeKey
       });
       
-      // Show result with ability to regenerate
-      el.innerHTML = `
-        <div class="p-4 rounded-lg" style="background:#e8f0fe;border:1px solid #1a73e8">
-          <div class="flex items-start gap-2 mb-2">
-            <span class="material-icons-outlined" style="color:#1a73e8">auto_awesome</span>
-            <p class="font-medium" style="color:#1a73e8">AI Analysis</p>
-          </div>
-          <div class="text-sm whitespace-pre-line" style="color:#202124">${data.message || 'Unable to generate analysis.'}</div>
-        </div>
-        <button onclick="Dashboard.generateAIBrief()" class="mt-3 text-sm px-3 py-1.5 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#5f6368">
-          <span class="material-icons-outlined text-sm align-middle">refresh</span> Regenerate
-        </button>
-      `;
+      el.textContent = data.message || 'Unable to generate summary.';
     } catch (error) {
-      el.innerHTML = `
-        <div class="p-4 rounded-lg" style="background:#fce8e6;border:1px solid #d93025">
-          <p class="text-sm" style="color:#c5221f">Unable to generate AI analysis. Check your Claude API key in Settings.</p>
-        </div>
-        <button onclick="Dashboard.showAIBriefButton()" class="mt-3 text-sm px-3 py-1.5 rounded border hover:bg-gray-50" style="border-color:#dadce0;color:#5f6368">
-          Try Again
-        </button>
-      `;
+      el.textContent = 'Unable to generate AI summary. Check your API key.';
     }
   }
 };

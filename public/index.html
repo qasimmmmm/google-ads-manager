@@ -506,35 +506,6 @@
           <div class="mb-6">
             <p class="text-sm mt-1" style="color:#5f6368">Analyze competitors' Google Ads strategies</p>
           </div>
-          
-          <!-- Method Selector -->
-          <div class="card p-4 mb-4">
-            <p class="text-sm font-medium mb-3">Choose Research Method:</p>
-            <div class="flex gap-3">
-              <button onclick="switchCompMethod('transparency')" data-method="transparency" 
-                      class="flex-1 p-3 rounded-lg border text-left active" 
-                      style="border-color:#1a73e8;color:#1a73e8;background:#e8f0fe">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="material-icons-outlined">visibility</span>
-                  <span class="font-medium">Google Ads Transparency</span>
-                  <span class="badge badge-green text-xs ml-auto">FREE*</span>
-                </div>
-                <p class="text-xs" style="color:#5f6368">See actual ad creatives from Transparency Center</p>
-              </button>
-              <button onclick="switchCompMethod('semrush')" data-method="semrush" 
-                      class="flex-1 p-3 rounded-lg border text-left" 
-                      style="border-color:#dadce0;color:#5f6368;background:white">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="material-icons-outlined">analytics</span>
-                  <span class="font-medium">SEMrush API</span>
-                  <span class="badge badge-yellow text-xs ml-auto">PAID</span>
-                </div>
-                <p class="text-xs" style="color:#5f6368">Get keyword data, traffic, and spend estimates</p>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Search Box -->
           <div class="card p-6 mb-6">
             <div class="flex gap-4">
               <div class="flex-1 relative">
@@ -542,26 +513,9 @@
                 <input type="text" id="competitorDomain" placeholder="Enter competitor domain (e.g., example.com)" class="w-full pl-12 pr-4 py-3 border rounded-lg text-base" style="border-color:#dadce0">
               </div>
               <button onclick="analyzeCompetitor()" id="analyzeCompBtn" class="btn-primary px-6 py-3 flex items-center gap-2">
-                <span class="material-icons-outlined">search</span>Search Transparency Center
+                <span class="material-icons-outlined">search</span>Analyze
               </button>
             </div>
-            
-            <!-- API Key inputs (shown based on method) -->
-            <div id="scraperKeySection" class="mt-3">
-              <div class="flex items-center gap-2">
-                <input type="text" id="scraperApiKey" placeholder="ScraperAPI Key (optional - will use saved key)" 
-                       class="flex-1 px-3 py-2 text-sm border rounded" style="border-color:#dadce0">
-                <a href="https://www.scraperapi.com/signup" target="_blank" class="text-xs hover:underline" style="color:#1a73e8">Get FREE key →</a>
-              </div>
-            </div>
-            <div id="semrushKeySection" class="mt-3 hidden">
-              <div class="flex items-center gap-2">
-                <input type="text" id="semrushApiKey" placeholder="SEMrush API Key" 
-                       class="flex-1 px-3 py-2 text-sm border rounded" style="border-color:#dadce0">
-                <a href="https://www.semrush.com/api-analytics/" target="_blank" class="text-xs hover:underline" style="color:#ff642d">Get SEMrush API →</a>
-              </div>
-            </div>
-            
             <div class="flex gap-4 mt-3">
               <span class="text-sm" style="color:#5f6368">Quick:</span>
               <button onclick="setCompDomain('spectrum.com')" class="text-sm hover:underline" style="color:#1a73e8">spectrum.com</button>
@@ -569,29 +523,22 @@
               <button onclick="setCompDomain('att.com')" class="text-sm hover:underline" style="color:#1a73e8">att.com</button>
             </div>
           </div>
-          
-          <!-- Results -->
           <div id="competitorResults" class="hidden">
+            <div id="compOverview" class="grid grid-cols-4 gap-4 mb-6"></div>
             <div class="card overflow-hidden">
+              <div class="flex border-b" style="border-color:#e8eaed">
+                <button onclick="showCompTab('ads')" class="tab-btn active" data-ctab="ads">Ad Copies</button>
+                <button onclick="showCompTab('keywords')" class="tab-btn" data-ctab="keywords">Paid Keywords</button>
+                <button onclick="showCompTab('organic')" class="tab-btn" data-ctab="organic">Organic</button>
+                <button onclick="showCompTab('competitors')" class="tab-btn" data-ctab="competitors">Their Competitors</button>
+              </div>
               <div id="compTabContent" class="p-4"></div>
             </div>
           </div>
-          
-          <!-- Empty State -->
           <div id="competitorEmpty" class="text-center py-16">
             <span class="material-icons-outlined text-6xl mb-4" style="color:#dadce0">search</span>
             <h3 class="font-medium mb-2" style="color:#202124">Enter a competitor domain</h3>
-            <p class="text-sm mb-4" style="color:#5f6368">Choose a method above and enter a domain to analyze</p>
-            <div class="flex justify-center gap-4 text-sm">
-              <div class="p-3 rounded-lg" style="background:#e8f0fe">
-                <p class="font-medium" style="color:#1a73e8">Transparency Center</p>
-                <p class="text-xs" style="color:#5f6368">See actual ad creatives</p>
-              </div>
-              <div class="p-3 rounded-lg" style="background:#fff3e0">
-                <p class="font-medium" style="color:#ff642d">SEMrush</p>
-                <p class="text-xs" style="color:#5f6368">Keywords & traffic data</p>
-              </div>
-            </div>
+            <p class="text-sm" style="color:#5f6368">Discover their keywords, ads, and spending</p>
           </div>
         </div>
 
@@ -600,80 +547,43 @@
         <!-- ═══════════════════════════════════════════════════════════ -->
         <div id="page-keyword-planner" class="page-content" style="display:none">
           <div class="mb-6">
-            <p class="text-sm mt-1" style="color:#5f6368">Discover keywords and see live ads running on Google</p>
+            <p class="text-sm mt-1" style="color:#5f6368">Discover new keywords and get search volume estimates</p>
           </div>
-          
-          <!-- TWO SECTIONS: Keyword Research (FREE) + Current Ads (ScraperAPI) -->
-          <div class="grid grid-cols-2 gap-6 mb-6">
-            
-            <!-- Section 1: FREE Keyword Research -->
-            <div class="card p-5">
-              <div class="flex items-center gap-2 mb-3">
-                <span class="material-icons-outlined" style="color:#34a853">search</span>
-                <h3 class="font-medium">Keyword Research</h3>
-                <span class="badge badge-green text-xs">FREE</span>
+          <div class="card p-6 mb-6">
+            <div class="flex gap-4">
+              <div class="flex-1 relative">
+                <span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2" style="color:#5f6368">search</span>
+                <input type="text" id="kwPlannerInput" placeholder="Enter a keyword to find related keywords..." class="w-full pl-12 pr-4 py-3 border rounded-lg text-base" style="border-color:#dadce0">
               </div>
-              <p class="text-sm mb-3" style="color:#5f6368">Find related keywords using Google Autocomplete</p>
-              <div class="flex gap-2">
-                <input type="text" id="kwPlannerInput" placeholder="Enter a seed keyword..." class="flex-1 px-4 py-2.5 border rounded-lg" style="border-color:#dadce0">
-                <button onclick="searchKeywords()" id="kwSearchBtn" class="btn-primary px-4 py-2.5 flex items-center gap-2">
-                  <span class="material-icons-outlined">search</span>Find Keywords
-                </button>
-              </div>
-              <p class="text-xs mt-2" style="color:#5f6368">✓ No API key required • 100% Free</p>
+              <button onclick="searchKeywords()" id="kwSearchBtn" class="btn-primary px-6 py-3 flex items-center gap-2">
+                <span class="material-icons-outlined">search</span>Find Keywords
+              </button>
             </div>
-            
-            <!-- Section 2: Current Ads on Keywords (NEW!) -->
-            <div class="card p-5" style="border:2px solid #1a73e8">
-              <div class="flex items-center gap-2 mb-3">
-                <span class="material-icons-outlined" style="color:#1a73e8">ads_click</span>
-                <h3 class="font-medium">Current Ads on Keywords</h3>
-                <span class="badge badge-blue text-xs">NEW!</span>
-              </div>
-              <p class="text-sm mb-3" style="color:#5f6368">See LIVE ads running on Google right now</p>
-              <div class="flex gap-2">
-                <input type="text" id="currentAdsInput" placeholder="Enter keyword to see ads..." class="flex-1 px-4 py-2.5 border rounded-lg" style="border-color:#dadce0">
-                <button onclick="searchCurrentAds()" id="currentAdsBtn" class="px-4 py-2.5 flex items-center gap-2 rounded-lg font-medium" style="background:#1a73e8;color:white">
-                  <span class="material-icons-outlined">ads_click</span>Search Current Ads
-                </button>
-              </div>
-              <p class="text-xs mt-2" style="color:#5f6368">⚡ Requires ScraperAPI key (FREE 1,000/month)</p>
+            <div class="grid grid-cols-4 gap-4 mt-4">
+              <div><label class="text-xs block mb-1" style="color:#5f6368">Max CPC</label><select id="kwMaxCpc" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="100">Any</option><option value="5">Under $5</option><option value="10" selected>Under $10</option><option value="20">Under $20</option></select></div>
+              <div><label class="text-xs block mb-1" style="color:#5f6368">Min Volume</label><select id="kwMinVol" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="0">Any</option><option value="100" selected>100+</option><option value="500">500+</option><option value="1000">1K+</option></select></div>
+              <div><label class="text-xs block mb-1" style="color:#5f6368">Competition</label><select id="kwComp" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="all">All</option><option value="low">Low</option><option value="medium">Medium</option></select></div>
+              <div><label class="text-xs block mb-1" style="color:#5f6368">Intent</label><select id="kwIntent" class="w-full px-3 py-2 border rounded text-sm" style="border-color:#dadce0"><option value="all">All</option><option value="commercial">Commercial</option><option value="transactional">Transactional</option></select></div>
             </div>
           </div>
-          
-          <!-- Current Ads Results (shown when searching) -->
-          <div id="currentAdsResults" class="hidden mb-6"></div>
-          
-          <!-- Keyword Research Results -->
           <div id="kwPlannerResults" class="hidden">
             <div id="kwPlannerSummary" class="grid grid-cols-4 gap-4 mb-4"></div>
             <div class="card overflow-hidden">
               <div class="p-4 border-b flex justify-between items-center" style="border-color:#e8eaed">
                 <div class="flex gap-2">
-                  <button onclick="filterKw('best')" class="badge badge-green cursor-pointer hover:opacity-80">💎 Best Opportunities</button>
-                  <button onclick="filterKw('lowcpc')" class="badge badge-blue cursor-pointer hover:opacity-80">💰 Low CPC</button>
-                  <button onclick="filterKw('highvol')" class="badge badge-yellow cursor-pointer hover:opacity-80">📈 High Volume</button>
+                  <button onclick="filterKwPlanner('best')" class="badge badge-green cursor-pointer hover:opacity-80">💎 Best Opportunities</button>
+                  <button onclick="filterKwPlanner('lowcpc')" class="badge badge-blue cursor-pointer hover:opacity-80">💰 Low CPC</button>
+                  <button onclick="filterKwPlanner('highvol')" class="badge badge-yellow cursor-pointer hover:opacity-80">📈 High Volume</button>
                 </div>
-                <button onclick="exportKw()" class="btn-secondary px-3 py-1.5 text-sm flex items-center gap-1"><span class="material-icons-outlined text-lg">download</span>Export</button>
+                <button onclick="exportKwPlanner()" class="btn-secondary px-3 py-1.5 text-sm flex items-center gap-1"><span class="material-icons-outlined text-lg">download</span>Export</button>
               </div>
               <div id="kwPlannerTable" class="overflow-x-auto max-h-[500px]"></div>
             </div>
           </div>
-          
-          <!-- Empty State -->
-          <div id="kwPlannerEmpty" class="text-center py-12">
-            <div class="grid grid-cols-2 gap-8 max-w-2xl mx-auto">
-              <div class="card p-6">
-                <span class="material-icons-outlined text-4xl mb-3" style="color:#34a853">search</span>
-                <h4 class="font-medium mb-2">Keyword Research</h4>
-                <p class="text-sm" style="color:#5f6368">Find related keywords and opportunities using FREE Google Autocomplete data</p>
-              </div>
-              <div class="card p-6">
-                <span class="material-icons-outlined text-4xl mb-3" style="color:#1a73e8">ads_click</span>
-                <h4 class="font-medium mb-2">Current Ads</h4>
-                <p class="text-sm" style="color:#5f6368">See which ads are currently running on Google for any keyword</p>
-              </div>
-            </div>
+          <div id="kwPlannerEmpty" class="text-center py-16">
+            <span class="material-icons-outlined text-6xl mb-4" style="color:#dadce0">manage_search</span>
+            <h3 class="font-medium mb-2" style="color:#202124">Search for keywords</h3>
+            <p class="text-sm" style="color:#5f6368">Enter a keyword to find related keywords and search volumes</p>
           </div>
         </div>
 
@@ -754,37 +664,20 @@
           <div class="max-w-2xl space-y-6">
             <div class="card p-6">
               <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background:#e6f4ea">
-                  <span class="material-icons-outlined" style="color:#34a853">visibility</span>
-                </div>
-                <div class="flex-1">
-                  <h3 class="font-medium" style="color:#202124">ScraperAPI <span class="badge badge-green">FREE!</span></h3>
-                  <p class="text-sm" style="color:#5f6368">For competitor ad intelligence (1,000 free/month)</p>
-                </div>
-                <span class="badge badge-green">Recommended</span>
-              </div>
-              <div class="flex gap-2">
-                <input type="password" id="scraperApiKey" placeholder="Enter ScraperAPI key" class="flex-1 px-4 py-2.5 border rounded" style="border-color:#dadce0">
-                <button onclick="saveScraperApiKey()" class="btn-primary px-6 py-2.5">Save</button>
-              </div>
-              <p class="text-xs mt-2" style="color:#5f6368">FREE signup at: <a href="https://www.scraperapi.com/signup" target="_blank" style="color:#1a73e8" class="hover:underline">scraperapi.com/signup</a> (no credit card required)</p>
-            </div>
-            <div class="card p-6">
-              <div class="flex items-center gap-4 mb-4">
                 <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background:#fff4e5">
                   <span class="material-icons-outlined" style="color:#f57c00">search</span>
                 </div>
                 <div class="flex-1">
                   <h3 class="font-medium" style="color:#202124">SEMrush API</h3>
-                  <p class="text-sm" style="color:#5f6368">For advanced competitor keyword research</p>
+                  <p class="text-sm" style="color:#5f6368">For competitor and keyword research</p>
                 </div>
-                <span class="badge badge-grey">Optional</span>
+                <span class="badge badge-yellow">Required</span>
               </div>
               <div class="flex gap-2">
                 <input type="password" id="semrushKey" placeholder="Enter SEMrush API key" class="flex-1 px-4 py-2.5 border rounded" style="border-color:#dadce0">
                 <button onclick="saveSemrushKey()" class="btn-primary px-6 py-2.5">Save</button>
               </div>
-              <p class="text-xs mt-2" style="color:#5f6368">Get from: SEMrush → Settings → API (paid service)</p>
+              <p class="text-xs mt-2" style="color:#5f6368">Get from: SEMrush → Settings → API</p>
             </div>
             <div class="card p-6">
               <div class="flex items-center gap-4 mb-4">
