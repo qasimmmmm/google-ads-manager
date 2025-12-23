@@ -196,7 +196,13 @@ class GoogleAdsService {
   // KEYWORDS
   // ═══════════════════════════════════════════════════════════
   async getKeywords(startDate, endDate, campaignId = null) {
-    const campaignFilter = campaignId ? `\n        AND campaign.id = '${campaignId}'` : '';
+    const normalizedCampaignId = campaignId ? String(campaignId).trim() : null;
+
+    if (normalizedCampaignId && !/^\d+$/.test(normalizedCampaignId)) {
+      throw new Error('Invalid campaignId. Must be a numeric ID.');
+    }
+
+    const campaignFilter = normalizedCampaignId ? `\n        AND campaign.id = ${normalizedCampaignId}` : '';
 
     const query = `
       SELECT
