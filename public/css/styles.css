@@ -28,11 +28,14 @@ body { background: var(--google-lightgrey); color: var(--google-darkgrey); margi
 .dark-theme .bg-white { background: var(--surface-primary) !important; }
 .dark-theme .bg-gray-50,
 .dark-theme .bg-gray-100 { background: var(--surface-primary) !important; }
+.dark-theme .bg-gray-200,
+.dark-theme .bg-gray-300 { background: var(--surface-tertiary) !important; }
 .dark-theme .bg-blue-50 { background: rgba(96,165,250,0.12) !important; color: var(--google-blue); }
 .dark-theme .bg-gray-400 { background: var(--google-grey) !important; }
 .dark-theme .border-gray-200, .dark-theme .border-gray-300 { border-color: var(--border-color) !important; }
 .dark-theme .text-google-grey { color: var(--google-grey) !important; }
 .dark-theme .text-google-darkgrey { color: var(--google-darkgrey) !important; }
+.dark-theme .text-gray-300 { color: var(--google-grey) !important; }
 .dark-theme .text-google-blue { color: var(--google-blue) !important; }
 .dark-theme .text-google-green { color: #6ee7b7 !important; }
 .dark-theme select,
@@ -54,6 +57,7 @@ body { background: var(--google-lightgrey); color: var(--google-darkgrey); margi
 .dark-theme .hover\:bg-gray-100:hover,
 .dark-theme .hover\:bg-gray-50:hover { background: rgba(148,163,184,0.08) !important; }
 .dark-theme .hover\:bg-blue-50:hover { background: rgba(96,165,250,0.12) !important; }
+.dark-theme .hover\:bg-gray-200:hover { background: rgba(148,163,184,0.08) !important; }
 .dark-theme .badge-blue { background: rgba(96,165,250,0.12); color: var(--google-blue); }
 .dark-theme .badge-green { background: rgba(52,211,153,0.12); color: #6ee7b7; }
 .dark-theme .badge-red { background: rgba(248,113,113,0.12); color: #fca5a5; }
