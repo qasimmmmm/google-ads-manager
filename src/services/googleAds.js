@@ -195,7 +195,9 @@ class GoogleAdsService {
   // ═══════════════════════════════════════════════════════════
   // KEYWORDS
   // ═══════════════════════════════════════════════════════════
-  async getKeywords(startDate, endDate) {
+  async getKeywords(startDate, endDate, campaignId = null) {
+    const campaignFilter = campaignId ? `\n        AND campaign.id = '${campaignId}'` : '';
+
     const query = `
       SELECT
         ad_group_criterion.criterion_id,
@@ -214,7 +216,7 @@ class GoogleAdsService {
         metrics.cost_per_conversion
       FROM keyword_view
       WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
-        AND ad_group_criterion.status != 'REMOVED'
+        AND ad_group_criterion.status != 'REMOVED'${campaignFilter}
       ORDER BY metrics.cost_micros DESC
       LIMIT 100
     `;
