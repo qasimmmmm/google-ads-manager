@@ -317,6 +317,167 @@ class GoogleAdsService {
   }
 
   // ═══════════════════════════════════════════════════════════
+  // LOCATIONS
+  // ═══════════════════════════════════════════════════════════
+  async getLocationPerformance(startDate, endDate) {
+    const query = `
+      SELECT
+        campaign.name,
+        segments.geo_target_country,
+        segments.geo_target_region,
+        segments.geo_target_city,
+        metrics.impressions,
+        metrics.clicks,
+        metrics.conversions,
+        metrics.cost_micros
+      FROM campaign
+      WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
+        AND campaign.status != 'REMOVED'
+    `;
+
+    try {
+      const results = await this.query(query);
+
+      const locations = {};
+
+      results.forEach(row => {
+        const segments = row.segments || {};
+        const metrics = row.metrics || {};
+        const campaignName = row.campaign?.name;
+
+        const locationName =
+          segments.geoTargetCity ||
+          segments.geoTargetRegion ||
+          segments.geoTargetCountry ||
+          'Unspecified';
+
+        if (!locations[locationName]) {
+          locations[locationName] = {
+            impressions: 0,
+            clicks: 0,
+            conversions: 0,
+            cost: 0,
+            campaigns: new Set()
+          };
+        }
+
+        const location = locations[locationName];
+        location.impressions += Number(metrics.impressions) || 0;
+        location.clicks += Number(metrics.clicks) || 0;
+        location.conversions += Number(metrics.conversions) || 0;
+        location.cost += (Number(metrics.costMicros) || 0) / 1000000;
+
+        if (campaignName) {
+          location.campaigns.add(campaignName);
+        }
+      });
+
+      return Object.entries(locations).map(([location, data]) => ({
+        location,
+        impressions: data.impressions,
+        clicks: data.clicks,
+        conversions: data.conversions,
+        cost: data.cost,
+        campaigns: Array.from(data.campaigns)
+      }));
+    } catch (error) {
+      console.error('Locations error:', error);
+      return [];
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // AUDIENCE PERFORMANCE
+  // ═══════════════════════════════════════════════════════════
+  async getAudiencePerformance(startDate, endDate) {
+    const query = `
+      SELECT
+        ad_group_criterion.criterion_id,
+        ad_group_criterion.type,
+        ad_group_criterion.user_list.user_list,
+        ad_group_criterion.user_interest.user_interest,
+        ad_group_criterion.status,
+        campaign.name,
+        ad_group.name,
+        metrics.impressions,
+        metrics.clicks,
+        metrics.conversions,
+        metrics.cost_micros
+      FROM ad_group_criterion
+      WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
+        AND ad_group_criterion.type IN ('USER_LIST', 'USER_INTEREST')
+        AND ad_group_criterion.status != 'REMOVED'
+      ORDER BY metrics.impressions DESC
+      LIMIT 50
+    `;
+
+    try {
+      const results = await this.query(query);
+
+      return results.map(row => {
+        const criterion = row.adGroupCriterion || {};
+        const metrics = row.metrics || {};
+
+        const audienceName =
+          criterion.userList?.userList ||
+          criterion.userInterest?.userInterest ||
+          'Audience';
+
+        return {
+          id: criterion.criterionId,
+          audience: audienceName,
+          type: criterion.type || 'UNKNOWN',
+          status: criterion.status || 'UNSPECIFIED',
+          campaign: row.campaign?.name || '',
+          adGroup: row.adGroup?.name || '',
+          impressions: Number(metrics.impressions) || 0,
+          clicks: Number(metrics.clicks) || 0,
+          conversions: Number(metrics.conversions) || 0,
+          cost: (Number(metrics.costMicros) || 0) / 1000000
+        };
+      });
+    } catch (error) {
+      console.error('Audience error:', error);
+      return [];
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CONVERSION ACTIONS
+  // ═══════════════════════════════════════════════════════════
+  async getConversionActions() {
+    const query = `
+      SELECT
+        conversion_action.id,
+        conversion_action.name,
+        conversion_action.category,
+        conversion_action.type,
+        conversion_action.status
+      FROM conversion_action
+      ORDER BY conversion_action.name
+      LIMIT 100
+    `;
+
+    try {
+      const results = await this.query(query);
+
+      return results.map(row => {
+        const action = row.conversionAction || {};
+        return {
+          id: action.id,
+          name: action.name || 'Conversion action',
+          category: action.category || 'UNSPECIFIED',
+          type: action.type || 'UNSPECIFIED',
+          status: action.status || 'UNSPECIFIED'
+        };
+      });
+    } catch (error) {
+      console.error('Conversions error:', error);
+      return [];
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // DEVICE PERFORMANCE
   // ═══════════════════════════════════════════════════════════
   async getDevicePerformance(startDate, endDate) {
