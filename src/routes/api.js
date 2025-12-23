@@ -18,14 +18,17 @@ const getAuthData = (req) => {
 // Middleware to check authentication
 const requireAuth = (req, res, next) => {
   const authData = getAuthData(req);
-  
+
   if (!authData || !authData.tokens || !authData.tokens.access_token) {
     return res.status(401).json({ error: 'Not authenticated. Please login first.' });
   }
-  
+
   req.authData = authData;
   next();
 };
+
+const createGoogleAdsService = (req) =>
+  new GoogleAdsService(req.authData.tokens.access_token, req.authData.tokens.refresh_token);
 
 // Helper to get date range
 const getDateRange = (range) => {
@@ -74,7 +77,7 @@ router.get('/summary', requireAuth, async (req, res) => {
     const { range = 'last30' } = req.query;
     const { startDate, endDate } = getDateRange(range);
     
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const data = await service.getAccountSummary(startDate, endDate);
     
     res.json({
@@ -96,7 +99,7 @@ router.get('/campaigns', requireAuth, async (req, res) => {
     const { range = 'last30' } = req.query;
     const { startDate, endDate } = getDateRange(range);
     
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const campaigns = await service.getCampaigns(startDate, endDate);
     
     res.json({
@@ -119,7 +122,7 @@ router.get('/keywords', requireAuth, async (req, res) => {
     const { range = 'last30', campaignId } = req.query;
     const { startDate, endDate } = getDateRange(range);
     
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const keywords = await service.getKeywords(startDate, endDate, campaignId);
     
     res.json({
@@ -142,7 +145,7 @@ router.get('/ads', requireAuth, async (req, res) => {
     const { range = 'last30' } = req.query;
     const { startDate, endDate } = getDateRange(range);
     
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const ads = await service.getAds(startDate, endDate);
     
     res.json({
@@ -165,7 +168,7 @@ router.get('/locations', requireAuth, async (req, res) => {
     const { range = 'last30' } = req.query;
     const { startDate, endDate } = getDateRange(range);
     
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const locations = await service.getLocationPerformance(startDate, endDate);
     
     res.json({
@@ -188,7 +191,7 @@ router.get('/devices', requireAuth, async (req, res) => {
     const { range = 'last30' } = req.query;
     const { startDate, endDate } = getDateRange(range);
     
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const devices = await service.getDevicePerformance(startDate, endDate);
     
     res.json({
@@ -210,7 +213,7 @@ router.get('/audiences', requireAuth, async (req, res) => {
     const { range = 'last30' } = req.query;
     const { startDate, endDate } = getDateRange(range);
     
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const audiences = await service.getAudiencePerformance(startDate, endDate);
     
     res.json({
@@ -230,7 +233,7 @@ router.get('/audiences', requireAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 router.get('/conversions', requireAuth, async (req, res) => {
   try {
-    const service = new GoogleAdsService(req.authData.tokens.access_token);
+    const service = createGoogleAdsService(req);
     const conversions = await service.getConversionActions();
     
     res.json({

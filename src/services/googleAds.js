@@ -1,3 +1,5 @@
+const { google } = require('googleapis');
+
 class GoogleAdsService {
   constructor(accessToken, refreshToken) {
     this.accessToken = accessToken;
@@ -5,9 +7,44 @@ class GoogleAdsService {
     this.customerId = process.env.GOOGLE_ADS_CUSTOMER_ID;
     this.developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
     this.managerId = process.env.GOOGLE_ADS_MANAGER_ID;
-    
+
+    this.oauthClient = this.createOAuthClient(refreshToken);
+
     // Base URL for Google Ads REST API
     this.baseUrl = 'https://googleads.googleapis.com/v18';
+  }
+
+  createOAuthClient(refreshToken) {
+    if (!refreshToken || !process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return null;
+    }
+
+    const oauthClient = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.OAUTH_CALLBACK_URL || 'http://localhost:3000/auth/callback'
+    );
+
+    oauthClient.setCredentials({ refresh_token: refreshToken });
+    return oauthClient;
+  }
+
+  async tryRefreshAccessToken() {
+    if (!this.oauthClient) {
+      return false;
+    }
+
+    try {
+      const { credentials } = await this.oauthClient.refreshAccessToken();
+      if (credentials?.access_token) {
+        this.accessToken = credentials.access_token;
+        return true;
+      }
+    } catch (error) {
+      console.error('Failed to refresh Google Ads access token:', error);
+    }
+
+    return false;
   }
 
   // Get headers for API requests
@@ -23,13 +60,20 @@ class GoogleAdsService {
   // Make API request
   async query(query) {
     const url = `${this.baseUrl}/customers/${this.customerId}/googleAds:searchStream`;
-    
+
     try {
-      const response = await fetch(url, {
+      const execute = async () => fetch(url, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify({ query })
       });
+
+      let response = await execute();
+
+      // Attempt a single token refresh on auth errors
+      if ((response.status === 401 || response.status === 403) && await this.tryRefreshAccessToken()) {
+        response = await execute();
+      }
 
       if (!response.ok) {
         const error = await response.json();

@@ -43,8 +43,9 @@ This document explains how the backend is structured, what each module does, and
 - **In-memory chat history:** AI chat histories are not persisted; multi-instance deployments will not share context.
 - **Secret handling:** API keys are accepted in request bodies for some automation endpoints; there is no central secret vault or rate limiting.
 - **Error handling:** Most routes return raw error messages; upstream provider errors can leak details.
-- **Token refresh:** Backend calls rely on the access token from the cookie and do not perform refreshes; long-lived sessions may fail once tokens expire.
+- **Token refresh:** Google Ads calls now attempt a single access-token refresh on 401/403 responses when a refresh token exists; sessions without refresh tokens will still expire.
 
 ## Recent Fixes
 - **Keyword filtering:** `/api/keywords` now respects `campaignId` and validates it is numeric before injecting into GAQL.
 - **Missing Google Ads handlers:** Added Google Ads service methods for geo locations, audiences, and conversion actions so `/api/locations`, `/api/audiences`, and `/api/conversions` return data instead of failing.
+- **Access token refresh:** Google Ads requests retry once after refreshing the access token when valid refresh credentials are available.
