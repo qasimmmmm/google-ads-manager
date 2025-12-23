@@ -85,3 +85,6 @@ Click "Search" again - each request gets a new IP!
 
 ## 📞 Support
 Open a GitHub issue for help.
+
+## 🧭 Backend Overview
+For route structure, authentication flow, and integration notes, see [docs/OVERVIEW.md](docs/OVERVIEW.md).
